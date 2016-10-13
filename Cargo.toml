@@ -1,0 +1,5 @@
+[package]
+name = "gb-rust"
+version = "0.1.0"
+authors = ["Jakub Jagusztyn <jakub.jagusztyn@gmail.com.com>"]
+
