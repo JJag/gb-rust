@@ -7,7 +7,7 @@ use cpu::*;
 use LD::*;
 
 fn main() {
-    let mut cpu = cpuister::init();
+    let mut cpu = cpu::init();
 
     ld_a_n(&mut cpu, 6);
     ld_d_a(&mut cpu);
