@@ -2,7 +2,7 @@ use util;
 
 
 #[derive(Debug)]
-pub struct Register {
+pub struct Cpu {
     pub a: u8,
     pub f: u8,
     pub b: u8,

@@ -1,7 +1,7 @@
 use mmu;
 use cpu::*;
 
-impl CPU {
+impl Cpu {
 pub fn ld_a_n(&mut self) { self.pc += 1; let n = mmu::read_byte(self.pc); self.a = n }
 pub fn ld_b_n(&mut self) { self.pc += 1; let n = mmu::read_byte(self.pc); self.b = n }
 pub fn ld_c_n(&mut self) { self.pc += 1; let n = mmu::read_byte(self.pc); self.c = n }
@@ -147,5 +147,5 @@ pub fn push_af(&mut self) {
     }
 
 
-pub fn ldhl_sp_n(&mut self) { self.pc += 1; let n = mmu::read_byte(self.pc); ??? }
+//pub fn ldhl_sp_n(&mut self) { self.pc += 1; let n = mmu::read_byte(self.pc); ??? }
 }
