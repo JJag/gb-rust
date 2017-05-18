@@ -1,6 +1,11 @@
 use util;
 use mmu;
 
+const Z_MASK: u8 = 0b10000000;
+const N_MASK: u8 = 0b01000000;
+const H_MASK: u8 = 0b00100000;
+const C_MASK: u8 = 0b00010000;
+
 pub struct Cpu {
     pub mmu: mmu::Mmu,
 
@@ -49,11 +54,6 @@ impl Cpu {
         self.d = (n >> 8) as u8;
         self.e = n as u8
     }
-
-    const Z_MASK: u8 = 0b10000000;
-    const N_MASK: u8 = 0b01000000;
-    const H_MASK: u8 = 0b00100000;
-    const C_MASK: u8 = 0b00010000;
 
     pub fn set_z(&mut self, set: bool) { if set { self.f |= Z_MASK } else { self.f &= !Z_MASK } }
     pub fn set_n(&mut self, set: bool) { if set { self.f |= N_MASK } else { self.f &= !N_MASK } }

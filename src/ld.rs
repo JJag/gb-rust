@@ -1,4 +1,5 @@
 use cpu::*;
+use util;
 
 impl Cpu {
     pub fn ld_a_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.a = n }
@@ -175,5 +176,17 @@ impl Cpu {
     pub fn push_af(&mut self) { let af =self.af(); self.sp -= 2; self.mmu.write_word(af, self.sp) }
     
     
-    //pub fn ldhl_sp_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); ??? }
+    pub fn ldhl_sp_n(&mut self) {
+        self.pc += 1;
+        let n = self.mmu.read_byte(self.pc);
+        let sp = self.sp;
+        self.set_hl(sp + n as u16);
+
+        self.set_z(false);
+        self.set_n(false);
+        self.set_h(util::check_half_carry(sp as u8, n));
+        self.set_c(util::check_full_carry(sp as u8, n));
+    }
+
 }
+

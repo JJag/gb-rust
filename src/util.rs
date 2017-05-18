@@ -4,6 +4,10 @@ pub fn concat(x: u8, y: u8) -> u16 {
     (x16 << 8) | y16
 }
 
+pub fn check_half_carry(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
+pub fn check_full_carry(a: u8, b: u8) -> bool { (a as u16) + (b as u16) > 0xFF }
+
+
 mod test {
     #[test]
     fn concat_test() {

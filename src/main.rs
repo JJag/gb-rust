@@ -46,8 +46,6 @@ fn run(cpu: &mut Cpu) {
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
     println!("GOT OPCODE {:X}", opcode);
-    fn unknown() { println!("UNKNOWN opcode ${:X}", opcode) }
-    
     
     match opcode {
         0x00 => cpu.nop(),
@@ -314,8 +312,8 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xF5 => cpu.push_af(),
         0xF6 => (),
         0xF7 => (),
-        0xF8 => (),
-        0xF9 => (),
+        0xF8 => cpu.ldhl_sp_n(),
+        0xF9 => cpu.ld_sp_hl(),
         0xFA => cpu.ld_a_nn(),
         0xFB => (),
         0xFC => panic!("INVALID OPCODE {}", opcode),
