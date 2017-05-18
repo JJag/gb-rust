@@ -1,8 +1,9 @@
 use util;
+use mmu;
 
-
-#[derive(Debug)]
 pub struct Cpu {
+    pub mmu: mmu::Mmu,
+
     pub a: u8,
     pub f: u8,
     pub b: u8,
@@ -16,8 +17,9 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn init() -> Cpu {
+    pub fn init(_mmu: mmu::Mmu) -> Cpu {
         Cpu {
+            mmu: _mmu,
             a: 0, f: 0,
             b: 0, c: 0,
             d: 0, e: 0,
