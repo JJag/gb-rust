@@ -5,7 +5,6 @@ pub fn concat(x: u8, y: u8) -> u16 {
 }
 
 mod test {
-    use super::concat;
     #[test]
     fn concat_test() {
         assert_eq!(concat(0xAF, 0x30), 0xAF30);
