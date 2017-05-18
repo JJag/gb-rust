@@ -83,12 +83,29 @@ impl Cpu {
     
     pub fn ld_a_bc(&mut self) { self.a = self.mmu.read_byte(self.bc()) }
     pub fn ld_a_de(&mut self) { self.a = self.mmu.read_byte(self.de()) }
-    pub fn ld_a_nn(&mut self, nn: u16) { self.a = self.mmu.read_byte(nn) }
-    
+    pub fn ld_a_nn(&mut self) {
+        self.pc +=1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc +=1;
+        self.a = self.mmu.read_byte(nn)
+    }
+
+    /// LD (HL), n
+    pub fn ld__hl__n(&mut self) {
+        self.pc += 1;
+        let n = self.mmu.read_byte(self.pc);
+        let hl = self.hl();
+        self.mmu.write_byte(n, hl);
+    }
     
     pub fn ld_bc_a(&mut self) { let bc = self.bc(); self.mmu.write_byte(self.a, bc) }
     pub fn ld_de_a(&mut self) { let de = self.de(); self.mmu.write_byte(self.a, de) }
-    pub fn ld_nn_a(&mut self, nn: u16) { self.mmu.write_byte(self.a, nn) }
+    pub fn ld_nn_a(&mut self) {
+        self.pc +=1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc +=1;
+        self.mmu.write_byte(self.a, nn)
+    }
     
     pub fn ldh_c_a(&mut self) { self.mmu.write_byte(self.a, 0xFF00 + self.c as u16) }
     pub fn ldh_a_c(&mut self) { self.a = self.mmu.read_byte(0xFF00 + self.c as u16) }
@@ -118,17 +135,44 @@ impl Cpu {
     pub fn ldh_n_a(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.mmu.write_byte(self.a, 0xFF00 + n as u16) }
     pub fn ldh_a_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.a = self.mmu.read_byte(0xFF00 + n as u16) }
     
-    pub fn ld_bc_nn(&mut self) { self.pc += 1; let nn = self.mmu.read_word(self.pc); self.set_bc(nn) }
-    pub fn ld_de_nn(&mut self) { self.pc += 1; let nn = self.mmu.read_word(self.pc); self.set_de(nn) }
-    pub fn ld_hl_nn(&mut self) { self.pc += 1; let nn = self.mmu.read_word(self.pc); self.set_hl(nn) }
-    pub fn ld_sp_nn(&mut self) { self.pc += 1; let nn = self.mmu.read_word(self.pc); self.sp = nn }
-    
+    pub fn ld_bc_nn(&mut self) {
+        self.pc += 1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc += 1;
+        self.set_bc(nn)
+    }
+    pub fn ld_de_nn(&mut self) {
+        self.pc += 1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc += 1;
+        self.set_de(nn)
+    }
+    pub fn ld_hl_nn(&mut self) {
+        self.pc += 1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc += 1;
+        self.set_hl(nn)
+    }
+    pub fn ld_sp_nn(&mut self) {
+        self.pc += 1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc += 1;
+        self.sp = nn
+    }
+
+    pub fn ld_nn_sp(&mut self) {
+        self.pc += 1;
+        let nn = self.mmu.read_word(self.pc);
+        self.pc += 1;
+        self.mmu.write_word(self.sp, nn)
+    }
+
     pub fn ld_sp_hl(&mut self) { self.sp = self.hl() }
     
-    pub fn push_bc(&mut self) { let bc =self.bc(); self.mmu.write_word(bc, self.sp - 2); self.sp = self.sp - 2 }
-    pub fn push_de(&mut self) { let de =self.de(); self.mmu.write_word(de, self.sp - 2); self.sp = self.sp - 2 }
-    pub fn push_hl(&mut self) { let hl =self.hl(); self.mmu.write_word(hl, self.sp - 2); self.sp = self.sp - 2 }
-    pub fn push_af(&mut self) { let af =self.af(); self.mmu.write_word(af, self.sp - 2); self.sp = self.sp - 2 }
+    pub fn push_bc(&mut self) { let bc =self.bc(); self.sp -= 2; self.mmu.write_word(bc, self.sp) }
+    pub fn push_de(&mut self) { let de =self.de(); self.sp -= 2; self.mmu.write_word(de, self.sp) }
+    pub fn push_hl(&mut self) { let hl =self.hl(); self.sp -= 2; self.mmu.write_word(hl, self.sp) }
+    pub fn push_af(&mut self) { let af =self.af(); self.sp -= 2; self.mmu.write_word(af, self.sp) }
     
     
     //pub fn ldhl_sp_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); ??? }
