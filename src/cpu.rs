@@ -50,5 +50,19 @@ impl Cpu {
         self.e = n as u8
     }
 
+    pub fn set_z(&mut self) { self.f |= 0b10000000 }
+    pub fn set_n(&mut self) { self.f |= 0b01000000 }
+    pub fn set_h(&mut self) { self.f |= 0b00100000 }
+    pub fn set_c(&mut self) { self.f |= 0b00010000 }
+
+    pub fn reset_z(&mut self) { self.f &= !0b10000000 }
+    pub fn reset_n(&mut self) { self.f &= !0b01000000 }
+    pub fn reset_h(&mut self) { self.f &= !0b00100000 }
+    pub fn reset_c(&mut self) { self.f &= !0b00010000 }
+
+    pub fn get_z(&self) -> bool { (self.f & 0b10000000) != 0 }
+    pub fn get_n(&self) -> bool { (self.f & 0b01000000) != 0 }
+    pub fn get_h(&self) -> bool { (self.f & 0b00100000) != 0 }
+    pub fn get_c(&self) -> bool { (self.f & 0b00010000) != 0 }
 
 }
