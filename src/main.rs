@@ -254,7 +254,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xBF => (),
 
         0xC0 => (),
-        0xC1 => (),
+        0xC1 => cpu.pop_bc(),
         0xC2 => (),
         0xC3 => (),
         0xC4 => (),
@@ -271,7 +271,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xCF => (),
 
         0xD0 => (),
-        0xD1 => (),
+        0xD1 => cpu.pop_de(),
         0xD2 => (),
         0xD3 => panic!("INVALID OPCODE {}", opcode),
         0xD4 => (),
@@ -288,7 +288,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xDF => (),
 
         0xE0 => cpu.ldh_n_a(),
-        0xE1 => (),
+        0xE1 => cpu.pop_hl(),
         0xE2 => cpu.ld_c_a(),
         0xE3 => panic!("INVALID OPCODE {}", opcode),
         0xE4 => panic!("INVALID OPCODE {}", opcode),
@@ -305,7 +305,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xEF => (),
 
         0xF0 => cpu.ldh_a_n(),
-        0xF1 => (),
+        0xF1 => cpu.pop_af(),
         0xF2 => cpu.ld_a_c(),
         0xF3 => (),
         0xF4 => panic!("INVALID OPCODE {}", opcode),

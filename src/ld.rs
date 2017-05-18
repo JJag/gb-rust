@@ -169,13 +169,17 @@ impl Cpu {
     }
 
     pub fn ld_sp_hl(&mut self) { self.sp = self.hl() }
-    
+
     pub fn push_bc(&mut self) { let bc =self.bc(); self.sp -= 2; self.mmu.write_word(bc, self.sp) }
     pub fn push_de(&mut self) { let de =self.de(); self.sp -= 2; self.mmu.write_word(de, self.sp) }
     pub fn push_hl(&mut self) { let hl =self.hl(); self.sp -= 2; self.mmu.write_word(hl, self.sp) }
     pub fn push_af(&mut self) { let af =self.af(); self.sp -= 2; self.mmu.write_word(af, self.sp) }
-    
-    
+
+    pub fn pop_bc(&mut self) { let val = self.mmu.read_word(self.sp); self.set_bc(val); self.sp += 2 }
+    pub fn pop_de(&mut self) { let val = self.mmu.read_word(self.sp); self.set_de(val); self.sp += 2 }
+    pub fn pop_hl(&mut self) { let val = self.mmu.read_word(self.sp); self.set_hl(val); self.sp += 2 }
+    pub fn pop_af(&mut self) { let val = self.mmu.read_word(self.sp); self.set_af(val); self.sp += 2 }
+
     pub fn ldhl_sp_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
