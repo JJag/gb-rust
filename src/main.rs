@@ -5,6 +5,7 @@ mod misc;
 mod util;
 mod add;
 mod sub;
+mod and;
 
 use cpu::*;
 use misc::*;
