@@ -7,7 +7,11 @@ impl Cpu {
     fn add(&mut self, x: u8) {
         let a = self.a;
         self.a = a.wrapping_add(x);
-        self.set_flags_add(a, x)
+        let new_a = self.a;
+        self.set_z(new_a == 0);
+        self.set_n(false);
+        self.set_h(util::half_carry_add(a, x));
+        self.set_c(util::full_carry_add(a, x));
     }
 
     pub fn add_a_a(&mut self) {let x = self.a; self.add(x) }
@@ -34,7 +38,11 @@ impl Cpu {
         let a = self.a;
         let c = to_u8(self.get_c());
         self.a = a.wrapping_add(x).wrapping_add(c);
-        self.set_flags_adc(a, x, c)
+        let new_a = self.a;
+        self.set_z(new_a == 0);
+        self.set_n(false);
+        self.set_h(util::half_carry_adc(a, x, c));
+        self.set_c(util::full_carry_adc(a, x, c));
     }
 
     pub fn adc_a_a(&mut self) { let x = self.a; self.adc(x) }
@@ -55,22 +63,6 @@ impl Cpu {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.adc(n)
-    }
-
-    fn set_flags_add(&mut self, x: u8, y: u8) {
-
-        self.set_z(x.wrapping_add(y) == 0);
-        self.set_n(false);
-        self.set_h(util::half_carry_add(x, y));
-        self.set_c(util::full_carry_add(x, y));
-    }
-
-    fn set_flags_adc(&mut self, x: u8, y: u8, c: u8) {
-
-        self.set_z(x.wrapping_add(y).wrapping_add(c) == 0);
-        self.set_n(false);
-        self.set_h(util::half_carry_adc(x, y, c));
-        self.set_c(util::full_carry_adc(x, y, c));
     }
 }
 

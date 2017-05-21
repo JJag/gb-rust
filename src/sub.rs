@@ -7,7 +7,11 @@ impl Cpu {
     fn sub(&mut self, x: u8) {
         let a = self.a;
         self.a = a.wrapping_sub(x);
-        self.set_flags_sub(a, x);
+        let new_a = self.a;
+        self.set_z(new_a == 0);
+        self.set_n(true);
+        self.set_h(half_borrow_sub(a, x));
+        self.set_c(full_borrow_sub(a, x));
     }
 
     pub fn sub_a_a(&mut self) {let x = self.a; self.sub(x) }
@@ -30,20 +34,16 @@ impl Cpu {
         self.sub(n);
     }
 
-    fn set_flags_sub(&mut self, x: u8, y: u8) {
-        self.set_z(x.wrapping_sub(y) == 0);
-        self.set_n(true);
-        self.set_h(half_borrow_sub(x, y));
-        self.set_c(full_borrow_sub(x, y));
-    }
-
     fn sbc(&mut self, x: u8) {
         let a = self.a;
         let c = to_u8(self.get_c());
         self.a = a.wrapping_sub(x).wrapping_sub(c);
-        self.set_flags_sbc(a, x, c);
+        let new_a = self.a;
+        self.set_z(new_a == 0);
+        self.set_n(true);
+        self.set_h(half_borrow_sub(a, x));
+        self.set_c(full_borrow_sub(a, x));
     }
-
 
     pub fn sbc_a_a(&mut self) { let x = self.a; self.sbc(x) }
     pub fn sbc_a_b(&mut self) { let x = self.b; self.sbc(x) }
@@ -63,13 +63,6 @@ impl Cpu {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.sbc(n);
-    }
-
-    fn set_flags_sbc(&mut self, x: u8, y: u8, c: u8) {
-        self.set_z(x.wrapping_sub(y).wrapping_sub(c) == 0);
-        self.set_n(true);
-        self.set_h(half_borrow_sub(x, y));
-        self.set_c(full_borrow_sub(x, y));
     }
 }
 

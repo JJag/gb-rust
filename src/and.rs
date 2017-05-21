@@ -7,7 +7,11 @@ impl Cpu {
     fn and(&mut self, x: u8) {
         let a = self.a;
         self.a = a & x;
-        self.set_flags_and();
+        let new_a = self.a;
+        self.set_z(new_a == 0);
+        self.set_n(false);
+        self.set_h(true);
+        self.set_c(false);
     }
 
     pub fn and_a_a(&mut self) {let x = self.a; self.and(x) }
@@ -28,14 +32,6 @@ impl Cpu {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.and(n);
-    }
-
-    fn set_flags_and(&mut self) {
-        let a = self.a;
-        self.set_z(a == 0);
-        self.set_n(false);
-        self.set_h(true);
-        self.set_c(false);
     }
 }
 
