@@ -10,6 +10,8 @@ pub fn split_word(x: u16) -> (u8, u8) {
     (hi, lo)
 }
 
+pub fn to_u8(b: bool) -> u8 { if b { 1 } else { 0 } }
+
 pub fn half_carry_add(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
 pub fn full_carry_add(a: u8, b: u8) -> bool { (a as u16) + (b as u16) > 0xFF }
 pub fn half_carry_adc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) + (b & 0x0F) + (c & 0x0F) > 0x0F }

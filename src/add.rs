@@ -1,5 +1,6 @@
 use cpu::*;
 use util;
+use util::to_u8;
 
 impl Cpu {
 
@@ -70,12 +71,8 @@ impl Cpu {
     }
 }
 
-
-fn to_u8(b: bool) -> u8 { if b { 1 } else { 0 } }
-
 #[cfg(test)]
 mod tests {
-
     fn init_cpu() -> ::cpu::Cpu {
         let mut mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
