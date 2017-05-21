@@ -12,9 +12,10 @@ impl Mmu {
 
     pub fn read_word(&self, addr: u16) -> u16 {
         let h = self.memory[addr as usize];
+
         let l = self.memory[(addr + 1) as usize];
         let val = util::concat(h, l);
-//        println!("Reading {} from {:X}", val, addr);
+        println!("Reading {} from {:X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
@@ -24,11 +25,14 @@ impl Mmu {
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
-        println!("Writing word {} to ${:X}", val, addr);
+        println!("Writing word {:4X} to ${:X}", val, addr);
+        let (hi, lo) = util::split_word(val);
+        self.memory[ addr      as usize] = hi;
+        self.memory[(addr + 1) as usize] = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
-        println!("Writing byte {} to ${:X}", val, addr);
+        println!("Writing byte {:2X} to ${:X}", val, addr);
         self.memory[addr as usize] = val
     }
 }

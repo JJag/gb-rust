@@ -1,10 +1,10 @@
 use util;
 use mmu;
 
-const Z_MASK: u8 = 0b10000000;
-const N_MASK: u8 = 0b01000000;
-const H_MASK: u8 = 0b00100000;
-const C_MASK: u8 = 0b00010000;
+const Z_MASK: u8 = 0b_1000_0000;
+const N_MASK: u8 = 0b_0100_0000;
+const H_MASK: u8 = 0b_0010_0000;
+const C_MASK: u8 = 0b_0001_0000;
 
 pub struct Cpu {
     pub mmu: mmu::Mmu,

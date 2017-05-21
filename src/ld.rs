@@ -108,8 +108,8 @@ impl Cpu {
         self.mmu.write_byte(self.a, nn)
     }
     
-    pub fn ldh_c_a(&mut self) { self.mmu.write_byte(self.a, 0xFF00 + self.c as u16) }
-    pub fn ldh_a_c(&mut self) { self.a = self.mmu.read_byte(0xFF00 + self.c as u16) }
+    pub fn ld__c__a(&mut self) { self.mmu.write_byte(self.a, 0xFF00 + self.c as u16) }
+    pub fn ld_a__c_(&mut self) { self.a = self.mmu.read_byte(0xFF00 + self.c as u16) }
     
     pub fn ldd_a_hl(&mut self) {
         let hl = self.hl();
@@ -177,7 +177,7 @@ impl Cpu {
 
     pub fn pop_bc(&mut self) { let val = self.mmu.read_word(self.sp); self.set_bc(val); self.sp += 2 }
     pub fn pop_de(&mut self) { let val = self.mmu.read_word(self.sp); self.set_de(val); self.sp += 2 }
-    pub fn pop_hl(&mut self) { let val = self.mmu.read_word(self.sp); self.set_hl(val); self.sp += 2 }
+    pub fn pop_hl(&mut self) { let val = self.mmu.read_word(self.sp); println!("{:4X}X{}X",self.sp, val);self.set_hl(val); self.sp += 2 }
     pub fn pop_af(&mut self) { let val = self.mmu.read_word(self.sp); self.set_af(val); self.sp += 2 }
 
     pub fn ldhl_sp_n(&mut self) {
@@ -188,8 +188,8 @@ impl Cpu {
 
         self.set_z(false);
         self.set_n(false);
-        self.set_h(util::check_half_carry(sp as u8, n));
-        self.set_c(util::check_full_carry(sp as u8, n));
+        self.set_h(util::half_carry_add(sp as u8, n));
+        self.set_c(util::full_carry_add(sp as u8, n));
     }
 
 }

@@ -3,19 +3,29 @@ mod mmu;
 mod ld;
 mod misc;
 mod util;
+mod add;
+mod sub;
 
 use cpu::*;
-use ld::*;
 use misc::*;
 
 fn main() {
 
     let mut mem = [0u8; 65536];
-    mem[0] = 0x00;
-    mem[1] = 0x06;
-    mem[2] = 0x06;
-    mem[3] = 0x0A;
-    mem[4] = 0x02;
+    mem[0]  = 0x00;
+    mem[1]  = 0x06; // LD B, 6
+    mem[2]  = 0x06;
+    mem[3]  = 0x0A; // LD A, (BC)
+    mem[4]  = 0x80; // ADD A, B
+    mem[5]  = 0x0E; // LD C, 209
+    mem[6]  = 232;
+    mem[7]  = 0x81; // ADD A, C
+    mem[8]  = 0x31; // LD SP, 666
+    mem[9]  = 0xFF;
+    mem[10]  = 0x22;
+    mem[11] = 0xF5; // PUSH AF
+    mem[12] = 0xE1; // POP HL
+    mem[13] = 0x00;
     mem[0x0600] = 23;
 
 
@@ -36,11 +46,14 @@ fn run(cpu: &mut Cpu) {
         let opcode = cpu.mmu.read_byte(cpu.pc);
         execute(cpu, opcode);
 
-        println!("a: {:3}\tb: {:3}",cpu.a, cpu.f);
+        println!("a: {:3}\tf: {:3}",cpu.a, cpu.f);
         println!("b: {:3}\tc: {:3}",cpu.b, cpu.c);
+        println!("d: {:3}\te: {:3}",cpu.d, cpu.e);
+        println!("h: {:3}\tl: {:3}",cpu.d, cpu.e);
+        println!("sp: {:4X}",cpu.sp);
+        println!("pc: {:4X}",cpu.pc);
         println!();
 
-        if cpu.pc > 5 { break; }
     }
 }
 
@@ -48,7 +61,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
     println!("GOT OPCODE {:X}", opcode);
     
     match opcode {
-        0x00 => cpu.nop(),
+        0x00 => std::process::exit(0), // cpu.nop(),
         0x01 => cpu.ld_bc_nn(),
         0x02 => cpu.ld_bc_a(),
         0x03 => (),
@@ -96,7 +109,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x2B => (),
         0x2C => (),
         0x2D => (),
-        0x2E => cpu.ld_e_n(),
+        0x2E => cpu.ld_l_n(),
         0x2F => (),
 
         0x30 => (),
@@ -150,49 +163,48 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x5E => cpu.ld_e_hl(),
         0x5F => cpu.ld_e_a(),
 
-        0x60 => cpu.ld_hl_b(),
-        0x61 => cpu.ld_hl_c(),
-        0x62 => cpu.ld_hl_d(),
-        0x63 => cpu.ld_hl_e(),
-        0x64 => cpu.ld_hl_h(),
-        0x65 => cpu.ld_hl_l(),
-        0x66 => println!("HALT {}", opcode),
-        0x67 => cpu.ld_hl_a(),
-        0x68 => cpu.ld_a_b(),
-        0x69 => cpu.ld_a_c(),
-        0x6A => cpu.ld_a_d(),
-        0x6B => cpu.ld_a_e(),
-        0x6C => cpu.ld_a_h(),
-        0x6D => cpu.ld_a_l(),
-        0x6E => cpu.ld_a_hl(),
-        0x6F => cpu.ld_a_a(),
+        0x60 => cpu.ld_h_b(),
+        0x61 => cpu.ld_h_c(),
+        0x62 => cpu.ld_h_d(),
+        0x63 => cpu.ld_h_e(),
+        0x64 => cpu.ld_h_h(),
+        0x65 => cpu.ld_h_l(),
+        0x66 => cpu.ld_h_hl(),
+        0x67 => cpu.ld_h_a(),
+        0x68 => cpu.ld_l_b(),
+        0x69 => cpu.ld_l_c(),
+        0x6A => cpu.ld_l_d(),
+        0x6B => cpu.ld_l_e(),
+        0x6C => cpu.ld_l_h(),
+        0x6D => cpu.ld_l_l(),
+        0x6E => cpu.ld_l_hl(),
+        0x6F => cpu.ld_l_a(),
 
+        0x70 => cpu.ld_hl_b(),
+        0x71 => cpu.ld_hl_c(),
+        0x72 => cpu.ld_hl_d(),
+        0x73 => cpu.ld_hl_e(),
+        0x74 => cpu.ld_hl_h(),
+        0x75 => cpu.ld_hl_l(),
+        0x76 => println!("HALT {}", opcode),
+        0x77 => cpu.ld_hl_a(),
+        0x78 => cpu.ld_a_b(),
+        0x79 => cpu.ld_a_c(),
+        0x7A => cpu.ld_a_d(),
+        0x7B => cpu.ld_a_e(),
+        0x7C => cpu.ld_a_h(),
+        0x7D => cpu.ld_a_l(),
+        0x7E => cpu.ld_a_hl(),
+        0x7F => cpu.ld_a_a(),
 
-        0x70 => (),
-        0x71 => (),
-        0x72 => (),
-        0x73 => (),
-        0x74 => (),
-        0x75 => (),
-        0x76 => (),
-        0x77 => (),
-        0x78 => (),
-        0x79 => (),
-        0x7A => (),
-        0x7B => (),
-        0x7C => (),
-        0x7D => (),
-        0x7E => (),
-        0x7F => (),
-
-        0x80 => (),
-        0x81 => (),
-        0x82 => (),
-        0x83 => (),
-        0x84 => (),
-        0x85 => (),
-        0x86 => (),
-        0x87 => (),
+        0x80 => cpu.add_a_b(),
+        0x81 => cpu.add_a_c(),
+        0x82 => cpu.add_a_d(),
+        0x83 => cpu.add_a_e(),
+        0x84 => cpu.add_a_h(),
+        0x85 => cpu.add_a_l(),
+        0x86 => cpu.add_a__hl_(),
+        0x87 => cpu.add_a_a(),
         0x88 => (),
         0x89 => (),
         0x8A => (),
@@ -259,7 +271,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xC3 => (),
         0xC4 => (),
         0xC5 => cpu.push_bc(),
-        0xC6 => (),
+        0xC6 => cpu.add_a_n(),
         0xC7 => (),
         0xC8 => (),
         0xC9 => (),
@@ -289,7 +301,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
         0xE0 => cpu.ldh_n_a(),
         0xE1 => cpu.pop_hl(),
-        0xE2 => cpu.ld_c_a(),
+        0xE2 => cpu.ld__c__a(),
         0xE3 => panic!("INVALID OPCODE {}", opcode),
         0xE4 => panic!("INVALID OPCODE {}", opcode),
         0xE5 => cpu.push_hl(),
@@ -306,7 +318,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
         0xF0 => cpu.ldh_a_n(),
         0xF1 => cpu.pop_af(),
-        0xF2 => cpu.ld_a_c(),
+        0xF2 => cpu.ld_a__c_(),
         0xF3 => (),
         0xF4 => panic!("INVALID OPCODE {}", opcode),
         0xF5 => cpu.push_af(),
