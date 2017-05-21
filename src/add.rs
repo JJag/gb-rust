@@ -4,54 +4,57 @@ use util::to_u8;
 
 impl Cpu {
 
-    pub fn add_a_a(&mut self) {let a = self.a; let x = self.a; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_b(&mut self) {let a = self.a; let x = self.b; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_c(&mut self) {let a = self.a; let x = self.c; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_d(&mut self) {let a = self.a; let x = self.d; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_e(&mut self) {let a = self.a; let x = self.e; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_h(&mut self) {let a = self.a; let x = self.h; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-    pub fn add_a_l(&mut self) {let a = self.a; let x = self.l; self.a = a.wrapping_add(x); self.set_flags_add(a, x) }
-
-    pub fn add_a__hl_(&mut self) {
+    fn add(&mut self, x: u8) {
         let a = self.a;
-        let hl = self.hl();
-        let x = self.mmu.read_byte(hl);
         self.a = a.wrapping_add(x);
         self.set_flags_add(a, x)
     }
 
-    pub fn add_a_n(&mut self) {
-        let a = self.a;
-        self.pc += 1;
-        let n = self.mmu.read_byte(self.pc);
-        self.a = a.wrapping_add(n);
-        self.set_flags_add(a, n)
+    pub fn add_a_a(&mut self) {let x = self.a; self.add(x) }
+    pub fn add_a_b(&mut self) {let x = self.b; self.add(x) }
+    pub fn add_a_c(&mut self) {let x = self.c; self.add(x) }
+    pub fn add_a_d(&mut self) {let x = self.d; self.add(x) }
+    pub fn add_a_e(&mut self) {let x = self.e; self.add(x) }
+    pub fn add_a_h(&mut self) {let x = self.h; self.add(x) }
+    pub fn add_a_l(&mut self) {let x = self.l; self.add(x) }
+
+    pub fn add_a__hl_(&mut self) {
+        let hl = self.hl();
+        let x = self.mmu.read_byte(hl);
+        self.add(x);
     }
 
-    pub fn adc_a_a(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.a; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_b(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.b; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_c(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.c; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_d(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.d; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_e(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.e; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_h(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.h; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
-    pub fn adc_a_l(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.l; self.a = a.wrapping_add(x).wrapping_add(c); self.set_flags_adc(a, x, c) }
+    pub fn add_a_n(&mut self) {
+        self.pc += 1;
+        let n = self.mmu.read_byte(self.pc);
+        self.add(n);
+    }
+
+    fn adc(&mut self, x: u8) {
+        let a = self.a;
+        let c = to_u8(self.get_c());
+        self.a = a.wrapping_add(x).wrapping_add(c);
+        self.set_flags_adc(a, x, c)
+    }
+
+    pub fn adc_a_a(&mut self) { let x = self.a; self.adc(x) }
+    pub fn adc_a_b(&mut self) { let x = self.b; self.adc(x) }
+    pub fn adc_a_c(&mut self) { let x = self.c; self.adc(x) }
+    pub fn adc_a_d(&mut self) { let x = self.d; self.adc(x) }
+    pub fn adc_a_e(&mut self) { let x = self.e; self.adc(x) }
+    pub fn adc_a_h(&mut self) { let x = self.h; self.adc(x) }
+    pub fn adc_a_l(&mut self) { let x = self.l; self.adc(x) }
 
     pub fn adc_a__hl_(&mut self) {
-        let a = self.a;
         let hl = self.hl();
-        let c = to_u8(self.get_c());
         let x = self.mmu.read_byte(hl);
-        self.a = a.wrapping_add(x).wrapping_add(c);
-        self.set_flags_adc(a, x, c);
+        self.adc(x)
     }
 
     pub fn adc_a_n(&mut self) {
-        let a = self.a;
         self.pc += 1;
-        let c = to_u8(self.get_c());
         let n = self.mmu.read_byte(self.pc);
-        self.a = a.wrapping_add(n).wrapping_add(c);
-        self.set_flags_adc(a, n, c);
+        self.adc(n)
     }
 
     fn set_flags_add(&mut self, x: u8, y: u8) {

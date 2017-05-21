@@ -4,29 +4,30 @@ use util::to_u8;
 
 impl Cpu {
 
-    pub fn sub_a_a(&mut self) {let a = self.a; let x = self.a; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_b(&mut self) {let a = self.a; let x = self.b; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_c(&mut self) {let a = self.a; let x = self.c; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_d(&mut self) {let a = self.a; let x = self.d; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_e(&mut self) {let a = self.a; let x = self.e; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_h(&mut self) {let a = self.a; let x = self.h; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
-    pub fn sub_a_l(&mut self) {let a = self.a; let x = self.l; self.a = a.wrapping_sub(x); self.set_flags_sub(a, x) }
+    fn sub(&mut self, x: u8) {
+        let a = self.a;
+        self.a = a.wrapping_sub(x);
+        self.set_flags_sub(a, x);
+    }
+
+    pub fn sub_a_a(&mut self) {let x = self.a; self.sub(x) }
+    pub fn sub_a_b(&mut self) {let x = self.b; self.sub(x) }
+    pub fn sub_a_c(&mut self) {let x = self.c; self.sub(x) }
+    pub fn sub_a_d(&mut self) {let x = self.d; self.sub(x) }
+    pub fn sub_a_e(&mut self) {let x = self.e; self.sub(x) }
+    pub fn sub_a_h(&mut self) {let x = self.h; self.sub(x) }
+    pub fn sub_a_l(&mut self) {let x = self.l; self.sub(x) }
 
     pub fn sub_a__hl_(&mut self) {
-        let a = self.a;
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
-        self.a = self.a.wrapping_sub(x);
-        self.set_flags_sub(a, x)
+        self.sub(x);
     }
 
     pub fn sub_a_n(&mut self) {
-        let a = self.a;
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
-        println!("n = {:?}", n);
-        self.a = self.a.wrapping_sub(n);
-        self.set_flags_sub(a, n)
+        self.sub(n);
     }
 
     fn set_flags_sub(&mut self, x: u8, y: u8) {
@@ -36,31 +37,32 @@ impl Cpu {
         self.set_c(full_borrow_sub(x, y));
     }
 
-    pub fn sbc_a_a(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.a; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_b(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.b; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_c(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.c; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_d(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.d; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_e(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.e; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_h(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.h; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-    pub fn sbc_a_l(&mut self) {let a = self.a; let c = to_u8(self.get_c()); let x = self.l; self.a = a.wrapping_sub(x).wrapping_sub(c); self.set_flags_sbc(a, x, c) }
-
-    pub fn sbc_a__hl_(&mut self) {
+    fn sbc(&mut self, x: u8) {
         let a = self.a;
-        let hl = self.hl();
         let c = to_u8(self.get_c());
-        let x = self.mmu.read_byte(hl);
         self.a = a.wrapping_sub(x).wrapping_sub(c);
         self.set_flags_sbc(a, x, c);
     }
 
+
+    pub fn sbc_a_a(&mut self) { let x = self.a; self.sbc(x) }
+    pub fn sbc_a_b(&mut self) { let x = self.b; self.sbc(x) }
+    pub fn sbc_a_c(&mut self) { let x = self.c; self.sbc(x) }
+    pub fn sbc_a_d(&mut self) { let x = self.d; self.sbc(x) }
+    pub fn sbc_a_e(&mut self) { let x = self.e; self.sbc(x) }
+    pub fn sbc_a_h(&mut self) { let x = self.h; self.sbc(x) }
+    pub fn sbc_a_l(&mut self) { let x = self.l; self.sbc(x) }
+
+    pub fn sbc_a__hl_(&mut self) {
+        let hl = self.hl();
+        let x = self.mmu.read_byte(hl);
+        self.sbc(x);
+    }
+
     pub fn sbc_a_n(&mut self) {
-        let a = self.a;
         self.pc += 1;
-        let c = to_u8(self.get_c());
         let n = self.mmu.read_byte(self.pc);
-        println!("n = {:?}", n);
-        self.a = a.wrapping_sub(n).wrapping_sub(c);
-        self.set_flags_sbc(a, n, c);
+        self.sbc(n);
     }
 
     fn set_flags_sbc(&mut self, x: u8, y: u8, c: u8) {
