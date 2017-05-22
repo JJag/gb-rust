@@ -14,21 +14,18 @@ impl Cpu {
         self.set_c(util::full_carry_add(a, x));
     }
 
-    pub fn add_a_a(&mut self) {let x = self.a; self.add(x) }
-    pub fn add_a_b(&mut self) {let x = self.b; self.add(x) }
-    pub fn add_a_c(&mut self) {let x = self.c; self.add(x) }
-    pub fn add_a_d(&mut self) {let x = self.d; self.add(x) }
-    pub fn add_a_e(&mut self) {let x = self.e; self.add(x) }
-    pub fn add_a_h(&mut self) {let x = self.h; self.add(x) }
-    pub fn add_a_l(&mut self) {let x = self.l; self.add(x) }
+    pub fn ADD(&mut self, r: Reg8) {
+        let x = *(self.get_reg8(r));
+        self.add(x);
+    }
 
-    pub fn add_a__hl_(&mut self) {
+    pub fn ADD_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.add(x);
     }
 
-    pub fn add_a_n(&mut self) {
+    pub fn ADD_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.add(n);
@@ -45,21 +42,18 @@ impl Cpu {
         self.set_c(util::full_carry_adc(a, x, c));
     }
 
-    pub fn adc_a_a(&mut self) { let x = self.a; self.adc(x) }
-    pub fn adc_a_b(&mut self) { let x = self.b; self.adc(x) }
-    pub fn adc_a_c(&mut self) { let x = self.c; self.adc(x) }
-    pub fn adc_a_d(&mut self) { let x = self.d; self.adc(x) }
-    pub fn adc_a_e(&mut self) { let x = self.e; self.adc(x) }
-    pub fn adc_a_h(&mut self) { let x = self.h; self.adc(x) }
-    pub fn adc_a_l(&mut self) { let x = self.l; self.adc(x) }
+    pub fn ADC(&mut self, r: Reg8) {
+        let x = *(self.get_reg8(r));
+        self.adc(x)
+    }
 
-    pub fn adc_a__hl_(&mut self) {
+    pub fn ADC_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.adc(x)
     }
 
-    pub fn adc_a_n(&mut self) {
+    pub fn ADC_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.adc(n)
@@ -68,6 +62,9 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
+
+    use cpu::Reg8::*;
+
     fn init_cpu() -> ::cpu::Cpu {
         let mut mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
@@ -79,7 +76,7 @@ mod tests {
         let mut cpu = init_cpu();
         cpu.a = 0x3A;
         cpu.b = 0xC6;
-        cpu.add_a_b();
+        cpu.ADD(B);
         assert_eq!(cpu.a, 0);
         assert_eq!(cpu.get_z(), true);
         assert_eq!(cpu.get_h(), true);
@@ -92,7 +89,7 @@ mod tests {
         let mut cpu = init_cpu();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0xFF, (cpu.pc + 1));
-        cpu.add_a_n();
+        cpu.ADD_n();
         assert_eq!(cpu.a, 0x3B);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), true);
@@ -106,7 +103,7 @@ mod tests {
         let hl = cpu.hl();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0x12, hl);
-        cpu.add_a__hl_();
+        cpu.ADD_HL();
         assert_eq!(cpu.a, 0x4E);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), false);
@@ -120,7 +117,7 @@ mod tests {
         cpu.a = 0xE1;
         cpu.e = 0x0F;
         cpu.set_c(true);
-        cpu.adc_a_e();
+        cpu.ADC(E);
         assert_eq!(cpu.a, 0xF1);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), true);
@@ -134,7 +131,7 @@ mod tests {
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x3B, (cpu.pc + 1));
         cpu.set_c(true);
-        cpu.adc_a_n();
+        cpu.ADC_n();
         assert_eq!(cpu.a, 0x1D);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), false);
@@ -149,7 +146,7 @@ mod tests {
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x1E, hl);
         cpu.set_c(true);
-        cpu.adc_a__hl_();
+        cpu.ADC_HL();
         assert_eq!(cpu.a, 0x00);
         assert_eq!(cpu.get_z(), true);
         assert_eq!(cpu.get_h(), true);

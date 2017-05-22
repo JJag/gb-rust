@@ -65,4 +65,37 @@ impl Cpu {
     pub fn get_h(&self) -> bool { (self.f & H_MASK) != 0 }
     pub fn get_c(&self) -> bool { (self.f & C_MASK) != 0 }
 
+    pub fn get_reg8(&self, r: Reg8) -> &u8 {
+        match r {
+            Reg8::A => &self.a,
+            Reg8::F => &self.f,
+            Reg8::B => &self.b,
+            Reg8::C => &self.c,
+            Reg8::D => &self.d,
+            Reg8::E => &self.e,
+            Reg8::H => &self.h,
+            Reg8::L => &self.l,
+        }
+    }
+
+    pub fn get_mut_reg8(&mut self, r: Reg8) -> &mut u8 {
+        match r {
+            Reg8::A => &mut self.a,
+            Reg8::F => &mut self.f,
+            Reg8::B => &mut self.b,
+            Reg8::C => &mut self.c,
+            Reg8::D => &mut self.d,
+            Reg8::E => &mut self.e,
+            Reg8::H => &mut self.h,
+            Reg8::L => &mut self.l,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Reg8 {
+    A, F,
+    B, C,
+    D, E,
+    H, L
 }

@@ -1,86 +1,30 @@
 use cpu::*;
+use cpu::Reg8;
 use util;
 
 impl Cpu {
-    pub fn ld_a_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.a = n }
-    pub fn ld_b_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.b = n }
-    pub fn ld_c_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.c = n }
-    pub fn ld_d_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.d = n }
-    pub fn ld_e_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.e = n }
-    pub fn ld_h_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.h = n }
-    pub fn ld_l_n(&mut self) { self.pc += 1; let n = self.mmu.read_byte(self.pc); self.l = n }
-    
-    pub fn ld_a_a(&mut self) { self.a = self.a }
-    pub fn ld_a_b(&mut self) { self.a = self.b }
-    pub fn ld_a_c(&mut self) { self.a = self.c }
-    pub fn ld_a_d(&mut self) { self.a = self.d }
-    pub fn ld_a_e(&mut self) { self.a = self.e }
-    pub fn ld_a_h(&mut self) { self.a = self.h }
-    pub fn ld_a_l(&mut self) { self.a = self.l }
-    
-    pub fn ld_b_a(&mut self) { self.b = self.a }
-    pub fn ld_b_b(&mut self) { self.b = self.b }
-    pub fn ld_b_c(&mut self) { self.b = self.c }
-    pub fn ld_b_d(&mut self) { self.b = self.d }
-    pub fn ld_b_e(&mut self) { self.b = self.e }
-    pub fn ld_b_h(&mut self) { self.b = self.h }
-    pub fn ld_b_l(&mut self) { self.b = self.l }
-    
-    pub fn ld_c_a(&mut self) { self.c = self.a }
-    pub fn ld_c_b(&mut self) { self.c = self.b }
-    pub fn ld_c_c(&mut self) { self.c = self.c }
-    pub fn ld_c_d(&mut self) { self.c = self.d }
-    pub fn ld_c_e(&mut self) { self.c = self.e }
-    pub fn ld_c_h(&mut self) { self.c = self.h }
-    pub fn ld_c_l(&mut self) { self.c = self.l }
-    
-    pub fn ld_d_a(&mut self) { self.d = self.a }
-    pub fn ld_d_b(&mut self) { self.d = self.b }
-    pub fn ld_d_c(&mut self) { self.d = self.c }
-    pub fn ld_d_d(&mut self) { self.d = self.d }
-    pub fn ld_d_e(&mut self) { self.d = self.e }
-    pub fn ld_d_h(&mut self) { self.d = self.h }
-    pub fn ld_d_l(&mut self) { self.d = self.l }
-    
-    pub fn ld_e_a(&mut self) { self.e = self.a }
-    pub fn ld_e_b(&mut self) { self.e = self.b }
-    pub fn ld_e_c(&mut self) { self.e = self.c }
-    pub fn ld_e_d(&mut self) { self.e = self.d }
-    pub fn ld_e_e(&mut self) { self.e = self.e }
-    pub fn ld_e_h(&mut self) { self.e = self.h }
-    pub fn ld_e_l(&mut self) { self.e = self.l }
-    
-    pub fn ld_h_a(&mut self) { self.h = self.a }
-    pub fn ld_h_b(&mut self) { self.h = self.b }
-    pub fn ld_h_c(&mut self) { self.h = self.c }
-    pub fn ld_h_d(&mut self) { self.h = self.d }
-    pub fn ld_h_e(&mut self) { self.h = self.e }
-    pub fn ld_h_h(&mut self) { self.h = self.h }
-    pub fn ld_h_l(&mut self) { self.h = self.l }
-    
-    pub fn ld_l_a(&mut self) { self.l = self.a }
-    pub fn ld_l_b(&mut self) { self.l = self.b }
-    pub fn ld_l_c(&mut self) { self.l = self.c }
-    pub fn ld_l_d(&mut self) { self.l = self.d }
-    pub fn ld_l_e(&mut self) { self.l = self.e }
-    pub fn ld_l_h(&mut self) { self.l = self.h }
-    pub fn ld_l_l(&mut self) { self.l = self.l }
-    
-    pub fn ld_a_hl(&mut self) { self.a = self.mmu.read_byte(self.hl()) }
-    pub fn ld_b_hl(&mut self) { self.b = self.mmu.read_byte(self.hl()) }
-    pub fn ld_c_hl(&mut self) { self.c = self.mmu.read_byte(self.hl()) }
-    pub fn ld_d_hl(&mut self) { self.d = self.mmu.read_byte(self.hl()) }
-    pub fn ld_e_hl(&mut self) { self.e = self.mmu.read_byte(self.hl()) }
-    pub fn ld_h_hl(&mut self) { self.h = self.mmu.read_byte(self.hl()) }
-    pub fn ld_l_hl(&mut self) { self.l = self.mmu.read_byte(self.hl()) }
-    
-    pub fn ld_hl_a(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.a, hl) }
-    pub fn ld_hl_b(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.b, hl) }
-    pub fn ld_hl_c(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.c, hl) }
-    pub fn ld_hl_d(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.d, hl) }
-    pub fn ld_hl_e(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.e, hl) }
-    pub fn ld_hl_h(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.h, hl) }
-    pub fn ld_hl_l(&mut self) { let hl = self.hl(); self.mmu.write_byte(self.l, hl) }
+
+    pub fn LD_rr(&mut self, to: Reg8, from: Reg8) {
+        let x: u8 = *self.get_reg8(from);
+        *(self.get_mut_reg8(to)) = x;
+    }
+
+    pub fn LD_rn(&mut self, to: Reg8) {
+        self.pc += 1;
+        let n = self.mmu.read_byte(self.pc);
+        *(self.get_mut_reg8(to)) = n;
+    }
+
+    pub fn LD_r_HL(&mut self, to: Reg8) {
+        let x = self.mmu.read_byte(self.hl());
+        *(self.get_mut_reg8(to)) = x;
+    }
+
+    pub fn LD_HL_r(&mut self, from: Reg8) {
+        let hl = self.hl();
+        let x = *self.get_reg8(from);
+        self.mmu.write_byte(x, hl);
+    }
     
     pub fn ld_a_bc(&mut self) { self.a = self.mmu.read_byte(self.bc()) }
     pub fn ld_a_de(&mut self) { self.a = self.mmu.read_byte(self.de()) }

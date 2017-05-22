@@ -14,21 +14,18 @@ impl Cpu {
         self.set_c(full_borrow_sub(a, x));
     }
 
-    pub fn sub_a_a(&mut self) {let x = self.a; self.sub(x) }
-    pub fn sub_a_b(&mut self) {let x = self.b; self.sub(x) }
-    pub fn sub_a_c(&mut self) {let x = self.c; self.sub(x) }
-    pub fn sub_a_d(&mut self) {let x = self.d; self.sub(x) }
-    pub fn sub_a_e(&mut self) {let x = self.e; self.sub(x) }
-    pub fn sub_a_h(&mut self) {let x = self.h; self.sub(x) }
-    pub fn sub_a_l(&mut self) {let x = self.l; self.sub(x) }
+    pub fn SUB(&mut self, r: Reg8) {
+        let x = *(self.get_reg8(r));
+        self.sub(x);
+    }
 
-    pub fn sub_a__hl_(&mut self) {
+    pub fn SUB_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.sub(x);
     }
 
-    pub fn sub_a_n(&mut self) {
+    pub fn SUB_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.sub(n);
@@ -45,21 +42,19 @@ impl Cpu {
         self.set_c(full_borrow_sub(a, x));
     }
 
-    pub fn sbc_a_a(&mut self) { let x = self.a; self.sbc(x) }
-    pub fn sbc_a_b(&mut self) { let x = self.b; self.sbc(x) }
-    pub fn sbc_a_c(&mut self) { let x = self.c; self.sbc(x) }
-    pub fn sbc_a_d(&mut self) { let x = self.d; self.sbc(x) }
-    pub fn sbc_a_e(&mut self) { let x = self.e; self.sbc(x) }
-    pub fn sbc_a_h(&mut self) { let x = self.h; self.sbc(x) }
-    pub fn sbc_a_l(&mut self) { let x = self.l; self.sbc(x) }
+    pub fn SBC(&mut self, r: Reg8) {
+        let x = *(self.get_reg8(r));
+        self.sbc(x);
+    }
 
-    pub fn sbc_a__hl_(&mut self) {
+
+    pub fn SBC_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.sbc(x);
     }
 
-    pub fn sbc_a_n(&mut self) {
+    pub fn SBC_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.sbc(n);
@@ -75,6 +70,9 @@ fn full_borrow_sbc(a: u8, b: u8,c: u8) -> bool { (a as u16) < (b as u16 + c as u
 
 #[cfg(test)]
 mod tests {
+
+    use cpu::Reg8::*;
+
     fn init_cpu() -> ::cpu::Cpu {
         let mut mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
@@ -86,7 +84,7 @@ mod tests {
         let mut cpu = init_cpu();
         cpu.a = 0x3E;
         cpu.e = 0x3E;
-        cpu.sub_a_e();
+        cpu.SUB(E);
 
         assert_eq!(cpu.a, 0);
         assert_eq!(cpu.get_z(), true);
@@ -102,7 +100,7 @@ mod tests {
         cpu.a = 0x3E;
         cpu.mmu.write_byte(0x0F, (cpu.pc + 1));
 
-        cpu.sub_a_n();
+        cpu.SUB_n();
 
         assert_eq!(cpu.a, 0x2F);
         assert_eq!(cpu.get_z(), false);
@@ -118,7 +116,7 @@ mod tests {
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x40, hl);
 
-        cpu.sub_a__hl_();
+        cpu.SUB_HL();
 
         assert_eq!(cpu.a, 0xFE);
         assert_eq!(cpu.get_z(), false);
@@ -133,7 +131,7 @@ mod tests {
         cpu.a = 0x3B;
         cpu.h = 0x2A;
         cpu.set_c(true);
-        cpu.sbc_a_h();
+        cpu.SBC(H);
 
 
         assert_eq!(cpu.a, 0x10);
@@ -150,7 +148,7 @@ mod tests {
         cpu.a = 0x3B;
         cpu.mmu.write_byte(0x3A, (cpu.pc + 1));
         cpu.set_c(true);
-        cpu.sbc_a_n();
+        cpu.SBC_n();
 
         assert_eq!(cpu.a, 0x00);
         assert_eq!(cpu.get_z(), true);
@@ -166,7 +164,7 @@ mod tests {
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x4F, hl);
         cpu.set_c(true);
-        cpu.sbc_a__hl_();
+        cpu.SBC_HL();
         assert_eq!(cpu.a, 0xEB);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), true);

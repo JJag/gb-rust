@@ -14,21 +14,18 @@ impl Cpu {
         self.set_c(false);
     }
 
-    pub fn and_a_a(&mut self) {let x = self.a; self.and(x) }
-    pub fn and_a_b(&mut self) {let x = self.b; self.and(x) }
-    pub fn and_a_c(&mut self) {let x = self.c; self.and(x) }
-    pub fn and_a_d(&mut self) {let x = self.d; self.and(x) }
-    pub fn and_a_e(&mut self) {let x = self.e; self.and(x) }
-    pub fn and_a_h(&mut self) {let x = self.h; self.and(x) }
-    pub fn and_a_l(&mut self) {let x = self.l; self.and(x) }
+    pub fn AND(&mut self, r: Reg8) {
+        let x = self.get_reg8(r);
+        self.and(x)
+    }
 
-    pub fn and_a__hl_(&mut self) {
+    pub fn AND_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.and(x);
     }
 
-    pub fn and_a_n(&mut self) {
+    pub fn AND_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
         self.and(n);
@@ -37,6 +34,9 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
+
+    use cpu::Reg8::*;
+
     fn init_cpu() -> ::cpu::Cpu {
         let mut mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
@@ -48,7 +48,7 @@ mod tests {
         let mut cpu = init_cpu();
         cpu.a = 0x5A;
         cpu.l = 0x3F;
-        cpu.and_a_l();
+        cpu.AND(L);
 
         assert_eq!(cpu.a, 0x1A);
         assert_eq!(cpu.get_z(), false);
@@ -64,7 +64,7 @@ mod tests {
         cpu.a = 0x5A;
         cpu.mmu.write_byte(0x38, (cpu.pc + 1));
 
-        cpu.and_a_n();
+        cpu.AND_n();
 
         assert_eq!(cpu.a, 0x18);
         assert_eq!(cpu.get_z(), false);
@@ -80,7 +80,7 @@ mod tests {
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x00, hl);
 
-        cpu.and_a__hl_();
+        cpu.AND_HL();
 
         assert_eq!(cpu.a, 0x00);
         assert_eq!(cpu.get_z(), true);
