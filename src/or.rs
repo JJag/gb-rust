@@ -4,31 +4,31 @@ use util::to_u8;
 
 impl Cpu {
 
-    fn and(&mut self, x: u8) {
+    fn or(&mut self, x: u8) {
         let a = self.a;
-        self.a = a & x;
+        self.a = a | x;
         let new_a = self.a;
         self.set_z(new_a == 0);
         self.set_n(false);
-        self.set_h(true);
+        self.set_h(false);
         self.set_c(false);
     }
 
-    pub fn AND(&mut self, r: Reg8) {
+    pub fn OR(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
-        self.and(x)
+        self.or(x)
     }
 
-    pub fn AND_HL(&mut self) {
+    pub fn OR_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
-        self.and(x);
+        self.or(x);
     }
 
-    pub fn AND_n(&mut self) {
+    pub fn OR_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
-        self.and(n);
+        self.or(n);
     }
 }
 
@@ -44,47 +44,46 @@ mod tests {
     }
 
     #[test]
-    fn AND_r() {
+    fn OR_r() {
         let mut cpu = init_cpu();
         cpu.a = 0x5A;
-        cpu.l = 0x3F;
-        cpu.AND(L);
+        cpu.OR(A);
 
-        assert_eq!(cpu.a, 0x1A);
+        assert_eq!(cpu.a, 0x5A);
         assert_eq!(cpu.get_z(), false);
-        assert_eq!(cpu.get_h(), true);
+        assert_eq!(cpu.get_h(), false);
         assert_eq!(cpu.get_n(), false);
         assert_eq!(cpu.get_c(), false);
 
     }
 
     #[test]
-    fn AND_n() {
+    fn OR_n() {
         let mut cpu = init_cpu();
         cpu.a = 0x5A;
-        cpu.mmu.write_byte(0x38, (cpu.pc + 1));
+        cpu.mmu.write_byte(0x03, (cpu.pc + 1));
 
-        cpu.AND_n();
+        cpu.OR_n();
 
-        assert_eq!(cpu.a, 0x18);
+        assert_eq!(cpu.a, 0x5B);
         assert_eq!(cpu.get_z(), false);
-        assert_eq!(cpu.get_h(), true);
+        assert_eq!(cpu.get_h(), false);
         assert_eq!(cpu.get_n(), false);
         assert_eq!(cpu.get_c(), false);
     }
 
     #[test]
-    fn AND_HL() {
+    fn OR_HL() {
         let mut cpu = init_cpu();
         cpu.a = 0x5A;
         let hl = cpu.hl();
-        cpu.mmu.write_byte(0x00, hl);
+        cpu.mmu.write_byte(0x0F, hl);
 
-        cpu.AND_HL();
+        cpu.OR_HL();
 
-        assert_eq!(cpu.a, 0x00);
-        assert_eq!(cpu.get_z(), true);
-        assert_eq!(cpu.get_h(), true);
+        assert_eq!(cpu.a, 0x5F);
+        assert_eq!(cpu.get_z(), false);
+        assert_eq!(cpu.get_h(), false);
         assert_eq!(cpu.get_n(), false);
         assert_eq!(cpu.get_c(), false);
     }
