@@ -7,6 +7,7 @@ mod and;
 mod or;
 mod xor;
 mod cp;
+mod inc;
 
 use util;
 use mmu;
@@ -102,7 +103,7 @@ impl Cpu {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Reg8 {
     A, F,
     B, C,
