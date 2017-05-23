@@ -7,6 +7,7 @@ mod add;
 mod sub;
 mod and;
 mod or;
+mod xor;
 
 use cpu::*;
 use misc::*;
@@ -243,14 +244,14 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xA5 => cpu.AND(L),
         0xA6 => cpu.AND_HL(),
         0xA7 => cpu.AND(A),
-        0xA8 => (),
-        0xA9 => (),
-        0xAA => (),
-        0xAB => (),
-        0xAC => (),
-        0xAD => (),
-        0xAE => (),
-        0xAF => (),
+        0xA8 => cpu.XOR(B),
+        0xA9 => cpu.XOR(C),
+        0xAA => cpu.XOR(D),
+        0xAB => cpu.XOR(E),
+        0xAC => cpu.XOR(H),
+        0xAD => cpu.XOR(L),
+        0xAE => cpu.XOR_HL(),
+        0xAF => cpu.XOR(A),
 
         0xB0 => cpu.OR(B),
         0xB1 => cpu.OR(C),
