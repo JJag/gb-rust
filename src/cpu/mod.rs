@@ -6,6 +6,7 @@ mod sbc;
 mod and;
 mod or;
 mod xor;
+mod cp;
 
 use util;
 use mmu;
