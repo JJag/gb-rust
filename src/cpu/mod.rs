@@ -1,3 +1,10 @@
+mod ld;
+mod add;
+mod sub;
+mod and;
+mod or;
+mod xor;
+
 use util;
 use mmu;
 
