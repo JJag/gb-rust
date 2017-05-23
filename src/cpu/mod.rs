@@ -1,6 +1,8 @@
 mod ld;
 mod add;
+mod adc;
 mod sub;
+mod sbc;
 mod and;
 mod or;
 mod xor;
