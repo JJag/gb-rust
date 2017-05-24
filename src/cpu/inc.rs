@@ -1,23 +1,22 @@
 use cpu::*;
 use util;
-use util::to_u8;
 
 impl Cpu {
 
     pub fn INC(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         (*self.get_mut_reg8(r)) = x.wrapping_add(1);
-        self.set_flags(x);
+        self.set_flags_inc(x);
     }
 
     pub fn INC_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.mmu.write_byte(x.wrapping_add(1), hl);
-        self.set_flags(x);
+        self.set_flags_inc(x);
     }
 
-    fn set_flags(&mut self, x: u8) {
+    fn set_flags_inc(&mut self, x: u8) {
         self.set_z(x.wrapping_add(1) == 0);
         self.set_n(false);
         self.set_h(util::half_carry_add(x, 1));
@@ -31,7 +30,7 @@ mod tests {
     use cpu::Reg8::*;
 
     fn init_cpu() -> ::cpu::Cpu {
-        let mut mem = [0u8; 65536];
+        let mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
         ::cpu::Cpu::init(mmu)
     }

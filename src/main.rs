@@ -1,10 +1,12 @@
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 mod cpu;
 mod mmu;
 mod misc;
 mod util;
 
 use cpu::*;
-use misc::*;
 
 fn main() {
 
@@ -65,7 +67,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x02 => cpu.ld_bc_a(),
         0x03 => (),
         0x04 => cpu.INC(B),
-        0x05 => (),
+        0x05 => cpu.DEC(B),
         0x06 => cpu.LD_rn(B),
         0x07 => (),
         0x08 => cpu.ld_nn_sp(),
@@ -73,7 +75,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x0A => cpu.ld_a_bc(),
         0x0B => (),
         0x0C => cpu.INC(C),
-        0x0D => (),
+        0x0D => cpu.DEC(C),
         0x0E => cpu.LD_rn(C),
         0x0F => (),
 
@@ -82,7 +84,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x12 => cpu.ld_de_a(),
         0x13 => (),
         0x14 => cpu.INC(D),
-        0x15 => (),
+        0x15 => cpu.DEC(D),
         0x16 => cpu.LD_rn(D),
         0x17 => (),
         0x18 => (),
@@ -90,7 +92,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x1A => cpu.ld_a_de(),
         0x1B => (),
         0x1C => cpu.INC(E),
-        0x1D => (),
+        0x1D => cpu.DEC(E),
         0x1E => cpu.LD_rn(E),
         0x1F => (),
 
@@ -99,7 +101,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x22 => cpu.ldi_hl_a(),
         0x23 => (),
         0x24 => cpu.INC(H),
-        0x25 => (),
+        0x25 => cpu.DEC(H),
         0x26 => cpu.LD_rn(H),
         0x27 => (),
         0x28 => (),
@@ -107,7 +109,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x2A => cpu.ldi_a_hl(),
         0x2B => (),
         0x2C => cpu.INC(L),
-        0x2D => (),
+        0x2D => cpu.DEC(L),
         0x2E => cpu.LD_rn(L),
         0x2F => (),
 
@@ -116,7 +118,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x32 => cpu.ldd_hl_a(),
         0x33 => (),
         0x34 => cpu.INC_HL(),
-        0x35 => (),
+        0x35 => cpu.DEC_HL(),
         0x36 => cpu.ld__hl__n(),
         0x37 => (),
         0x38 => (),
@@ -124,7 +126,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x3A => cpu.ldd_a_hl(),
         0x3B => (),
         0x3C => cpu.INC(A),
-        0x3D => (),
+        0x3D => cpu.DEC(A),
         0x3E => cpu.LD_rn(A),
         0x3F => (),
 

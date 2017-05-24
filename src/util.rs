@@ -16,6 +16,11 @@ pub fn half_carry_add(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
 pub fn full_carry_add(a: u8, b: u8) -> bool { (a as u16) + (b as u16) > 0xFF }
 pub fn half_carry_adc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) + (b & 0x0F) + (c & 0x0F) > 0x0F }
 pub fn full_carry_adc(a: u8, b: u8, c: u8) -> bool { (a as u16) + (b as u16) + (c as u16) > 0xFF }
+pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) as i8 - (b & 0x0F) as i8 - (c  as i8) < 0 }
+pub fn full_borrow_sbc(a: u8, b: u8,c: u8) -> bool { (a as u16) < (b as u16 + c as u16) }
+pub fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
+pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
+
 
 mod test {
     use super::concat;

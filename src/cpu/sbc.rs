@@ -11,8 +11,8 @@ impl Cpu {
         let new_a = self.a;
         self.set_z(new_a == 0);
         self.set_n(true);
-        self.set_h(half_borrow_sbc(a, x, c));
-        self.set_c(full_borrow_sbc(a, x, c));
+        self.set_h(util::half_borrow_sbc(a, x, c));
+        self.set_c(util::full_borrow_sbc(a, x, c));
     }
 
     pub fn SBC(&mut self, r: Reg8) {
@@ -34,17 +34,13 @@ impl Cpu {
     }
 }
 
-fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) as i8 - (b & 0x0F) as i8 - (c  as i8) < 0 }
-fn full_borrow_sbc(a: u8, b: u8,c: u8) -> bool { (a as u16) < (b as u16 + c as u16) }
-
-
 #[cfg(test)]
 mod tests {
 
     use cpu::Reg8::*;
 
     fn init_cpu() -> ::cpu::Cpu {
-        let mut mem = [0u8; 65536];
+        let mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
         ::cpu::Cpu::init(mmu)
     }

@@ -1,10 +1,9 @@
 use cpu::*;
 use util;
-use util::to_u8;
 
 impl Cpu {
 
-    fn add(&mut self, x: u8) {
+    fn add16(&mut self, x: u8) {
         let a = self.a;
         self.a = a.wrapping_add(x);
         let new_a = self.a;
@@ -16,19 +15,19 @@ impl Cpu {
 
     pub fn ADD(&mut self, r: Reg8) {
         let x = *(self.get_reg8(r));
-        self.add(x);
+        self.add16(x);
     }
 
     pub fn ADD_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
-        self.add(x);
+        self.add16(x);
     }
 
     pub fn ADD_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
-        self.add(n);
+        self.add16(n);
     }
 }
 
@@ -38,7 +37,7 @@ mod tests {
     use cpu::Reg8::*;
 
     fn init_cpu() -> ::cpu::Cpu {
-        let mut mem = [0u8; 65536];
+        let mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
         ::cpu::Cpu::init(mmu)
     }

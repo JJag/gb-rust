@@ -8,6 +8,8 @@ mod or;
 mod xor;
 mod cp;
 mod inc;
+mod dec;
+
 
 use util;
 use mmu;

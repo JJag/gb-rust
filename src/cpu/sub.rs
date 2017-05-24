@@ -1,6 +1,5 @@
 use cpu::*;
 use util;
-use util::to_u8;
 
 impl Cpu {
 
@@ -10,8 +9,8 @@ impl Cpu {
         let new_a = self.a;
         self.set_z(new_a == 0);
         self.set_n(true);
-        self.set_h(half_borrow_sub(a, x));
-        self.set_c(full_borrow_sub(a, x));
+        self.set_h(util::half_borrow_sub(a, x));
+        self.set_c(util::full_borrow_sub(a, x));
     }
 
     pub fn SUB(&mut self, r: Reg8) {
@@ -32,16 +31,13 @@ impl Cpu {
     }
 }
 
-fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
-fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
-
 #[cfg(test)]
 mod tests {
 
     use cpu::Reg8::*;
 
     fn init_cpu() -> ::cpu::Cpu {
-        let mut mem = [0u8; 65536];
+        let mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
         ::cpu::Cpu::init(mmu)
     }

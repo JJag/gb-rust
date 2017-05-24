@@ -1,6 +1,4 @@
 use cpu::*;
-use util;
-use util::to_u8;
 
 impl Cpu {
 
@@ -38,7 +36,7 @@ mod tests {
     use cpu::Reg8::*;
 
     fn init_cpu() -> ::cpu::Cpu {
-        let mut mem = [0u8; 65536];
+        let mem = [0u8; 65536];
         let mmu = ::mmu::Mmu::init(mem);
         ::cpu::Cpu::init(mmu)
     }
