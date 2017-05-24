@@ -10,6 +10,10 @@ pub fn split_word(x: u16) -> (u8, u8) {
     (hi, lo)
 }
 
+pub fn swap_nibbles(x: u8) -> u8 {
+    x >> 4 | x << 4
+}
+
 pub fn to_u8(b: bool) -> u8 { if b { 1 } else { 0 } }
 
 pub fn half_carry_add(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
@@ -23,7 +27,7 @@ pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
 
 
 mod test {
-    use super::concat;
+    use super::*;
     #[test]
     fn concat_test() {
         assert_eq!(concat(0xAF, 0x30), 0xAF30);
@@ -32,4 +36,14 @@ mod test {
         assert_eq!(concat(0xFF, 0x00), 0xFF00);
         assert_eq!(concat(0xFF, 0xFF), 0xFFFF);
     }
+
+    #[test]
+    fn swap_nibbles_test() {
+        assert_eq!(swap_nibbles(0x3C), 0xC3);
+        assert_eq!(swap_nibbles(0xEF), 0xFE);
+        assert_eq!(swap_nibbles(0x00), 0x00);
+        assert_eq!(swap_nibbles(0xFF), 0xFF);
+        assert_eq!(swap_nibbles(0x9A), 0xA9);
+    }
+
 }
