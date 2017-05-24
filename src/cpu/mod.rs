@@ -9,6 +9,7 @@ mod xor;
 mod cp;
 mod inc;
 mod dec;
+mod add16;
 
 
 use util;
@@ -56,16 +57,16 @@ impl Cpu {
         self.f = n as u8
     }
     pub fn set_bc(&mut self, n: u16) -> () {
-            self.b = (n >> 8) as u8;
-            self.c = n as u8
-        }
+        self.b = (n >> 8) as u8;
+        self.c = n as u8
+    }
     pub fn set_de(&mut self, n: u16) -> () {
         self.d = (n >> 8) as u8;
         self.e = n as u8
     }
     pub fn set_hl(&mut self, n: u16) -> () {
-        self.d = (n >> 8) as u8;
-        self.e = n as u8
+        self.h = (n >> 8) as u8;
+        self.l = n as u8
     }
 
     pub fn set_z(&mut self, set: bool) { if set { self.f |= Z_MASK } else { self.f &= !Z_MASK } }
