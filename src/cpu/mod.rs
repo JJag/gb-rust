@@ -10,6 +10,8 @@ mod cp;
 mod inc;
 mod dec;
 mod add16;
+mod inc16;
+mod dec2;
 
 
 use util;

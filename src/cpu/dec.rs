@@ -9,7 +9,7 @@ impl Cpu {
         self.set_flags_dec(x);
     }
 
-    pub fn DEC_HL(&mut self) {
+    pub fn DEC_aHL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.mmu.write_byte(x.wrapping_sub(1), hl);
@@ -48,11 +48,11 @@ mod tests {
 
 
     #[test]
-    fn DEC_HL() {
+    fn DEC_aHL() {
         let mut cpu = init_cpu();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x00, hl);
-        cpu.DEC_HL();
+        cpu.DEC_aHL();
         assert_eq!(cpu.mmu.read_byte(hl), 0xFF);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), true);

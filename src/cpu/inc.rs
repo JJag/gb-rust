@@ -9,7 +9,7 @@ impl Cpu {
         self.set_flags_inc(x);
     }
 
-    pub fn INC_HL(&mut self) {
+    pub fn INC_aHL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         self.mmu.write_byte(x.wrapping_add(1), hl);
@@ -52,7 +52,7 @@ mod tests {
         let mut cpu = init_cpu();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x50, hl);
-        cpu.INC_HL();
+        cpu.INC_aHL();
         assert_eq!(cpu.mmu.read_byte(hl), 0x51);
         assert_eq!(cpu.get_z(), false);
         assert_eq!(cpu.get_h(), false);
