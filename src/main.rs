@@ -8,6 +8,8 @@ mod util;
 
 use cpu::*;
 
+const OPERATION_MASK: u8 = 0b1111_1000;
+
 fn main() {
 
     let mut mem = [0u8; 65536];
@@ -69,7 +71,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x04 => cpu.INC(B),
         0x05 => cpu.DEC(B),
         0x06 => cpu.LD_rn(B),
-        0x07 => (),
+        0x07 => cpu.RLCA(),
         0x08 => cpu.ld_nn_sp(),
         0x09 => cpu.ADD_HL_BC(),
         0x0A => cpu.ld_a_bc(),
@@ -77,7 +79,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x0C => cpu.INC(C),
         0x0D => cpu.DEC(C),
         0x0E => cpu.LD_rn(C),
-        0x0F => (),
+        0x0F => cpu.RRCA(),
 
         0x10 => (),
         0x11 => cpu.ld_de_nn(),
@@ -86,7 +88,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x14 => cpu.INC(D),
         0x15 => cpu.DEC(D),
         0x16 => cpu.LD_rn(D),
-        0x17 => (),
+        0x17 => cpu.RLA(),
         0x18 => (),
         0x19 => cpu.ADD_HL_DE(),
         0x1A => cpu.ld_a_de(),
@@ -94,7 +96,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x1C => cpu.INC(E),
         0x1D => cpu.DEC(E),
         0x1E => cpu.LD_rn(E),
-        0x1F => (),
+        0x1F => cpu.RRA(),
 
         0x20 => (),
         0x21 => cpu.ld_hl_nn(),
@@ -277,7 +279,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xC8 => (),
         0xC9 => (),
         0xCA => (),
-        0xCB => (),
+        0xCB => execute_CB_prefixed(cpu),
         0xCC => (),
         0xCD => (),
         0xCE => cpu.ADC_n(),
@@ -335,5 +337,65 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xFF => (),
         _    => panic!("INVALID OPCODE {}", opcode),
     }
+
+    pub fn execute_CB_prefixed(cpu: &mut Cpu) {
+        use cpu::Reg8::*;
+        cpu.pc += 1;
+        println!("{}", cpu.pc);
+        let opcode = cpu.mmu.read_byte(cpu.pc);
+        println!("GOT OPCODE CB{:X}", opcode);
+        let reg_code = reg_code(opcode);
+
+        let SWAP_MASK = 0b0011_0 << 3;
+        let RLC_MASK  = 0b0000_0 << 3;
+        let RRC_MASK  = 0b0000_1 << 3;
+        let RL_MASK   = 0b0001_0 << 3;
+        let RR_MASK   = 0b0001_1 << 3;
+
+        match opcode & OPERATION_MASK {
+            SWAP_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.SWAP_r(r),
+                RegOrHl::HL     => cpu.SWAP_aHL(),
+            },
+            RLC_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.RLC(r),
+                RegOrHl::HL     => cpu.RLC_aHL(),
+            },
+            RRC_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.RRC(r),
+                RegOrHl::HL     => cpu.RRC_aHL(),
+            },
+            RL_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.RL(r),UI
+                RegOrHl::HL     => cpu.RL_aHL(),
+            },
+            RR_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.RR(r),
+                RegOrHl::HL     => cpu.RR_aHL(),
+            },
+
+        }
+
+    }
+
+
+    pub fn reg_code(opcode: u8) -> RegOrHl {
+        use RegOrHl::*;
+        match opcode % 8 {
+            0 => REG(B),
+            1 => REG(C),
+            2 => REG(D),
+            3 => REG(E),
+            4 => REG(H),
+            5 => REG(L),
+            6 => HL,
+            7 => REG(A),
+            _ => panic!("illegal state")
+        }
+    }
 }
 
+enum RegOrHl {
+    REG(Reg8),
+    HL
+}

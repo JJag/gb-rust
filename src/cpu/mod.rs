@@ -12,6 +12,8 @@ mod dec;
 mod add16;
 mod inc16;
 mod dec2;
+mod swap;
+mod rot;
 
 
 use util;
