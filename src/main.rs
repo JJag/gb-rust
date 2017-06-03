@@ -346,11 +346,14 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         println!("GOT OPCODE CB{:X}", opcode);
         let reg_code = reg_code(opcode);
 
-        let SWAP_MASK = 0b0011_0 << 3;
-        let RLC_MASK  = 0b0000_0 << 3;
-        let RRC_MASK  = 0b0000_1 << 3;
-        let RL_MASK   = 0b0001_0 << 3;
-        let RR_MASK   = 0b0001_1 << 3;
+        let RLC_MASK  = 0b_0000_0 << 3;
+        let RRC_MASK  = 0b_0000_1 << 3;
+        let RL_MASK   = 0b_0001_0 << 3;
+        let RR_MASK   = 0b_0001_1 << 3;
+        let SLA_MASK  = 0b_0010_0 << 3;
+        let SRA_MASK  = 0b_0010_1 << 3;
+        let SWAP_MASK = 0b_0011_0 << 3;
+        let SRL_MASK  = 0b_0011_1 << 3;
 
         match opcode & OPERATION_MASK {
             SWAP_MASK => match reg_code {
@@ -366,14 +369,25 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
                 RegOrHl::HL     => cpu.RRC_aHL(),
             },
             RL_MASK => match reg_code {
-                RegOrHl::REG(r) => cpu.RL(r),UI
+                RegOrHl::REG(r) => cpu.RL(r),
                 RegOrHl::HL     => cpu.RL_aHL(),
             },
             RR_MASK => match reg_code {
                 RegOrHl::REG(r) => cpu.RR(r),
                 RegOrHl::HL     => cpu.RR_aHL(),
             },
-
+            SLA_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.SLA_r(r),
+                RegOrHl::HL     => cpu.SLA_aHL(),
+            },
+            SRA_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.SRA_r(r),
+                RegOrHl::HL     => cpu.SRA_aHL(),
+            },
+            SRL_MASK => match reg_code {
+                RegOrHl::REG(r) => cpu.SRL_r(r),
+                RegOrHl::HL     => cpu.SRL_aHL(),
+            },
         }
 
     }
