@@ -15,6 +15,8 @@ mod dec2;
 mod swap;
 mod rot;
 mod shift;
+mod bit;
+
 
 use util;
 use mmu;

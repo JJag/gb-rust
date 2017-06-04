@@ -1,10 +1,9 @@
 use cpu::*;
 use util::to_u8;
 
-// FIXME Z is set to 0 - not sure if it's correct because different sources say different things
 impl Cpu {
 
-    fn SLA_r(&mut self, r: Reg8) {
+    pub fn SLA_r(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
 
         *self.get_mut_reg8(r) = x << 1;
@@ -14,7 +13,7 @@ impl Cpu {
         self.set_n(false);
     }
 
-    fn SRA_r(&mut self, r: Reg8) {
+    pub fn SRA_r(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         let new_x = x >> 1 | (x & (1 << 7));
         *self.get_mut_reg8(r) = new_x;
@@ -24,7 +23,7 @@ impl Cpu {
         self.set_n(false);
     }
 
-    fn SRL_r(&mut self, r: Reg8) {
+    pub fn SRL_r(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         let new_x = x >> 1;
         *self.get_mut_reg8(r) = new_x;
