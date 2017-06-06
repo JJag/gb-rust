@@ -42,9 +42,9 @@ fn main() {
 
 fn run(cpu: &mut Cpu) {
     loop {
-        cpu.pc += 1;
         println!("{}", cpu.pc);
         let opcode = cpu.mmu.read_byte(cpu.pc);
+        cpu.pc += 1;
         execute(cpu, opcode);
 
         println!("a: {:3}\tf: {:3}",cpu.a, cpu.f);
@@ -89,7 +89,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x15 => cpu.DEC(D),
         0x16 => cpu.LD_rn(D),
         0x17 => cpu.RLA(),
-        0x18 => (),
+        0x18 => cpu.JR(),
         0x19 => cpu.ADD_HL_DE(),
         0x1A => cpu.ld_a_de(),
         0x1B => cpu.DEC_DE(),
@@ -98,7 +98,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x1E => cpu.LD_rn(E),
         0x1F => cpu.RRA(),
 
-        0x20 => (),
+        0x20 => cpu.JR_NZ(),
         0x21 => cpu.ld_hl_nn(),
         0x22 => cpu.ldi_hl_a(),
         0x23 => cpu.INC_HL(),
@@ -106,7 +106,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x25 => cpu.DEC(H),
         0x26 => cpu.LD_rn(H),
         0x27 => (),
-        0x28 => (),
+        0x28 => cpu.JR_Z(),
         0x29 => cpu.ADD_HL_HL(),
         0x2A => cpu.ldi_a_hl(),
         0x2B => cpu.DEC_HL(),
@@ -115,7 +115,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x2E => cpu.LD_rn(L),
         0x2F => (),
 
-        0x30 => (),
+        0x30 => cpu.JR_NC(),
         0x31 => cpu.ld_sp_nn(),
         0x32 => cpu.ldd_hl_a(),
         0x33 => cpu.INC_SP(),
@@ -123,7 +123,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x35 => cpu.DEC_aHL(),
         0x36 => cpu.ld__hl__n(),
         0x37 => (),
-        0x38 => (),
+        0x38 => cpu.JR_C(),
         0x39 => cpu.ADD_HL_SP(),
         0x3A => cpu.ldd_a_hl(),
         0x3B => cpu.DEC_SP(),
@@ -270,15 +270,15 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
         0xC0 => (),
         0xC1 => cpu.pop_bc(),
-        0xC2 => (),
-        0xC3 => (),
+        0xC2 => cpu.JP_NZ(),
+        0xC3 => cpu.JP(),
         0xC4 => (),
         0xC5 => cpu.push_bc(),
         0xC6 => cpu.ADD_n(),
         0xC7 => (),
         0xC8 => (),
         0xC9 => (),
-        0xCA => (),
+        0xCA => cpu.JP_Z(),
         0xCB => execute_CB_prefixed(cpu),
         0xCC => (),
         0xCD => (),
@@ -287,7 +287,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
         0xD0 => (),
         0xD1 => cpu.pop_de(),
-        0xD2 => (),
+        0xD2 => cpu.JP_NC(),
         0xD3 => panic!("INVALID OPCODE {}", opcode),
         0xD4 => (),
         0xD5 => cpu.push_de(),
@@ -295,7 +295,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xD7 => (),
         0xD8 => (),
         0xD9 => (),
-        0xDA => (),
+        0xDA => cpu.JP_C(),
         0xDB => panic!("INVALID OPCODE {}", opcode),
         0xDC => (),
         0xDD => panic!("INVALID OPCODE {}", opcode),
@@ -311,7 +311,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE6 => cpu.AND_n(),
         0xE7 => (),
         0xE8 => cpu.ADD_SP_n(),
-        0xE9 => (),
+        0xE9 => cpu.JP_aHL(),
         0xEA => cpu.ld_nn_a(),
         0xEB => panic!("INVALID OPCODE {}", opcode),
         0xEC => panic!("INVALID OPCODE {}", opcode),
@@ -393,10 +393,10 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
         _ => {
             let bit = bit_code(opcode);
             let BIT_OP_MASK = 0b_1100_0000;
-            let BIT_MASK = 0b_0100_0000;
-            let RES_MASK = 0b_1000_0000;
-            let SET_MASK = 0b_1100_0000;
-            match opcode & OPERATION_MASK {
+            let BIT_MASK    = 0b_0100_0000;
+            let RES_MASK    = 0b_1000_0000;
+            let SET_MASK    = 0b_1100_0000;
+            match opcode & BIT_OP_MASK {
                 BIT_MASK => match reg_code {
                     RegOrHl::REG(r) => cpu.BIT_r(bit, r),
                     RegOrHl::HL => cpu.BIT_aHL(bit),

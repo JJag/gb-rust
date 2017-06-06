@@ -16,7 +16,7 @@ mod swap;
 mod rot;
 mod shift;
 mod bit;
-
+mod jp;
 
 use util;
 use mmu;
