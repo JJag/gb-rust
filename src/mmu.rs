@@ -1,9 +1,24 @@
 use util;
 
-pub struct Mmu {
-    memory: [u8; 65536],
-    bios_enabled: bool,
+const ROM1_SIZE: usize = 16 * 1024;
+const ROM2_SIZE: usize = 16 * 1024;
+const VRAM_SIZE: usize = 8 * 1024;
+const EXT_RAM_SIZE: usize = 8 * 1024;
+const WORK_RAM_SIZE: usize = 8 * 1024;
+const SPRITE_ATTR_SIZE: usize = 160;
+const IO_SIZE: usize = 128;
+const ZERO_RAM_SIZE: usize = 128;
 
+pub struct Mmu {
+    rom1: [u8; ROM1_SIZE],
+    rom2: [u8; ROM2_SIZE],
+    vram: [u8; VRAM_SIZE],
+    ext_ram: [u8; EXT_RAM_SIZE],
+    work_ram: [u8; WORK_RAM_SIZE],
+    sprite_attr: [u8; SPRITE_ATTR_SIZE],
+    io: [u8; IO_SIZE],
+    zero_ram: [u8; ZERO_RAM_SIZE],
+    bios_enabled: bool,
 }
 
 const BIOS: [u8; 16 * 16] = [
@@ -26,37 +41,72 @@ const BIOS: [u8; 16 * 16] = [
 ];
 
 impl Mmu {
-
     pub fn init(mem: [u8; 65536]) -> Mmu {
         Mmu {
-            memory: mem,
+            rom1: [0; 16 * 1024],
+            rom2: [0; 16 * 1024],
+            vram: [0; 8 * 1024],
+            ext_ram: [0; 8 * 1024],
+            work_ram: [0; 8 * 1024],
+            sprite_attr: [0; 160],
+            io: [0; 128],
+            zero_ram: [0; 128],
             bios_enabled: true,
         }
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
-        let h = self.memory[addr as usize];
-
-        let l = self.memory[(addr + 1) as usize];
+        let h = *self.map_addr(addr);
+        let l = *self.map_addr(addr + 1);
         let val = util::concat(h, l);
         println!("Reading {} from {:X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
-        let val = self.memory[addr as usize];
-//        println!("Reading {} from {:X}",val, addr);
-        val
+        *self.map_addr(addr)
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
         println!("Writing word {:4X} to ${:X}", val, addr);
         let (hi, lo) = util::split_word(val);
-        self.memory[ addr      as usize] = hi;
-        self.memory[(addr + 1) as usize] = lo;
+        *(self.map_addr_mut(addr)) = hi;
+        *(self.map_addr_mut(addr + 1)) = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
         println!("Writing byte {:2X} to ${:X}", val, addr);
-        self.memory[addr as usize] = val
+        *(self.map_addr_mut(addr)) = val;
+    }
+
+    fn map_addr(&self, addr: u16) -> &u8 {
+        let a = addr as usize;
+        match a {
+            0x0000 ... 0x3FFF => &self.rom1[a % ROM1_SIZE],
+            0x4000 ... 0x7FFF => &self.rom2[a % ROM2_SIZE],
+            0x8000 ... 0x9FFF => &self.vram[a % VRAM_SIZE],
+            0xA000 ... 0xBFFF => &self.ext_ram[a % EXT_RAM_SIZE],
+            0xC000 ... 0xDFFF => &self.work_ram[a % WORK_RAM_SIZE],
+            0xE000 ... 0xFDFF => &self.work_ram[a % WORK_RAM_SIZE],
+            0xFE00 ... 0xFE9F => &self.sprite_attr[a % SPRITE_ATTR_SIZE],
+            0xFF00 ... 0xFF7F => &self.io[a % IO_SIZE],
+            0xFF80 ... 0xFFFF => &self.zero_ram[a % ZERO_RAM_SIZE],
+            _ => panic!("Unhandled address in memory map: {}", a),
+        }
+    }
+
+    fn map_addr_mut(&mut self, addr: u16) -> &mut u8 {
+        let a = addr as usize;
+        match a {
+            0x0000 ... 0x3FFF => &mut self.rom1[a % ROM1_SIZE],
+            0x4000 ... 0x7FFF => &mut self.rom2[a % ROM2_SIZE],
+            0x8000 ... 0x9FFF => &mut self.vram[a % VRAM_SIZE],
+            0xA000 ... 0xBFFF => &mut self.ext_ram[a % EXT_RAM_SIZE],
+            0xC000 ... 0xDFFF => &mut self.work_ram[a % WORK_RAM_SIZE],
+            0xE000 ... 0xFDFF => &mut self.work_ram[a % WORK_RAM_SIZE],
+            0xFE00 ... 0xFE9F => &mut self.sprite_attr[a % SPRITE_ATTR_SIZE],
+            0xFF00 ... 0xFF7F => &mut self.io[a % IO_SIZE],
+            0xFF80 ... 0xFFFF => &mut self.zero_ram[a % ZERO_RAM_SIZE],
+            _ => panic!("Unhandled address in memory map: {}", a),
+        }
     }
 }
