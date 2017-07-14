@@ -5,7 +5,7 @@ const ROM2_SIZE: usize = 16 * 1024;
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;
 const WORK_RAM_SIZE: usize = 8 * 1024;
-const SPRITE_ATTR_SIZE: usize = 160;
+const OAM_SIZE: usize = 160;
 const IO_SIZE: usize = 128;
 const ZERO_RAM_SIZE: usize = 128;
 
@@ -15,10 +15,10 @@ pub struct Mmu {
     vram: [u8; VRAM_SIZE],
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
-    sprite_attr: [u8; SPRITE_ATTR_SIZE],
+    oam: [u8; OAM_SIZE],
     io: [u8; IO_SIZE],
     zero_ram: [u8; ZERO_RAM_SIZE],
-    bios_enabled: bool,
+    pub bios_enabled: bool,
 }
 
 const BIOS: [u8; 16 * 16] = [
@@ -41,14 +41,14 @@ const BIOS: [u8; 16 * 16] = [
 ];
 
 impl Mmu {
-    pub fn init(mem: [u8; 65536]) -> Mmu {
+    pub fn init() -> Mmu {
         Mmu {
             rom1: [0; 16 * 1024],
             rom2: [0; 16 * 1024],
             vram: [0; 8 * 1024],
             ext_ram: [0; 8 * 1024],
             work_ram: [0; 8 * 1024],
-            sprite_attr: [0; 160],
+            oam: [0; 160],
             io: [0; 128],
             zero_ram: [0; 128],
             bios_enabled: true,
@@ -56,14 +56,18 @@ impl Mmu {
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
-        let h = *self.map_addr(addr);
-        let l = *self.map_addr(addr + 1);
+        let h = self.read_byte(addr);
+        let l = self.read_byte(addr + 1);
         let val = util::concat(h, l);
         println!("Reading {} from {:X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
-        *self.map_addr(addr)
+        if self.bios_enabled && addr <= 100 {
+            BIOS[addr as usize]
+        } else {
+            *self.map_addr(addr)
+        }
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
@@ -87,7 +91,7 @@ impl Mmu {
             0xA000 ... 0xBFFF => &self.ext_ram[a % EXT_RAM_SIZE],
             0xC000 ... 0xDFFF => &self.work_ram[a % WORK_RAM_SIZE],
             0xE000 ... 0xFDFF => &self.work_ram[a % WORK_RAM_SIZE],
-            0xFE00 ... 0xFE9F => &self.sprite_attr[a % SPRITE_ATTR_SIZE],
+            0xFE00 ... 0xFE9F => &self.oam[a % OAM_SIZE],
             0xFF00 ... 0xFF7F => &self.io[a % IO_SIZE],
             0xFF80 ... 0xFFFF => &self.zero_ram[a % ZERO_RAM_SIZE],
             _ => panic!("Unhandled address in memory map: {}", a),
@@ -103,7 +107,7 @@ impl Mmu {
             0xA000 ... 0xBFFF => &mut self.ext_ram[a % EXT_RAM_SIZE],
             0xC000 ... 0xDFFF => &mut self.work_ram[a % WORK_RAM_SIZE],
             0xE000 ... 0xFDFF => &mut self.work_ram[a % WORK_RAM_SIZE],
-            0xFE00 ... 0xFE9F => &mut self.sprite_attr[a % SPRITE_ATTR_SIZE],
+            0xFE00 ... 0xFE9F => &mut self.oam[a % OAM_SIZE],
             0xFF00 ... 0xFF7F => &mut self.io[a % IO_SIZE],
             0xFF80 ... 0xFFFF => &mut self.zero_ram[a % ZERO_RAM_SIZE],
             _ => panic!("Unhandled address in memory map: {}", a),
