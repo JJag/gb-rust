@@ -17,6 +17,7 @@ mod rot;
 mod shift;
 mod bit;
 mod jp;
+mod misc;
 
 use util;
 use mmu;
@@ -39,17 +40,31 @@ pub struct Cpu {
     pub l: u8,
     pub sp: u16,
     pub pc: u16,
+
+    pub halted: bool,
+    pub stopped: bool,
+
+    pub interrupts_enabled: bool,
+
+    ei_pending: bool,
+    di_pending: bool,
+
 }
 
 impl Cpu {
-    pub fn init(_mmu: mmu::Mmu) -> Cpu {
+    pub fn init() -> Cpu {
         Cpu {
-            mmu: _mmu,
+            mmu: mmu::Mmu::init(),
             a: 0, f: 0,
             b: 0, c: 0,
             d: 0, e: 0,
             h: 0, l: 0,
             sp: 0, pc: 0,
+            halted: false,
+            stopped: false,
+            interrupts_enabled: false,
+            ei_pending: false,
+            di_pending: false,
         }
     }
 
