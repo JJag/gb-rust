@@ -70,10 +70,10 @@ impl Cpu {
         }
     }
 
-    pub fn af(&self) -> u16 { util::concat(self.a, self.f) }
-    pub fn de(&self) -> u16 { util::concat(self.d, self.e) }
-    pub fn bc(&self) -> u16 { util::concat(self.b, self.c) }
-    pub fn hl(&self) -> u16 { util::concat(self.h, self.l) }
+    pub fn af(&self) -> u16 { util::concat(self.f, self.a) }
+    pub fn de(&self) -> u16 { util::concat(self.e, self.d) }
+    pub fn bc(&self) -> u16 { util::concat(self.c, self.b) }
+    pub fn hl(&self) -> u16 { util::concat(self.l, self.h) }
 
     pub fn set_af(&mut self, n: u16) -> () {
         self.a = (n >> 8) as u8;
