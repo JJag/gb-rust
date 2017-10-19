@@ -3,57 +3,44 @@
 
 mod cpu;
 mod mmu;
-mod misc;
 mod util;
 
 use cpu::*;
+use std::io::Read;
+
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn main() {
-
-    let mut mem = [0u8; 65536];
-    mem[0]  = 0x00;
-    mem[1]  = 0x06; // LD B, 6
-    mem[2]  = 0x06;
-    mem[3]  = 0x0A; // LD A, (BC)
-    mem[4]  = 0x80; // ADD A, B
-    mem[5]  = 0x0E; // LD C, 209
-    mem[6]  = 232;
-    mem[7]  = 0x81; // ADD A, C
-    mem[8]  = 0x31; // LD SP, 666
-    mem[9]  = 0xFF;
-    mem[10]  = 0x22;
-    mem[11] = 0xF5; // PUSH AF
-    mem[12] = 0xE1; // POP HL
-    mem[13] = 0x00;
-    mem[0x0600] = 23;
-
-
-    let mmu = mmu::Mmu::init(mem);
-    let mut cpu = cpu::Cpu::init(mmu);
-
-//    println!!("{:?}", cpu);
-
+    let mut cpu = cpu::Cpu::init();
     run(&mut cpu)
-
-//    println!!("{:?}", cpu);
 }
 
 fn run(cpu: &mut Cpu) {
     loop {
         println!("{}", cpu.pc);
         let opcode = cpu.mmu.read_byte(cpu.pc);
-        cpu.pc += 1;
         execute(cpu, opcode);
+        cpu.pc += 1;
 
-        println!("a: {:3}\tf: {:3}",cpu.a, cpu.f);
-        println!("b: {:3}\tc: {:3}",cpu.b, cpu.c);
-        println!("d: {:3}\te: {:3}",cpu.d, cpu.e);
-        println!("h: {:3}\tl: {:3}",cpu.d, cpu.e);
-        println!("sp: {:4X}",cpu.sp);
-        println!("pc: {:4X}",cpu.pc);
+        if cpu.pc > 0x100 {
+            cpu.mmu.bios_enabled = false;
+            std::process::exit(1);
+        }
+
+        println!("af: {:02X}{:02X}",cpu.a, cpu.f);
+        println!("bc: {:02X}{:02X}",cpu.b, cpu.c);
+        println!("de: {:02X}{:02X}",cpu.d, cpu.e);
+        println!("hl: {:02X}{:02X}",cpu.h, cpu.l);
+        println!("sp: {:04X}",cpu.sp);
+        println!("pc: {:04X}",cpu.pc);
         println!();
+
+        if cpu.pc > 0x28 {
+            std::io::stdin()
+                .bytes()
+                .next();
+        }
 
     }
 }
@@ -64,7 +51,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
     use cpu::Reg8::*;
 
     match opcode {
-        0x00 => std::process::exit(0), // cpu.nop(),
+        0x00 => cpu.nop(),
         0x01 => cpu.ld_bc_nn(),
         0x02 => cpu.ld_bc_a(),
         0x03 => cpu.INC_BC(),
@@ -81,7 +68,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x0E => cpu.LD_rn(C),
         0x0F => cpu.RRCA(),
 
-        0x10 => (),
+        0x10 => cpu.stop(),
         0x11 => cpu.ld_de_nn(),
         0x12 => cpu.ld_de_a(),
         0x13 => cpu.INC_DE(),
@@ -105,7 +92,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x24 => cpu.INC(H),
         0x25 => cpu.DEC(H),
         0x26 => cpu.LD_rn(H),
-        0x27 => (),
+        0x27 => cpu.daa(),
         0x28 => cpu.JR_Z(),
         0x29 => cpu.ADD_HL_HL(),
         0x2A => cpu.ldi_a_hl(),
@@ -113,7 +100,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x2C => cpu.INC(L),
         0x2D => cpu.DEC(L),
         0x2E => cpu.LD_rn(L),
-        0x2F => (),
+        0x2F => cpu.cpl(),
 
         0x30 => cpu.JR_NC(),
         0x31 => cpu.ld_sp_nn(),
@@ -122,7 +109,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x34 => cpu.INC_aHL(),
         0x35 => cpu.DEC_aHL(),
         0x36 => cpu.ld__hl__n(),
-        0x37 => (),
+        0x37 => cpu.scf(),
         0x38 => cpu.JR_C(),
         0x39 => cpu.ADD_HL_SP(),
         0x3A => cpu.ldd_a_hl(),
@@ -130,7 +117,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x3C => cpu.INC(A),
         0x3D => cpu.DEC(A),
         0x3E => cpu.LD_rn(A),
-        0x3F => (),
+        0x3F => cpu.ccf(),
 
         0x40 => cpu.LD_rr(B, B),
         0x41 => cpu.LD_rr(B, C),
@@ -189,7 +176,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x73 => cpu.LD_HL_r(E),
         0x74 => cpu.LD_HL_r(H),
         0x75 => cpu.LD_HL_r(L),
-        0x76 => println!("HALT {}", opcode),
+        0x76 => cpu.halt(),
         0x77 => cpu.LD_HL_r(A),
         0x78 => cpu.LD_rr(A, B),
         0x79 => cpu.LD_rr(A, C),
@@ -268,39 +255,39 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xBE => cpu.CP_HL(),
         0xBF => cpu.CP(A),
 
-        0xC0 => (),
+        0xC0 => cpu.RET_NZ(),
         0xC1 => cpu.pop_bc(),
         0xC2 => cpu.JP_NZ(),
         0xC3 => cpu.JP(),
-        0xC4 => (),
+        0xC4 => cpu.CALL_NZ(),
         0xC5 => cpu.push_bc(),
         0xC6 => cpu.ADD_n(),
-        0xC7 => (),
-        0xC8 => (),
-        0xC9 => (),
+        0xC7 => cpu.RST_00H(),
+        0xC8 => cpu.RET_Z(),
+        0xC9 => cpu.RET(),
         0xCA => cpu.JP_Z(),
         0xCB => execute_CB_prefixed(cpu),
-        0xCC => (),
-        0xCD => (),
+        0xCC => cpu.CALL_Z(),
+        0xCD => cpu.CALL(),
         0xCE => cpu.ADC_n(),
-        0xCF => (),
+        0xCF => cpu.RST_08H(),
 
-        0xD0 => (),
+        0xD0 => cpu.RET_NC(),
         0xD1 => cpu.pop_de(),
         0xD2 => cpu.JP_NC(),
         0xD3 => panic!("INVALID OPCODE {}", opcode),
-        0xD4 => (),
+        0xD4 => cpu.CALL_NC(),
         0xD5 => cpu.push_de(),
         0xD6 => cpu.SUB_n(),
-        0xD7 => (),
-        0xD8 => (),
-        0xD9 => (),
+        0xD7 => cpu.RST_10H(),
+        0xD8 => cpu.RET_C(),
+        0xD9 => cpu.RETI(),
         0xDA => cpu.JP_C(),
         0xDB => panic!("INVALID OPCODE {}", opcode),
-        0xDC => (),
+        0xDC => cpu.CALL_C(),
         0xDD => panic!("INVALID OPCODE {}", opcode),
         0xDE => cpu.SBC_n(),
-        0xDF => (),
+        0xDF => cpu.RST_18H(),
 
         0xE0 => cpu.ldh_n_a(),
         0xE1 => cpu.pop_hl(),
@@ -309,7 +296,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE4 => panic!("INVALID OPCODE {}", opcode),
         0xE5 => cpu.push_hl(),
         0xE6 => cpu.AND_n(),
-        0xE7 => (),
+        0xE7 => cpu.RST_20H(),
         0xE8 => cpu.ADD_SP_n(),
         0xE9 => cpu.JP_aHL(),
         0xEA => cpu.ld_nn_a(),
@@ -317,98 +304,86 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xEC => panic!("INVALID OPCODE {}", opcode),
         0xED => panic!("INVALID OPCODE {}", opcode),
         0xEE => cpu.XOR_n(),
-        0xEF => (),
+        0xEF => cpu.RST_28H(),
 
         0xF0 => cpu.ldh_a_n(),
         0xF1 => cpu.pop_af(),
         0xF2 => cpu.ld_a__c_(),
-        0xF3 => (),
+        0xF3 => cpu.di(),
         0xF4 => panic!("INVALID OPCODE {}", opcode),
         0xF5 => cpu.push_af(),
         0xF6 => cpu.OR_n(),
-        0xF7 => (),
+        0xF7 => cpu.RST_30H(),
         0xF8 => cpu.ldhl_sp_n(),
         0xF9 => cpu.ld_sp_hl(),
         0xFA => cpu.ld_a_nn(),
-        0xFB => (),
+        0xFB => cpu.ei(),
         0xFC => panic!("INVALID OPCODE {}", opcode),
         0xFD => panic!("INVALID OPCODE {}", opcode),
         0xFE => cpu.CP_n(),
-        0xFF => (),
+        0xFF => cpu.RST_38H(),
         _ => panic!("INVALID OPCODE {}", opcode),
     }
 }
 
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
-    use cpu::Reg8::*;
-    cpu.pc += 1;
+    cpu.pc += 1;    
     println!("{}", cpu.pc);
     let opcode = cpu.mmu.read_byte(cpu.pc);
     println!("GOT OPCODE CB{:X}", opcode);
     let reg_code = reg_code(opcode);
 
-    let RLC_MASK = 0b_0000_0 << 3;
-    let RRC_MASK = 0b_0000_1 << 3;
-    let RL_MASK = 0b_0001_0 << 3;
-    let RR_MASK = 0b_0001_1 << 3;
-    let SLA_MASK = 0b_0010_0 << 3;
-    let SRA_MASK = 0b_0010_1 << 3;
-    let SWAP_MASK = 0b_0011_0 << 3;
-    let SRL_MASK = 0b_0011_1 << 3;
-
     match opcode & OPERATION_MASK {
-        SWAP_MASK => match reg_code {
+        0b_0011_0000 => match reg_code {
             RegOrHl::REG(r) => cpu.SWAP_r(r),
             RegOrHl::HL => cpu.SWAP_aHL(),
         },
-        RLC_MASK => match reg_code {
+        0b_0000_0000 => match reg_code {
             RegOrHl::REG(r) => cpu.RLC(r),
             RegOrHl::HL => cpu.RLC_aHL(),
         },
-        RRC_MASK => match reg_code {
+        0b_0000_1000 => match reg_code {
             RegOrHl::REG(r) => cpu.RRC(r),
             RegOrHl::HL => cpu.RRC_aHL(),
         },
-        RL_MASK => match reg_code {
+        0b_0001_0000 => match reg_code {
             RegOrHl::REG(r) => cpu.RL(r),
             RegOrHl::HL => cpu.RL_aHL(),
         },
-        RR_MASK => match reg_code {
+        0b_0001_1000 => match reg_code {
             RegOrHl::REG(r) => cpu.RR(r),
             RegOrHl::HL => cpu.RR_aHL(),
         },
-        SLA_MASK => match reg_code {
+        0b_0010_0000 => match reg_code {
             RegOrHl::REG(r) => cpu.SLA_r(r),
             RegOrHl::HL => cpu.SLA_aHL(),
         },
-        SRA_MASK => match reg_code {
+        0b_0010_1000 => match reg_code {
             RegOrHl::REG(r) => cpu.SRA_r(r),
             RegOrHl::HL => cpu.SRA_aHL(),
         },
-        SRL_MASK => match reg_code {
+        0b_0011_1000 => match reg_code {
             RegOrHl::REG(r) => cpu.SRL_r(r),
             RegOrHl::HL => cpu.SRL_aHL(),
         },
         _ => {
             let bit = bit_code(opcode);
-            let BIT_OP_MASK = 0b_1100_0000;
-            let BIT_MASK    = 0b_0100_0000;
-            let RES_MASK    = 0b_1000_0000;
-            let SET_MASK    = 0b_1100_0000;
+            const BIT_OP_MASK: u8 = 0b_1100_0000;
             match opcode & BIT_OP_MASK {
-                BIT_MASK => match reg_code {
+                0b_0100_0000 => match reg_code {
                     RegOrHl::REG(r) => cpu.BIT_r(bit, r),
                     RegOrHl::HL => cpu.BIT_aHL(bit),
                 },
-                RES_MASK => match reg_code {
+                0b_1000_0000 => match reg_code {
                     RegOrHl::REG(r) => cpu.RES_r(bit, r),
                     RegOrHl::HL => cpu.RES_aHL(bit),
                 },
-                SET_MASK => match reg_code {
+                0b_1100_0000 => match reg_code {
                     RegOrHl::REG(r) => cpu.SET_r(bit, r),
                     RegOrHl::HL => cpu.SET_aHL(bit),
                 },
+                _ => panic!(),
             }
         }
     }
