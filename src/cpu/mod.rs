@@ -55,7 +55,6 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn init() -> Cpu {
-    pub fn init() -> Cpu {
         Cpu {
             mmu: mmu::Mmu::init(),
             a: 0, f: 0,
