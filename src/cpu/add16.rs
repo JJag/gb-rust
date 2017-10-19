@@ -42,15 +42,10 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
 
     #[test]
     fn ADD_HL_rr() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.set_hl(0x8A23);
         cpu.set_bc(0x0605);
         cpu.ADD_HL_BC();
@@ -69,7 +64,7 @@ mod tests {
 
     #[test]
     fn ADD_SP_n() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.sp = 0xFFF8;
         cpu.mmu.write_byte(0x02, (cpu.pc + 1));
         cpu.ADD_SP_n();

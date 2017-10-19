@@ -38,15 +38,9 @@ mod tests {
 
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn ADC_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0xE1;
         cpu.e = 0x0F;
         cpu.set_c(true);
@@ -60,7 +54,7 @@ mod tests {
 
     #[test]
     fn ADC_n() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x3B, (cpu.pc + 1));
         cpu.set_c(true);
@@ -74,7 +68,7 @@ mod tests {
 
     #[test]
     fn ADC_HL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         let hl = cpu.hl();
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x1E, hl);

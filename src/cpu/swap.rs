@@ -29,15 +29,9 @@ mod tests {
 
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn SWAP_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.b = 0x2F;
         cpu.l = 0x00;
         cpu.SWAP_r(B);
@@ -51,7 +45,7 @@ mod tests {
 
     #[test]
     fn SWAP_aHL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x40, hl);
         cpu.SWAP_aHL();

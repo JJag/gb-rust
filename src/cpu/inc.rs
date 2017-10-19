@@ -29,15 +29,9 @@ mod tests {
 
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn INC_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0xFF;
         cpu.INC(A);
         assert_eq!(cpu.a, 0x00);
@@ -49,7 +43,7 @@ mod tests {
 
     #[test]
     fn INC_HL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x50, hl);
         cpu.INC_aHL();

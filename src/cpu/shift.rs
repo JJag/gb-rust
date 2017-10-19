@@ -1,5 +1,4 @@
 use cpu::*;
-use util::to_u8;
 
 impl Cpu {
 
@@ -72,15 +71,9 @@ impl Cpu {
 mod tests {
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn SLA_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.d = 0x80;
         cpu.set_c(false);
 
@@ -95,7 +88,7 @@ mod tests {
 
     #[test]
     fn SLA_aHL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0xFF, hl);
@@ -110,7 +103,7 @@ mod tests {
     }
     #[test]
     fn SRA_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x8A;
         cpu.set_c(false);
 
@@ -125,7 +118,7 @@ mod tests {
 
     #[test]
     fn SRA_aHL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x01, hl);
@@ -141,7 +134,7 @@ mod tests {
 
     #[test]
     fn SRL_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x01;
         cpu.set_c(false);
 
@@ -156,7 +149,7 @@ mod tests {
 
     #[test]
     fn SRL_aHL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0xFF, hl);

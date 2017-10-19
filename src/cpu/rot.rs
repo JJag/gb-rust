@@ -1,5 +1,4 @@
 use cpu::*;
-use util::to_u8;
 
 // FIXME Z is set to 0 - not sure if it's correct because different sources say different things
 impl Cpu {
@@ -103,15 +102,9 @@ impl Cpu {
 mod tests {
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn RLCA() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x85;
         cpu.set_c(false);
 
@@ -126,7 +119,7 @@ mod tests {
 
     #[test]
     fn RLA() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x95;
         cpu.set_c(true);
 
@@ -141,7 +134,7 @@ mod tests {
 
     #[test]
     fn RRCA() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x3B;
         cpu.set_c(false);
 
@@ -156,7 +149,7 @@ mod tests {
 
     #[test]
     fn RRA() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x81;
         cpu.set_c(false);
 

@@ -36,15 +36,9 @@ mod tests {
 
     use cpu::Reg8::*;
 
-    fn init_cpu() -> ::cpu::Cpu {
-        let mem = [0u8; 65536];
-        let mmu = ::mmu::Mmu::init(mem);
-        ::cpu::Cpu::init(mmu)
-    }
-
     #[test]
     fn ADD_r() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x3A;
         cpu.b = 0xC6;
         cpu.ADD(B);
@@ -57,7 +51,7 @@ mod tests {
 
     #[test]
     fn ADD_n() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0xFF, (cpu.pc + 1));
         cpu.ADD_n();
@@ -70,7 +64,7 @@ mod tests {
 
     #[test]
     fn ADD_HL() {
-        let mut cpu = init_cpu();
+        let mut cpu = ::cpu::Cpu::init();
         let hl = cpu.hl();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0x12, hl);
