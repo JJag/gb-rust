@@ -18,7 +18,9 @@ mod shift;
 mod bit;
 mod jp;
 mod misc;
-
+mod call;
+mod rst;
+mod ret;
 use util;
 use mmu;
 
@@ -52,6 +54,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
+    pub fn init() -> Cpu {
     pub fn init() -> Cpu {
         Cpu {
             mmu: mmu::Mmu::init(),
