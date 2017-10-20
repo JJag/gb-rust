@@ -100,7 +100,6 @@ impl Cpu {
 
 #[cfg(test)]
 mod tests {
-    use cpu::Reg8::*;
 
     #[test]
     fn RLCA() {
