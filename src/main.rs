@@ -383,7 +383,7 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
                     RegOrHl::REG(r) => cpu.SET_r(bit, r),
                     RegOrHl::HL => cpu.SET_aHL(bit),
                 },
-                _ => panic!(),
+                _ => panic!("illegal state"),
             }
         }
     }
