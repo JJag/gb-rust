@@ -51,7 +51,7 @@ impl Mmu {
             oam: [0; 160],
             io: [0; 128],
             zero_ram: [0; 128],
-            bios_enabled: true,
+            bios_enabled: false,
         }
     }
 

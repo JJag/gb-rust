@@ -13,12 +13,13 @@ const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn main() {
     let mut cpu = cpu::Cpu::init();
+    cpu.mmu.bios_enabled = true;
     run(&mut cpu)
 }
 
 fn run(cpu: &mut Cpu) {
     loop {
-        println!("{}", cpu.pc);
+        println!("PC decimal: {}", cpu.pc);
         let opcode = cpu.mmu.read_byte(cpu.pc);
         execute(cpu, opcode);
         cpu.pc += 1;
@@ -36,7 +37,7 @@ fn run(cpu: &mut Cpu) {
         println!("pc: {:04X}",cpu.pc);
         println!();
 
-        if cpu.pc > 0x28 {
+        if cpu.pc > 0x40 {
             std::io::stdin()
                 .bytes()
                 .next();
