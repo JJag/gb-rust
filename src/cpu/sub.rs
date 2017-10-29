@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn SUB_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3E;
         cpu.e = 0x3E;
         cpu.SUB(E);
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn SUB_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3E;
         cpu.mmu.write_byte(0x0F, (cpu.pc + 1));
 
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn SUB_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3E;
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x40, hl);

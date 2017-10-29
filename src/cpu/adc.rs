@@ -40,7 +40,7 @@ mod tests {
 
     #[test]
     fn ADC_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xE1;
         cpu.e = 0x0F;
         cpu.set_c(true);
@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn ADC_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x3B, (cpu.pc + 1));
         cpu.set_c(true);
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn ADC_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.a = 0xE1;
         cpu.mmu.write_byte(0x1E, hl);

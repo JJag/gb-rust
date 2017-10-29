@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn INC_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xFF;
         cpu.INC(A);
         assert_eq!(cpu.a, 0x00);
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn INC_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x50, hl);
         cpu.INC_aHL();

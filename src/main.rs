@@ -1,6 +1,10 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 mod cpu;
 mod mmu;
 mod util;
@@ -12,14 +16,15 @@ use std::io::Read;
 const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn main() {
-    let mut cpu = cpu::Cpu::init();
+    env_logger::init().unwrap();
+    let mut cpu = cpu::Cpu::new();
     cpu.mmu.bios_enabled = true;
     run(&mut cpu)
 }
 
 fn run(cpu: &mut Cpu) {
     loop {
-        println!("PC decimal: {}", cpu.pc);
+        debug!("PC decimal: {}", cpu.pc);
         let opcode = cpu.mmu.read_byte(cpu.pc);
         execute(cpu, opcode);
         cpu.pc += 1;
@@ -29,13 +34,13 @@ fn run(cpu: &mut Cpu) {
             std::process::exit(1);
         }
 
-        println!("af: {:02X}{:02X}",cpu.a, cpu.f);
-        println!("bc: {:02X}{:02X}",cpu.b, cpu.c);
-        println!("de: {:02X}{:02X}",cpu.d, cpu.e);
-        println!("hl: {:02X}{:02X}",cpu.h, cpu.l);
-        println!("sp: {:04X}",cpu.sp);
-        println!("pc: {:04X}",cpu.pc);
-        println!();
+        debug!("af: {:02X}{:02X}", cpu.a, cpu.f);
+        debug!("bc: {:02X}{:02X}", cpu.b, cpu.c);
+        debug!("de: {:02X}{:02X}", cpu.d, cpu.e);
+        debug!("hl: {:02X}{:02X}", cpu.h, cpu.l);
+        debug!("sp: {:04X}", cpu.sp);
+        debug!("pc: {:04X}", cpu.pc);
+
 
         if cpu.pc > 0x40 {
             std::io::stdin()
@@ -47,7 +52,7 @@ fn run(cpu: &mut Cpu) {
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
-    println!("GOT OPCODE {:X}", opcode);
+    debug!("GOT OPCODE {:X}", opcode);
 
     use cpu::Reg8::*;
 
@@ -330,9 +335,9 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
     cpu.pc += 1;    
-    println!("{}", cpu.pc);
+    debug!("{}", cpu.pc);
     let opcode = cpu.mmu.read_byte(cpu.pc);
-    println!("GOT OPCODE CB{:X}", opcode);
+    debug!("GOT OPCODE CB{:X}", opcode);
     let reg_code = reg_code(opcode);
 
     match opcode & OPERATION_MASK {

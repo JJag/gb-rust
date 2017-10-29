@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn BIT_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x80;
         cpu.l = 0xEF;
 
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn BIT_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0xFE, hl);
 

@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn ADD_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3A;
         cpu.b = 0xC6;
         cpu.ADD(B);
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn ADD_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0xFF, (cpu.pc + 1));
         cpu.ADD_n();
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn ADD_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.a = 0x3C;
         cpu.mmu.write_byte(0x12, hl);

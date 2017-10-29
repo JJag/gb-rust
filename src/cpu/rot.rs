@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn RLCA() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x85;
         cpu.set_c(false);
 
@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn RLA() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x95;
         cpu.set_c(true);
 
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn RRCA() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x3B;
         cpu.set_c(false);
 
@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     fn RRA() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x81;
         cpu.set_c(false);
 

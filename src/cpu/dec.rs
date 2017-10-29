@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn DEC_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.l = 0x01;
         cpu.DEC(L);
         assert_eq!(cpu.a, 0x00);
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn DEC_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x00, hl);
         cpu.DEC_aHL();

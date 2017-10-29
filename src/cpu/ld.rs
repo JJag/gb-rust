@@ -121,7 +121,7 @@ impl Cpu {
 
     pub fn pop_bc(&mut self) { let val = self.mmu.read_word(self.sp); self.set_bc(val); self.sp += 2 }
     pub fn pop_de(&mut self) { let val = self.mmu.read_word(self.sp); self.set_de(val); self.sp += 2 }
-    pub fn pop_hl(&mut self) { let val = self.mmu.read_word(self.sp); println!("{:4X}X{}X",self.sp, val);self.set_hl(val); self.sp += 2 }
+    pub fn pop_hl(&mut self) { let val = self.mmu.read_word(self.sp); self.set_hl(val); self.sp += 2 }
     pub fn pop_af(&mut self) { let val = self.mmu.read_word(self.sp); self.set_af(val); self.sp += 2 }
 
     pub fn ldhl_sp_n(&mut self) {

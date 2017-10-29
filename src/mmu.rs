@@ -1,3 +1,4 @@
+use log;
 use util;
 
 const ROM1_SIZE: usize = 16 * 1024;
@@ -41,7 +42,7 @@ const BIOS: [u8; 16 * 16] = [
 ];
 
 impl Mmu {
-    pub fn init() -> Mmu {
+    pub fn new() -> Mmu {
         Mmu {
             rom1: [0; 16 * 1024],
             rom2: [0; 16 * 1024],
@@ -59,7 +60,7 @@ impl Mmu {
         let h = self.read_byte(addr);
         let l = self.read_byte(addr + 1);
         let val = util::concat(l, h);
-        println!("Reading {:04X} from {:X}", val, addr);
+        debug!("Reading {:04X} from {:X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
@@ -71,14 +72,14 @@ impl Mmu {
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
-        println!("Writing word {:4X} to ${:X}", val, addr);
+        debug!("Writing word {:4X} to ${:X}", val, addr);
         let (lo, hi) = util::split_word(val);
         *(self.map_addr_mut(addr)) = hi;
         *(self.map_addr_mut(addr + 1)) = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
-        println!("Writing byte {:2X} to ${:X}", val, addr);
+        debug!("Writing byte {:2X} to ${:X}", val, addr);
         *(self.map_addr_mut(addr)) = val;
     }
 

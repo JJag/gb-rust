@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn SLA_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.d = 0x80;
         cpu.set_c(false);
 
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn SLA_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0xFF, hl);
@@ -103,7 +103,7 @@ mod tests {
     }
     #[test]
     fn SRA_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x8A;
         cpu.set_c(false);
 
@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn SRA_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x01, hl);
@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn SRL_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x01;
         cpu.set_c(false);
 
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn SRL_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
 
         let hl = cpu.hl();
         cpu.mmu.write_byte(0xFF, hl);

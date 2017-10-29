@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn XOR_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xFF;
         cpu.XOR(A);
 
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn XOR_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xFF;
         cpu.mmu.write_byte(0x0F, (cpu.pc + 1));
 
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn XOR_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0xFF;
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x8A, hl);

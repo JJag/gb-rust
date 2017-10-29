@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn SWAP_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.b = 0x2F;
         cpu.l = 0x00;
         cpu.SWAP_r(B);
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn SWAP_aHL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x40, hl);
         cpu.SWAP_aHL();

@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn AND_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         cpu.l = 0x3F;
         cpu.AND(L);
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn AND_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         cpu.mmu.write_byte(0x38, (cpu.pc + 1));
 
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn AND_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x00, hl);

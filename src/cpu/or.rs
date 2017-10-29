@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn OR_r() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         cpu.OR(A);
 
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn OR_n() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         cpu.mmu.write_byte(0x03, (cpu.pc + 1));
 
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn OR_HL() {
-        let mut cpu = ::cpu::Cpu::init();
+        let mut cpu = ::cpu::Cpu::new();
         cpu.a = 0x5A;
         let hl = cpu.hl();
         cpu.mmu.write_byte(0x0F, hl);
