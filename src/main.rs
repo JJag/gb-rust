@@ -334,7 +334,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
-    cpu.pc += 1;    
+    cpu.pc += 1;
     debug!("{}", cpu.pc);
     let opcode = cpu.mmu.read_byte(cpu.pc);
     debug!("GOT OPCODE CB{:X}", opcode);
