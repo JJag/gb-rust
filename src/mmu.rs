@@ -86,15 +86,15 @@ impl Mmu {
     fn map_addr(&self, addr: u16) -> &u8 {
         let a = addr as usize;
         match a {
-            0x0000 ... 0x3FFF => &self.rom1[a % ROM1_SIZE],
-            0x4000 ... 0x7FFF => &self.rom2[a % ROM2_SIZE],
-            0x8000 ... 0x9FFF => &self.vram[a % VRAM_SIZE],
-            0xA000 ... 0xBFFF => &self.ext_ram[a % EXT_RAM_SIZE],
-            0xC000 ... 0xDFFF => &self.work_ram[a % WORK_RAM_SIZE],
-            0xE000 ... 0xFDFF => &self.work_ram[a % WORK_RAM_SIZE],
-            0xFE00 ... 0xFE9F => &self.oam[a % OAM_SIZE],
-            0xFF00 ... 0xFF7F => &self.io[a % IO_SIZE],
-            0xFF80 ... 0xFFFF => &self.zero_ram[a % ZERO_RAM_SIZE],
+            0x0000 ... 0x3FFF => &self.rom1[a],
+            0x4000 ... 0x7FFF => &self.rom2[a - 0x4000],
+            0x8000 ... 0x9FFF => &self.vram[a - 0x8000],
+            0xA000 ... 0xBFFF => &self.ext_ram[a - 0xA000],
+            0xC000 ... 0xDFFF => &self.work_ram[a - 0xC000],
+            0xE000 ... 0xFDFF => &self.work_ram[a - 0xE000],
+            0xFE00 ... 0xFE9F => &self.oam[a - 0xFE00],
+            0xFF00 ... 0xFF7F => &self.io[a - 0xFF00],
+            0xFF80 ... 0xFFFF => &self.zero_ram[a - 0xFF80],
             _ => panic!("Unhandled address in memory map: {}", a),
         }
     }
@@ -102,15 +102,15 @@ impl Mmu {
     fn map_addr_mut(&mut self, addr: u16) -> &mut u8 {
         let a = addr as usize;
         match a {
-            0x0000 ... 0x3FFF => &mut self.rom1[a % ROM1_SIZE],
-            0x4000 ... 0x7FFF => &mut self.rom2[a % ROM2_SIZE],
-            0x8000 ... 0x9FFF => &mut self.vram[a % VRAM_SIZE],
-            0xA000 ... 0xBFFF => &mut self.ext_ram[a % EXT_RAM_SIZE],
-            0xC000 ... 0xDFFF => &mut self.work_ram[a % WORK_RAM_SIZE],
-            0xE000 ... 0xFDFF => &mut self.work_ram[a % WORK_RAM_SIZE],
-            0xFE00 ... 0xFE9F => &mut self.oam[a % OAM_SIZE],
-            0xFF00 ... 0xFF7F => &mut self.io[a % IO_SIZE],
-            0xFF80 ... 0xFFFF => &mut self.zero_ram[a % ZERO_RAM_SIZE],
+            0x0000 ... 0x3FFF => &mut self.rom1[a],
+            0x4000 ... 0x7FFF => &mut self.rom2[a - 0x4000],
+            0x8000 ... 0x9FFF => &mut self.vram[a - 0x8000],
+            0xA000 ... 0xBFFF => &mut self.ext_ram[a - 0xA000],
+            0xC000 ... 0xDFFF => &mut self.work_ram[a - 0xC000],
+            0xE000 ... 0xFDFF => &mut self.work_ram[a - 0xE000],
+            0xFE00 ... 0xFE9F => &mut self.oam[a - 0xFE00],
+            0xFF00 ... 0xFF7F => &mut self.io[a - 0xFF00],
+            0xFF80 ... 0xFFFF => &mut self.zero_ram[a - 0xFF80],
             _ => panic!("Unhandled address in memory map: {}", a),
         }
     }
