@@ -1,3 +1,5 @@
+extern crate rand;
+
 pub fn concat(x: u8, y: u8) -> u16 {
     let x16 = x as u16;
     let y16 = y as u16;
@@ -25,6 +27,27 @@ pub fn full_borrow_sbc(a: u8, b: u8,c: u8) -> bool { (a as u16) < (b as u16 + c 
 pub fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
 pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
 
+pub fn check_bit(val: u8, bit: u8) -> bool {
+    val & (1 << bit) != 0
+}
+
+fn random_framebuffer() {
+    use super::gpu::Color;
+    use super::rand::Rng;
+
+    let mut framebuffer = [Color::DARK; 160 * 144];
+    for i in 0..(160 * 144) {
+        let mut rng = rand::thread_rng();
+        let c = match rng.next_u32() % 4 {
+            0 => Color::LIGHTEST,
+            1 => Color::LIGHT,
+            2 => Color::DARK,
+            3 => Color::DARKEST,
+            _ => panic!("foo"),
+        };
+        framebuffer[i] = c;
+    }
+}
 
 mod test {
     use super::*;
@@ -46,4 +69,11 @@ mod test {
         assert_eq!(swap_nibbles(0x9A), 0xA9);
     }
 
+    #[test]
+    fn check_bit_test() {
+        assert_eq!(check_bit(0b1111_0000, 0), false);
+        assert_eq!(check_bit(0b1111_0000, 3), false);
+        assert_eq!(check_bit(0b1111_0000, 4), true);
+        assert_eq!(check_bit(0b1111_0000, 7), true);
+    }
 }

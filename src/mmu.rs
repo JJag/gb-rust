@@ -1,4 +1,3 @@
-use log;
 use util;
 
 const ROM1_SIZE: usize = 16 * 1024;
@@ -13,7 +12,7 @@ const ZERO_RAM_SIZE: usize = 128;
 pub struct Mmu {
     rom1: [u8; ROM1_SIZE],
     rom2: [u8; ROM2_SIZE],
-    vram: [u8; VRAM_SIZE],
+    pub vram: [u8; VRAM_SIZE],
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
     oam: [u8; OAM_SIZE],
@@ -22,7 +21,7 @@ pub struct Mmu {
     pub bios_enabled: bool,
 }
 
-const BIOS: [u8; 16 * 16] = [
+const BIOS: [u8; 256] = [
     0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
     0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
     0x47, 0x11, 0x04, 0x01, 0x21, 0x10, 0x80, 0x1A, 0xCD, 0x95, 0x00, 0xCD, 0x96, 0x00, 0x13, 0x7B,
@@ -43,7 +42,7 @@ const BIOS: [u8; 16 * 16] = [
 
 impl Mmu {
     pub fn new() -> Mmu {
-        Mmu {
+        let mut mmu = Mmu {
             rom1: [0; 16 * 1024],
             rom2: [0; 16 * 1024],
             vram: [0; 8 * 1024],
@@ -53,33 +52,46 @@ impl Mmu {
             io: [0; 128],
             zero_ram: [0; 128],
             bios_enabled: false,
+        };
+
+        let nintendo_logo_hack =
+            [0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+                0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
+                0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E];
+
+        for i in 0..48 {
+            mmu.rom1[0x104 + i] = nintendo_logo_hack[i];
         }
+
+        mmu
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
         let h = self.read_byte(addr);
         let l = self.read_byte(addr + 1);
         let val = util::concat(l, h);
-        debug!("Reading {:04X} from {:X}", val, addr);
+        println!("Reading {:04X} from {:04X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
-        if self.bios_enabled && addr <= 100 {
+        let val = if self.bios_enabled && addr <= 0x100 {
             BIOS[addr as usize]
         } else {
             *self.map_addr(addr)
-        }
+        };
+        println!("Reading {:02X} from {:04X}", val, addr);
+        val
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
-        debug!("Writing word {:4X} to ${:X}", val, addr);
+        println!("Writing word {:4X} to ${:04X}", val, addr);
         let (lo, hi) = util::split_word(val);
         *(self.map_addr_mut(addr)) = hi;
         *(self.map_addr_mut(addr + 1)) = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
-        debug!("Writing byte {:2X} to ${:X}", val, addr);
+        println!("Writing byte {:2X} to ${:04X}", val, addr);
         *(self.map_addr_mut(addr)) = val;
     }
 

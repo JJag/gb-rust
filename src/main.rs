@@ -5,54 +5,100 @@
 extern crate log;
 extern crate env_logger;
 
+extern crate piston;
+extern crate graphics;
+extern crate glutin_window;
+extern crate opengl_graphics;
+
+extern crate rand;
+
 mod cpu;
 mod mmu;
 mod util;
+mod gfx;
+mod gpu;
 
 use cpu::*;
 use std::io::Read;
 
+use piston::window::WindowSettings;
+use piston::event_loop::*;
+use piston::input::*;
+use glutin_window::GlutinWindow as Window;
+use opengl_graphics::{GlGraphics, OpenGL};
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn main() {
     env_logger::init().unwrap();
-    let mut cpu = cpu::Cpu::new();
-    cpu.mmu.bios_enabled = true;
-    run(&mut cpu)
-}
+    let opengl = OpenGL::V3_2;
 
-fn run(cpu: &mut Cpu) {
+    let mut window: Window = WindowSettings::new(
+        "GB",
+        [160, 144],
+    )
+        .opengl(opengl)
+        .exit_on_esc(true)
+        .build()
+        .unwrap();
+
+    let mut app = gfx::Gfx {
+        gl: GlGraphics::new(opengl)
+    };
+    let mut events = Events::new(EventSettings::new());
+
+    let mut cpu = cpu::Cpu::new();
+    let mut gpu = gpu::Gpu::new();
+    cpu.mmu.bios_enabled = true;
+
+
+
     loop {
-        debug!("PC decimal: {}", cpu.pc);
+        if cpu.pc % 20 == 0 {
+            if let Some(e) = events.next(&mut window) {
+                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
+                if let Some(u) = e.update_args() { app.update(&u); }
+            }
+        }
+
         let opcode = cpu.mmu.read_byte(cpu.pc);
-        execute(cpu, opcode);
+//        eprintln!("cpu.pc = {:02X}", cpu.pc);
+        execute(&mut cpu, opcode);
         cpu.pc += 1;
+
+        if gpu.step(&mut cpu.mmu) {
+            if let Some(e) = events.next(&mut window) {
+                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
+                if let Some(u) = e.update_args() { app.update(&u); }
+            }
+        }
 
         if cpu.pc > 0x100 {
             cpu.mmu.bios_enabled = false;
             std::process::exit(1);
         }
+//println!("*************");
+//        println!("af: {:02X}{:02X} ", cpu.a, cpu.f);
+//        println!("bc: {:02X}{:02X}", cpu.b, cpu.c);
+//        println!("de: {:02X}{:02X}", cpu.d, cpu.e);
+//        println!("hl: {:02X}{:02X}", cpu.h, cpu.l);
+//        println!("sp: {:04X}", cpu.sp);
+//        println!("pc: {:04X}", cpu.pc);
+//println!("*************");
 
-        debug!("af: {:02X}{:02X}", cpu.a, cpu.f);
-        debug!("bc: {:02X}{:02X}", cpu.b, cpu.c);
-        debug!("de: {:02X}{:02X}", cpu.d, cpu.e);
-        debug!("hl: {:02X}{:02X}", cpu.h, cpu.l);
-        debug!("sp: {:04X}", cpu.sp);
-        debug!("pc: {:04X}", cpu.pc);
 
 
-        if cpu.pc > 0x40 {
-            std::io::stdin()
-                .bytes()
-                .next();
-        }
-
+//
+//        if cpu.pc > 0x40 {
+//            std::io::stdin()
+//                .bytes()
+//                .next();
+//        }
     }
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
-    debug!("GOT OPCODE {:X}", opcode);
+//    debug!("GOT OPCODE {:X}", opcode);
 
     use cpu::Reg8::*;
 
@@ -335,9 +381,8 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
     cpu.pc += 1;
-    debug!("{}", cpu.pc);
     let opcode = cpu.mmu.read_byte(cpu.pc);
-    debug!("GOT OPCODE CB{:X}", opcode);
+//    debug!("GOT OPCODE CB{:X}", opcode);
     let reg_code = reg_code(opcode);
 
     match opcode & OPERATION_MASK {
@@ -415,5 +460,5 @@ pub fn reg_code(opcode: u8) -> RegOrHl {
 
 pub enum RegOrHl {
     REG(Reg8),
-    HL
+    HL,
 }
