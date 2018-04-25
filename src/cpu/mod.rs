@@ -44,6 +44,8 @@ pub struct Cpu {
     pub sp: u16,
     pub pc: u16,
 
+    pub clock: u64,
+
     pub halted: bool,
     pub stopped: bool,
 
@@ -63,6 +65,7 @@ impl Cpu {
             d: 0, e: 0,
             h: 0, l: 0,
             sp: 0, pc: 0,
+            clock: 0,
             halted: false,
             stopped: false,
             interrupts_enabled: false,

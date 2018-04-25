@@ -15,11 +15,6 @@ piston2d-opengl_graphics = "0.50.0"
 
 rand = "0.3"
 
-
-[[bin]]
-name = "gfx"
-path = "src/gfx.rs"
-
 [[bin]]
 name = "gb"
 path = "src/main.rs"

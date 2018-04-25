@@ -20,6 +20,7 @@ mod gpu;
 
 use cpu::*;
 use std::io::Read;
+use std::io::BufRead;
 
 use piston::window::WindowSettings;
 use piston::event_loop::*;
@@ -31,12 +32,25 @@ const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn main() {
     env_logger::init().unwrap();
-    let opengl = OpenGL::V3_2;
+    let opengl = OpenGL::V4_1;
 
-    let mut window: Window = WindowSettings::new(
-        "GB",
-        [160, 144],
-    )
+
+//    let mut mainWindow: Window = WindowSettings::new(
+//        "GB",
+//        [160, 144],
+//    )
+//        .opengl(opengl)
+//        .exit_on_esc(true)
+//        .build()
+//        .unwrap();
+
+//    let mut tileWindow: Window = WindowSettings::new("Tiles", [16 * 9, 16 * 9])
+//        .opengl(opengl)
+//        .exit_on_esc(true)
+//        .build()
+//        .unwrap();
+
+    let mut tilemapWindow: Window = WindowSettings::new("BG Map #1", [32 * 8, 32 * 8])
         .opengl(opengl)
         .exit_on_esc(true)
         .build()
@@ -51,55 +65,93 @@ fn main() {
     let mut gpu = gpu::Gpu::new();
     cpu.mmu.bios_enabled = true;
 
-
+    let mut debug_mode_on = false;
 
     loop {
-        if cpu.pc % 20 == 0 {
-            if let Some(e) = events.next(&mut window) {
-                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
+//8036
+
+        cpu.clock += 1;
+
+        let breakpoints: Vec<u16> = vec![
+//            0x0C,
+//            0x39,
+//            0x40,
+//            0x27,
+//            0x6A,
+//            0x95,
+//            0x95,
+//            0x96,
+//            0xA3,
+//            0x60,
+//            0xFC,
+        ];
+
+        let sc_x: u8 = cpu.mmu.read_byte(0xFF43);
+        let sc_y: u8 = cpu.mmu.read_byte(0xFF42);
+
+        if cpu.clock % 60 == 0 {
+//            if let Some(e) = events.next(&mut tileWindow) {
+//                if let Some(r) = e.render_args() { app.render_tileset(&r, &cpu.mmu.vram); }
+//                if let Some(u) = e.update_args() { app.update(&u); }
+//            }
+            if let Some(e) = events.next(&mut tilemapWindow) {
+                if let Some(r) = e.render_args() { app.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
                 if let Some(u) = e.update_args() { app.update(&u); }
             }
+
         }
 
         let opcode = cpu.mmu.read_byte(cpu.pc);
-//        eprintln!("cpu.pc = {:02X}", cpu.pc);
+
+
+        if breakpoints.contains(&cpu.pc) {
+            debug_mode_on = true;
+        }
+
+        if debug_mode_on {
+            eprintln!();
+            eprintln!("af: {:02X}{:02X} ", cpu.a, cpu.f);
+            eprintln!("Z = {}", cpu.get_z());
+            eprintln!("bc: {:02X}{:02X}", cpu.b, cpu.c);
+            eprintln!("de: {:02X}{:02X}", cpu.d, cpu.e);
+            eprintln!("hl: {:02X}{:02X}", cpu.h, cpu.l);
+            eprintln!("sp: {:04X}", cpu.sp);
+            eprintln!("pc: {:04X}", cpu.pc);
+            eprintln!("FF42(SC_Y): {:02X}", cpu.mmu.read_byte(0xFF42));
+            eprintln!("FF44: {:02X}", cpu.mmu.read_byte(0xFF44));
+
+            eprintln!("NEXT OPCODE: {:X}", opcode);
+
+
+            let mut line = String::new();
+            std::io::stdin().read_line(&mut line);
+
+            match line.trim() {
+                "q" => debug_mode_on = false,
+                _ => (),
+            }
+        }
         execute(&mut cpu, opcode);
         cpu.pc += 1;
 
         if gpu.step(&mut cpu.mmu) {
-            if let Some(e) = events.next(&mut window) {
-                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
-                if let Some(u) = e.update_args() { app.update(&u); }
-            }
+//            if let Some(e) = events.next(&mut window) {
+//                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
+//                if let Some(u) = e.update_args() { app.update(&u); }
+//            }
         }
 
         if cpu.pc > 0x100 {
             cpu.mmu.bios_enabled = false;
             std::process::exit(1);
         }
+
+
 //println!("*************");
-//        println!("af: {:02X}{:02X} ", cpu.a, cpu.f);
-//        println!("bc: {:02X}{:02X}", cpu.b, cpu.c);
-//        println!("de: {:02X}{:02X}", cpu.d, cpu.e);
-//        println!("hl: {:02X}{:02X}", cpu.h, cpu.l);
-//        println!("sp: {:04X}", cpu.sp);
-//        println!("pc: {:04X}", cpu.pc);
-//println!("*************");
-
-
-
-//
-//        if cpu.pc > 0x40 {
-//            std::io::stdin()
-//                .bytes()
-//                .next();
-//        }
     }
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
-//    debug!("GOT OPCODE {:X}", opcode);
-
     use cpu::Reg8::*;
 
     match opcode {

@@ -70,7 +70,7 @@ impl Mmu {
         let h = self.read_byte(addr);
         let l = self.read_byte(addr + 1);
         let val = util::concat(l, h);
-        println!("Reading {:04X} from {:04X}", val, addr);
+//        println!("Reading {:04X} from {:04X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
@@ -79,19 +79,19 @@ impl Mmu {
         } else {
             *self.map_addr(addr)
         };
-        println!("Reading {:02X} from {:04X}", val, addr);
+//        println!("Reading {:02X} from {:04X}", val, addr);
         val
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
-        println!("Writing word {:4X} to ${:04X}", val, addr);
+//        eprintln!("Writing word {:4X} to ${:04X}", val, addr);
         let (lo, hi) = util::split_word(val);
         *(self.map_addr_mut(addr)) = hi;
         *(self.map_addr_mut(addr + 1)) = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
-        println!("Writing byte {:2X} to ${:04X}", val, addr);
+//        eprintln!("Writing byte {:2X} to ${:04X}", val, addr);
         *(self.map_addr_mut(addr)) = val;
     }
 

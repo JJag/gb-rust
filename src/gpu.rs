@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 struct Tile {
     pixels: [u8; 2 * 8 * 8] // each line is 2 bytes
 }
@@ -35,12 +37,12 @@ impl Gpu {
     }
 
     fn renderscan(&mut self, mmu: &mut super::mmu::Mmu) {
+        let now = Instant::now();
+
         let sc_x: u8 = mmu.read_byte(0xFF43);
         let sc_y: u8 = mmu.read_byte(0xFF42);
-
+//        eprintln!("sc_x = {:?}\t sc_y = {:?}", sc_x, sc_y);
         let current_scanline = mmu.read_byte(0xFF44);
-        mmu.write_byte((current_scanline + 1) % 144, 0xFF44);
-
         let vram = &mmu.vram;
 
         const VRAM_OFFSET: usize = 0x8000; // TODO clean this up.
@@ -60,7 +62,6 @@ impl Gpu {
         let window_on = check_bit(lcdc, 5);
         let window_tile_map = check_bit(lcdc, 6); // 1 if true, 0 otherwise
         let display_enabled = check_bit(lcdc, 7);
-
         let bg_tile_map = if bg_tile_map { tile_map1 } else { tile_map0 };
         let bg_tile_set = if bg_tile_set { tile_set1 } else { tile_set0 };
         let window_tile_map = if window_tile_map { tile_map1 } else { tile_map0 };
@@ -72,28 +73,28 @@ impl Gpu {
         let bg_x0 = sc_x;
 
 
-        // TEST
-
-        let mut bg_tile_map: [u16; 256] = [0; 256];
-        for i in 0..bg_tile_map.len() {
-            bg_tile_map[i] = i as u16;
-        }
-        eprintln!("bg_tile_set = {:?}", bg_tile_set);
-//        eprintln!("bg_tile_map = {:?}", &bg_tile_map[..]);
+//        eprintln!("bg_tile_set = {:?}", &bg_tile_set[..32]);
+//        eprintln!("bg_tile_map = {:?}", &bg_tile_map[128..]);
 
         let tile_row = bg_y / 32;
         let row_in_tile = bg_y % 8;
 
 
 
+//        if y == 0 {
+//            println!("y = ({})", current_scanline);
+//        }
 
+//        println!("y = ({})", current_scanline);
         for d_x in 0..160 {
             let bg_x = bg_x0.wrapping_add(d_x);
             let tile_col = bg_x / 32;
             let col_in_tile = bg_x % 8;
             let tile_idx = bg_tile_map[(32 * tile_row + tile_col) as usize];
             const TILE_SIZE: u16 = 16;
-            let tile = &bg_tile_set[(TILE_SIZE * tile_idx) as usize..(TILE_SIZE * (tile_idx + 1)) as usize];   // TODO im not sure if this indexing is correct for both tilesets
+            let tile = &bg_tile_set[(TILE_SIZE * tile_idx as u16) as usize..(TILE_SIZE * (tile_idx + 1) as u16) as usize];   // TODO im not sure if this indexing is correct for both tilesets
+//            eprintln!("tile_idx = {:?}", tile_idx);
+//            eprintln!("tile = {:?}", tile);
             // tile is 8 * 8 * 2 bits
 
 //            println!("{} {}", bg_x, bg_y);
@@ -109,28 +110,25 @@ impl Gpu {
             let hi_bit = tile_row_hi >> (7 - col_in_tile) & 1;
             let lo_bit = tile_row_lo >> (7 - col_in_tile) & 1;
             let color_idx = hi_bit << 1 | lo_bit;
-            println!("{}", color_idx);
 
             let x = d_x;
             let y = current_scanline;
-
             let fb_idx = y as usize * 160 + x as usize;
-            self.framebuffer[fb_idx] = palette[color_idx as usize];
+            if current_scanline < 140 {
+                self.framebuffer[fb_idx] = palette[color_idx as usize];
+            }
         }
 
 
-//        use super::rand::Rng;
-//        extern crate rand;
-//        let mut rng = rand::thread_rng();
-//        let c = rng.next_u32() % (160 * 144);
-//        self.framebuffer[c as usize] = Color::DARK;
+//        println!("{}", now.elapsed().as_millis());
     }
 
     // if true is returned canvas should be redrawn
     // TODO design it better
     pub fn step(&mut self, mmu: &mut super::mmu::Mmu) -> bool {
+        let current_scanline = mmu.read_byte(0xFF44);
         self.mode_time += 1; // TODO delta time?
-
+        self.mode_time += 3; // TODO delta time?
         match self.mode {
             GpuMode::OamAccess => {
                 if self.mode_time >= 80 {
@@ -148,9 +146,9 @@ impl Gpu {
             GpuMode::HBlank => {
                 if self.mode_time >= 204 {
                     self.mode_time = 0;
-                    self.line += 1;
+                    mmu.write_byte((current_scanline + 1), 0xFF44);
 
-                    if self.line == 143 { // last line was rendered
+                    if current_scanline == 143 { // last line was rendered
                         self.mode = GpuMode::VBlank;
                     } else {
                         self.mode = GpuMode::OamAccess;
@@ -161,11 +159,11 @@ impl Gpu {
             GpuMode::VBlank => {
                 if self.mode_time >= 456 {
                     self.mode_time = 0;
-                    self.line += 1;
+                    mmu.write_byte((current_scanline + 1), 0xFF44);
 
-                    if self.line > 153 {
+                    if current_scanline > 153 {
                         self.mode = GpuMode::OamAccess;
-                        self.line = 0;
+                        mmu.write_byte(0, 0xFF44);
                     }
                 }
             }
