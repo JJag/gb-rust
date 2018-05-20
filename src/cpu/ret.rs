@@ -4,7 +4,7 @@ impl Cpu {
     fn ret_nn(&mut self, pred: bool) {
         if pred {
             let addr = self.mmu.read_word(self.sp);
-            self.sp += 2;
+            self.sp = self.sp.wrapping_add(2);
             self.pc = addr;
         }
     }

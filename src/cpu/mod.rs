@@ -57,9 +57,9 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn new() -> Cpu {
+    pub fn new(mmu: mmu::Mmu) -> Cpu {
         Cpu {
-            mmu: mmu::Mmu::new(),
+            mmu: mmu,
             a: 0, f: 0,
             b: 0, c: 0,
             d: 0, e: 0,

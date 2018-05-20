@@ -1,16 +1,26 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
+extern crate env_logger;
+extern crate glutin_window;
+extern crate graphics;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
-
-extern crate piston;
-extern crate graphics;
-extern crate glutin_window;
 extern crate opengl_graphics;
-
+extern crate piston;
 extern crate rand;
+
+use cpu::*;
+use glutin_window::GlutinWindow as Window;
+use opengl_graphics::{GlGraphics, OpenGL};
+use piston::event_loop::*;
+use piston::input::*;
+use piston::window::WindowSettings;
+use std::io::BufRead;
+use std::io::Read;
+use std::fs::File;
+use std::time::Instant;
+use std::collections::HashMap;
 
 mod cpu;
 mod mmu;
@@ -18,23 +28,30 @@ mod util;
 mod gfx;
 mod gpu;
 
-use cpu::*;
-use std::io::Read;
-use std::io::BufRead;
-
-use piston::window::WindowSettings;
-use piston::event_loop::*;
-use piston::input::*;
-use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
 
 const OPERATION_MASK: u8 = 0b1111_1000;
+
+fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
+    let mut f: File = File::open(filename)?;
+    let size = f.metadata()?.len();
+    let mut contents = Vec::with_capacity(size as usize);
+    f.read_to_end(&mut contents)?;
+    Result::Ok(contents)
+}
 
 fn main() {
     env_logger::init().unwrap();
     let opengl = OpenGL::V4_1;
 
+    let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
+    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
 
+
+    let mut mmu = mmu::Mmu::new(bootrom, rom);
+    let mut cpu = cpu::Cpu::new(mmu);
+    let mut gpu = gpu::Gpu::new();
+
+    let rom_name = cpu.mmu.get_rom_name();
 //    let mut mainWindow: Window = WindowSettings::new(
 //        "GB",
 //        [160, 144],
@@ -44,35 +61,31 @@ fn main() {
 //        .build()
 //        .unwrap();
 
-//    let mut tileWindow: Window = WindowSettings::new("Tiles", [16 * 9, 16 * 9])
-//        .opengl(opengl)
-//        .exit_on_esc(true)
-//        .build()
-//        .unwrap();
-
-    let mut tilemapWindow: Window = WindowSettings::new("BG Map #1", [32 * 8, 32 * 8])
+    let mut tilemap_window: Window = WindowSettings::new(rom_name, [32 * 8, 32 * 8])
         .opengl(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
-
-    let mut app = gfx::Gfx {
+    let mut app_tilemap = gfx::Gfx {
         gl: GlGraphics::new(opengl)
     };
-    let mut events = Events::new(EventSettings::new());
+    let mut events1 = Events::new(EventSettings::new());
 
-    let mut cpu = cpu::Cpu::new();
-    let mut gpu = gpu::Gpu::new();
-    cpu.mmu.bios_enabled = true;
+//    let mut tileset_window: Window = WindowSettings::new("Tiles", [16 * 9, 16 * 9])
+//        .opengl(opengl)
+//        .exit_on_esc(true)
+//        .build()
+//        .unwrap();
+//    let mut app_tileset = gfx::Gfx {
+//        gl: GlGraphics::new(opengl)
+//    };
+//    let mut events2 = Events::new(EventSettings::new());
+
 
     let mut debug_mode_on = false;
 
-    loop {
-//8036
 
-        cpu.clock += 1;
-
-        let breakpoints: Vec<u16> = vec![
+    let breakpoints: Vec<u16> = vec![
 //            0x0C,
 //            0x39,
 //            0x40,
@@ -84,21 +97,31 @@ fn main() {
 //            0xA3,
 //            0x60,
 //            0xFC,
-        ];
+//        0x100
+    ];
+
+    loop {
+//8036
+        let now: Instant = Instant::now();
+
+        cpu.clock += 1;
 
         let sc_x: u8 = cpu.mmu.read_byte(0xFF43);
         let sc_y: u8 = cpu.mmu.read_byte(0xFF42);
 
-        if cpu.clock % 60 == 0 {
+        if cpu.clock % 17_500 == 0 {
 //            if let Some(e) = events.next(&mut tileWindow) {
 //                if let Some(r) = e.render_args() { app.render_tileset(&r, &cpu.mmu.vram); }
 //                if let Some(u) = e.update_args() { app.update(&u); }
 //            }
-            if let Some(e) = events.next(&mut tilemapWindow) {
-                if let Some(r) = e.render_args() { app.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
-                if let Some(u) = e.update_args() { app.update(&u); }
+            if let Some(e) = events1.next(&mut tilemap_window) {
+                if let Some(r) = e.render_args() { app_tilemap.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
+                if let Some(u) = e.update_args() { app_tilemap.update(&u); }
             }
-
+//            if let Some(e) = events2.next(&mut tileset_window) {
+//                if let Some(r) = e.render_args() { app_tileset.render_tileset(&r, &cpu.mmu.vram); }
+//                if let Some(u) = e.update_args() { app_tileset.update(&u); }
+//            }
         }
 
         let opcode = cpu.mmu.read_byte(cpu.pc);
@@ -109,20 +132,8 @@ fn main() {
         }
 
         if debug_mode_on {
-            eprintln!();
-            eprintln!("af: {:02X}{:02X} ", cpu.a, cpu.f);
-            eprintln!("Z = {}", cpu.get_z());
-            eprintln!("bc: {:02X}{:02X}", cpu.b, cpu.c);
-            eprintln!("de: {:02X}{:02X}", cpu.d, cpu.e);
-            eprintln!("hl: {:02X}{:02X}", cpu.h, cpu.l);
-            eprintln!("sp: {:04X}", cpu.sp);
-            eprintln!("pc: {:04X}", cpu.pc);
-            eprintln!("FF42(SC_Y): {:02X}", cpu.mmu.read_byte(0xFF42));
-            eprintln!("FF44: {:02X}", cpu.mmu.read_byte(0xFF44));
 
-            eprintln!("NEXT OPCODE: {:X}", opcode);
-
-
+            print_registers(&cpu);
             let mut line = String::new();
             std::io::stdin().read_line(&mut line);
 
@@ -132,23 +143,34 @@ fn main() {
             }
         }
         execute(&mut cpu, opcode);
-        cpu.pc += 1;
+        cpu.pc = cpu.pc.wrapping_add(1);
 
         if gpu.step(&mut cpu.mmu) {
-//            if let Some(e) = events.next(&mut window) {
-//                if let Some(r) = e.render_args() { app.render(&r, gpu.framebuffer); }
+//            if let Some(e) = events.next(&mut mainWindow) {
+//                if let Some(r) = e.render_args() { app.render(&r, &gpu.framebuffer); }
 //                if let Some(u) = e.update_args() { app.update(&u); }
 //            }
         }
 
-        if cpu.pc > 0x100 {
-            cpu.mmu.bios_enabled = false;
-            std::process::exit(1);
-        }
 
+//        println!("Elapsed {}", now.elapsed().subsec_nanos());
 
 //println!("*************");
     }
+}
+
+fn print_registers(cpu: &Cpu) {
+    eprintln!();
+    eprintln!("af: {:02X}{:02X} ", cpu.a, cpu.f);
+    eprintln!("Z = {}", cpu.get_z());
+    eprintln!("bc: {:02X}{:02X}", cpu.b, cpu.c);
+    eprintln!("de: {:02X}{:02X}", cpu.d, cpu.e);
+    eprintln!("hl: {:02X}{:02X}", cpu.h, cpu.l);
+    eprintln!("sp: {:04X}", cpu.sp);
+    eprintln!("pc: {:04X}", cpu.pc);
+    eprintln!("FF42(SC_Y): {:02X}", cpu.mmu.read_byte(0xFF42));
+    eprintln!("FF44: {:02X}", cpu.mmu.read_byte(0xFF44));
+
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
@@ -379,7 +401,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xD0 => cpu.RET_NC(),
         0xD1 => cpu.pop_de(),
         0xD2 => cpu.JP_NC(),
-        0xD3 => panic!("INVALID OPCODE {}", opcode),
+        0xD3 => handle_invalid_opcode(opcode),
         0xD4 => cpu.CALL_NC(),
         0xD5 => cpu.push_de(),
         0xD6 => cpu.SUB_n(),
@@ -387,26 +409,26 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xD8 => cpu.RET_C(),
         0xD9 => cpu.RETI(),
         0xDA => cpu.JP_C(),
-        0xDB => panic!("INVALID OPCODE {}", opcode),
+        0xDB => handle_invalid_opcode(opcode),
         0xDC => cpu.CALL_C(),
-        0xDD => panic!("INVALID OPCODE {}", opcode),
+        0xDD => handle_invalid_opcode(opcode),
         0xDE => cpu.SBC_n(),
         0xDF => cpu.RST_18H(),
 
         0xE0 => cpu.ldh_n_a(),
         0xE1 => cpu.pop_hl(),
         0xE2 => cpu.ld__c__a(),
-        0xE3 => panic!("INVALID OPCODE {}", opcode),
-        0xE4 => panic!("INVALID OPCODE {}", opcode),
+        0xE3 => handle_invalid_opcode(opcode),
+        0xE4 => handle_invalid_opcode(opcode),
         0xE5 => cpu.push_hl(),
         0xE6 => cpu.AND_n(),
         0xE7 => cpu.RST_20H(),
         0xE8 => cpu.ADD_SP_n(),
         0xE9 => cpu.JP_aHL(),
         0xEA => cpu.ld_nn_a(),
-        0xEB => panic!("INVALID OPCODE {}", opcode),
-        0xEC => panic!("INVALID OPCODE {}", opcode),
-        0xED => panic!("INVALID OPCODE {}", opcode),
+        0xEB => handle_invalid_opcode(opcode),
+        0xEC => handle_invalid_opcode(opcode),
+        0xED => handle_invalid_opcode(opcode),
         0xEE => cpu.XOR_n(),
         0xEF => cpu.RST_28H(),
 
@@ -414,7 +436,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xF1 => cpu.pop_af(),
         0xF2 => cpu.ld_a__c_(),
         0xF3 => cpu.di(),
-        0xF4 => panic!("INVALID OPCODE {}", opcode),
+        0xF4 => handle_invalid_opcode(opcode),
         0xF5 => cpu.push_af(),
         0xF6 => cpu.OR_n(),
         0xF7 => cpu.RST_30H(),
@@ -422,12 +444,16 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xF9 => cpu.ld_sp_hl(),
         0xFA => cpu.ld_a_nn(),
         0xFB => cpu.ei(),
-        0xFC => panic!("INVALID OPCODE {}", opcode),
-        0xFD => panic!("INVALID OPCODE {}", opcode),
+        0xFC => handle_invalid_opcode(opcode),
+        0xFD => handle_invalid_opcode(opcode),
         0xFE => cpu.CP_n(),
         0xFF => cpu.RST_38H(),
-        _ => panic!("INVALID OPCODE {}", opcode),
+        _ => handle_invalid_opcode(opcode),
     }
+}
+
+fn handle_invalid_opcode(opcode: u8) {
+    panic!("INVALID OPCODE {}", opcode)
 }
 
 

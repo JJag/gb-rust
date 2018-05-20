@@ -5,7 +5,7 @@ use piston::window::WindowSettings;
 use piston::event_loop::*;
 use piston::input::*;
 use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
+use opengl_graphics::{GlGraphics};
 use std::time::{Duration, Instant};
 
 
@@ -26,7 +26,7 @@ fn from_hex(rgba: u32) -> [f32; 4] {
 }
 
 impl Gfx {
-    pub fn render(&mut self, args: &RenderArgs, framebuffer: [Color; 160 * 144]) {
+    pub fn render_framebuffer(&mut self, args: &RenderArgs, framebuffer: &[Color]) {
         use graphics::*;
 
         use std::collections::HashMap;
@@ -42,7 +42,6 @@ impl Gfx {
                     rectangle(rgba, square, transform, gl);
                 }
             }
-//            println!("{}", now.elapsed().subsec_nanos());
         });
     }
 
@@ -68,7 +67,6 @@ impl Gfx {
 
                         let tile_y = tidx / 16;
                         let tile_x = tidx % 16;
-
                         let global_x = tile_x * 9 + x;
                         let global_y = tile_y * 9 + y;
 
@@ -83,7 +81,6 @@ impl Gfx {
 
     pub fn render_tilemap(&mut self, args: &RenderArgs, vram: &[u8], sc_x: u8, sc_y: u8) {
         use graphics::*;
-
         use std::collections::HashMap;
         self.gl.draw(args.viewport(), |c, gl| {
             let now = Instant::now();
@@ -120,11 +117,13 @@ impl Gfx {
                 }
             }
             let square = rectangle::rectangle_by_corners(1.0, 1.0, 1.0+ 160.0, 1.0 + 144.0);
-            let red = [1.0, 0.0, 0.0, 1.0];
+            let red = [1.0, 0.0, 0.0, 0.3];
             let transform = c.transform.trans(sc_x as f64, sc_y as f64);
             rectangle(red, square, transform, gl);
         });
     }
+
+
 
 
     pub fn update(&mut self, args: &UpdateArgs) {}

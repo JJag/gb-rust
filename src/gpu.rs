@@ -80,7 +80,6 @@ impl Gpu {
         let row_in_tile = bg_y % 8;
 
 
-
 //        if y == 0 {
 //            println!("y = ({})", current_scanline);
 //        }
@@ -146,7 +145,7 @@ impl Gpu {
             GpuMode::HBlank => {
                 if self.mode_time >= 204 {
                     self.mode_time = 0;
-                    mmu.write_byte((current_scanline + 1), 0xFF44);
+                    mmu.write_byte(current_scanline + 1, 0xFF44);
 
                     if current_scanline == 143 { // last line was rendered
                         self.mode = GpuMode::VBlank;
@@ -159,7 +158,7 @@ impl Gpu {
             GpuMode::VBlank => {
                 if self.mode_time >= 456 {
                     self.mode_time = 0;
-                    mmu.write_byte((current_scanline + 1), 0xFF44);
+                    mmu.write_byte(current_scanline + 1, 0xFF44);
 
                     if current_scanline > 153 {
                         self.mode = GpuMode::OamAccess;
