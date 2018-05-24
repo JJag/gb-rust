@@ -1,7 +1,5 @@
 use util;
 
-const ROM1_SIZE: usize = 16 * 1024;
-const ROM2_SIZE: usize = 16 * 1024;
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;
 const WORK_RAM_SIZE: usize = 8 * 1024;
@@ -12,9 +10,6 @@ const ZERO_RAM_SIZE: usize = 128;
 pub struct Mmu {
     bootrom: Vec<u8>,
     rom: Vec<u8>,
-    unhandled: [u8; ROM1_SIZE],
-    rom1: [u8; ROM1_SIZE],
-    rom2: [u8; ROM2_SIZE],
     pub vram: [u8; VRAM_SIZE],
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
@@ -29,9 +24,6 @@ impl Mmu {
         let mut mmu = Mmu {
             bootrom: bootrom,
             rom: rom,
-            unhandled: [0; 16 * 1024],
-            rom1: [0; 16 * 1024],
-            rom2: [0; 16 * 1024],
             vram: [0; 8 * 1024],
             ext_ram: [0; 8 * 1024],
             work_ram: [0; 8 * 1024],
@@ -58,7 +50,7 @@ impl Mmu {
         val
     }
 
-    pub fn get_rom_name(&self)-> String {
+    pub fn get_rom_name(&self) -> String {
         let ascii = &self.rom[0x134..0x144];
         String::from_utf8(ascii.to_vec()).unwrap()
     }
@@ -91,8 +83,7 @@ impl Mmu {
             0xFE00...0xFE9F => &self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &self.io[a - 0xFF00],
             0xFF80...0xFFFF => &self.zero_ram[a - 0xFF80],
-            _ => &self.unhandled[0],
-//                panic!("Unhandled address in memory map: {}", a),
+            _ => panic!("Unhandled address in memory map: {}", a),
         }
     }
 
@@ -109,8 +100,7 @@ impl Mmu {
             0xFE00...0xFE9F => &mut self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &mut self.io[a - 0xFF00],
             0xFF80...0xFFFF => &mut self.zero_ram[a - 0xFF80],
-            _ => &mut self.unhandled[0],
-//                panic!("Unhandled address in memory map: {}", a),
+            _ => panic!("Unhandled address in memory map: {}", a),
         }
     }
 }
