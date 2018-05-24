@@ -21,17 +21,16 @@ pub struct Mmu {
 
 impl Mmu {
     pub fn new(bootrom: Vec<u8>, rom: Vec<u8>) -> Mmu {
-        let mut mmu = Mmu {
-            bootrom: bootrom,
-            rom: rom,
+        Mmu {
+            bootrom,
+            rom,
             vram: [0; 8 * 1024],
             ext_ram: [0; 8 * 1024],
             work_ram: [0; 8 * 1024],
             oam: [0; 160],
             io: [0; 128],
             zero_ram: [0; 128],
-        };
-        mmu
+        }
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
