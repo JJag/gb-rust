@@ -18,7 +18,6 @@ pub struct Mmu {
     zero_ram: [u8; ZERO_RAM_SIZE],
 }
 
-
 impl Mmu {
     pub fn new(bootrom: Vec<u8>, rom: Vec<u8>) -> Mmu {
         Mmu {
@@ -82,7 +81,7 @@ impl Mmu {
             0xFE00...0xFE9F => &self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &self.io[a - 0xFF00],
             0xFF80...0xFFFF => &self.zero_ram[a - 0xFF80],
-            _ => panic!("Unhandled address in memory map: {}", a),
+            _ => panic!("Unhandled address in memory map: {:X}", a),
         }
     }
 
@@ -99,7 +98,7 @@ impl Mmu {
             0xFE00...0xFE9F => &mut self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &mut self.io[a - 0xFF00],
             0xFF80...0xFFFF => &mut self.zero_ram[a - 0xFF80],
-            _ => panic!("Unhandled address in memory map: {}", a),
+            _ => panic!("Unhandled address in memory map: {:X}", a),
         }
     }
 }
