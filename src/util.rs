@@ -43,7 +43,7 @@ fn random_framebuffer() {
             1 => Color::LIGHT,
             2 => Color::DARK,
             3 => Color::DARKEST,
-            _ => panic!("foo"),
+            _ => panic!("impossible"),
         };
         framebuffer[i] = c;
     }
