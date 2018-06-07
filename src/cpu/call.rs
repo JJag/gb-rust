@@ -7,13 +7,9 @@ impl Cpu {
         self.pc += 1;
         if pred {
             let pc = self.pc;
-//            println!("PC = {:02X}", self.pc);
-//            println!("nn = {:02X}", nn);
             self.sp -= 2;
             self.mmu.write_word(pc, self.sp);
-            self.pc = nn - 1;   // TODO FIX THIS!!!! this hack works because the way I handle PC is totally fucked up
-
-//            println!("AFTER CALL: pc = {:02X}", self.pc);
+            self.pc = nn - 1;   // FIXME this hack works because the way I handle PC is totally fucked up
         }
     }
 

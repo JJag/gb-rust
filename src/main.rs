@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 extern crate env_logger;
+extern crate glutin;
 extern crate glutin_window;
 extern crate graphics;
 #[macro_use]
@@ -11,16 +12,18 @@ extern crate piston;
 extern crate rand;
 
 use cpu::*;
-use glutin_window::GlutinWindow as Window;
+use glutin_window::GlutinWindow;
+use gpu::Gpu;
+use mmu::Mmu;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::*;
 use piston::input::*;
 use piston::window::WindowSettings;
+use std::collections::HashMap;
+use std::fs::File;
 use std::io::BufRead;
 use std::io::Read;
-use std::fs::File;
 use std::time::Instant;
-use std::collections::HashMap;
 
 mod cpu;
 mod mmu;
@@ -33,7 +36,8 @@ const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
     let mut f: File = File::open(filename)?;
-    let size = f.metadata()?.len();
+//    let size = f.metadata()?.len();
+    let size = 1000;
     let mut contents = Vec::with_capacity(size as usize);
     f.read_to_end(&mut contents)?;
     Result::Ok(contents)
@@ -44,119 +48,153 @@ fn main() {
     let opengl = OpenGL::V4_1;
 
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
-    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
+    let rom = load_rom("roms/cpu_instrs.gb").expect("error when loading a ROM");
+//    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
 
 
-    let mut mmu = mmu::Mmu::new(bootrom, rom);
-    let mut cpu = cpu::Cpu::new(mmu);
-    let mut gpu = gpu::Gpu::new();
+    let mmu = Mmu::new(bootrom, rom);
+    let mut cpu = Cpu::new(mmu);
+    let mut gpu = Gpu::new();
 
     let rom_name = cpu.mmu.get_rom_name();
-//    let mut mainWindow: Window = WindowSettings::new(
-//        "GB",
-//        [160, 144],
-//    )
-//        .opengl(opengl)
-//        .exit_on_esc(true)
-//        .build()
-//        .unwrap();
 
-    let mut tilemap_window: Window = WindowSettings::new(rom_name, [32 * 8, 32 * 8])
+    let mut window: GlutinWindow = WindowSettings::new(rom_name, [32 * 8, 32 * 8])
         .opengl(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
-    let mut app_tilemap = gfx::Gfx {
+    let mut gfx = gfx::Gfx {
         gl: GlGraphics::new(opengl)
     };
-    let mut events1 = Events::new(EventSettings::new());
-
-//    let mut tileset_window: Window = WindowSettings::new("Tiles", [16 * 9, 16 * 9])
-//        .opengl(opengl)
-//        .exit_on_esc(true)
-//        .build()
-//        .unwrap();
-//    let mut app_tileset = gfx::Gfx {
-//        gl: GlGraphics::new(opengl)
-//    };
-//    let mut events2 = Events::new(EventSettings::new());
+    let mut events: Events = Events::new(EventSettings::new());
 
 
-    let mut debug_mode_on = false;
-
-
-    let breakpoints: Vec<u16> = vec![
-//            0x0C,
-//            0x39,
-//            0x40,
-//            0x27,
-//            0x6A,
-//            0x95,
-//            0x95,
-//            0x96,
-//            0xA3,
-//            0x60,
-//            0xFC,
-//        0x100
+    let mut breakpoints: Vec<u16> = vec![
+//        0x0100,
+0x8014,
+//0x0B79,
+//0x45C,
+//0x45F,
+//0x035B,
+//0x0360,
+//0x0363,
     ];
+    let mut is_debug = false;
 
     loop {
-//8036
-        let now: Instant = Instant::now();
-
-        cpu.clock += 1;
-
-        let sc_x: u8 = cpu.mmu.read_byte(0xFF43);
-        let sc_y: u8 = cpu.mmu.read_byte(0xFF42);
-
-        if cpu.clock % 17_500 == 0 {
-//            if let Some(e) = events.next(&mut tileWindow) {
-//                if let Some(r) = e.render_args() { app.render_tileset(&r, &cpu.mmu.vram); }
-//                if let Some(u) = e.update_args() { app.update(&u); }
-//            }
-            if let Some(e) = events1.next(&mut tilemap_window) {
-                if let Some(r) = e.render_args() { app_tilemap.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
-                if let Some(u) = e.update_args() { app_tilemap.update(&u); }
-            }
-//            if let Some(e) = events2.next(&mut tileset_window) {
-//                if let Some(r) = e.render_args() { app_tileset.render_tileset(&r, &cpu.mmu.vram); }
-//                if let Some(u) = e.update_args() { app_tileset.update(&u); }
-//            }
-        }
-
-        let opcode = cpu.mmu.read_byte(cpu.pc);
-
-
+        run_machine_cycle(&mut cpu, &mut gpu, is_debug);
         if breakpoints.contains(&cpu.pc) {
-            debug_mode_on = true;
+            is_debug = true;
+        }
+        if is_debug {
+            is_debug = do_debug_stuff(&cpu, &mut breakpoints);
         }
 
-        if debug_mode_on {
-
-            print_registers(&cpu);
-            let mut line = String::new();
-            std::io::stdin().read_line(&mut line);
-
-            match line.trim() {
-                "q" => debug_mode_on = false,
-                _ => (),
+        let sc_x: u8 = cpu.mmu.read_byte(SC_X);
+        let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
+        if cpu.clock % 17_500 == 0 {
+            if let Some(e) = events.next(&mut window) {
+                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
+//                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
+                if let Some(u) = e.update_args() { gfx.update(&u); }
             }
         }
-        execute(&mut cpu, opcode);
-        cpu.pc = cpu.pc.wrapping_add(1);
-
-        if gpu.step(&mut cpu.mmu) {
-//            if let Some(e) = events.next(&mut mainWindow) {
-//                if let Some(r) = e.render_args() { app.render(&r, &gpu.framebuffer); }
-//                if let Some(u) = e.update_args() { app.update(&u); }
-//            }
-        }
-
-
-//        println!("Elapsed {}", now.elapsed().subsec_nanos());
-
-//println!("*************");
     }
+}
+
+
+const SC_X: u16 = 0xFF43;
+const SC_Y: u16 = 0xFF42;
+const INPUT: u16 = 0xFF00;
+
+
+fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
+    cpu.clock += 1;
+    let opcode = cpu.mmu.read_byte(cpu.pc);
+    execute(cpu, opcode);
+    cpu.pc = cpu.pc.wrapping_add(1);
+    gpu.step(&mut cpu.mmu);
+//eprintln!("{:02x}", cpu.pc);
+    if cpu.pc == 0x100 {
+        eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
+        eprintln!("[$FF06] = {:02x} ($00) ; TMA", cpu.mmu.read_byte(0xFF06));
+        eprintln!("[$FF07] = {:02x} ($00) ; TAC", cpu.mmu.read_byte(0xFF07));
+        eprintln!("[$FF10] = {:02x} ($80) ; NR10", cpu.mmu.read_byte(0xFF10));
+        eprintln!("[$FF11] = {:02x} ($BF) ; NR11", cpu.mmu.read_byte(0xFF11));
+        eprintln!("[$FF12] = {:02x} ($F3) ; NR12", cpu.mmu.read_byte(0xFF12));
+        eprintln!("[$FF14] = {:02x} ($BF) ; NR14", cpu.mmu.read_byte(0xFF14));
+        eprintln!("[$FF16] = {:02x} ($3F) ; NR21", cpu.mmu.read_byte(0xFF16));
+        eprintln!("[$FF17] = {:02x} ($00) ; NR22", cpu.mmu.read_byte(0xFF17));
+        eprintln!("[$FF19] = {:02x} ($BF) ; NR24", cpu.mmu.read_byte(0xFF19));
+        eprintln!("[$FF1A] = {:02x} ($7F) ; NR30", cpu.mmu.read_byte(0xFF1A));
+        eprintln!("[$FF1B] = {:02x} ($FF) ; NR31", cpu.mmu.read_byte(0xFF1B));
+        eprintln!("[$FF1C] = {:02x} ($9F) ; NR32", cpu.mmu.read_byte(0xFF1C));
+        eprintln!("[$FF1E] = {:02x} ($BF) ; NR33", cpu.mmu.read_byte(0xFF1E));
+        eprintln!("[$FF20] = {:02x} ($FF) ; NR41", cpu.mmu.read_byte(0xFF20));
+        eprintln!("[$FF21] = {:02x} ($00) ; NR42", cpu.mmu.read_byte(0xFF21));
+        eprintln!("[$FF22] = {:02x} ($00) ; NR43", cpu.mmu.read_byte(0xFF22));
+        eprintln!("[$FF23] = {:02x} ($BF) ; NR30", cpu.mmu.read_byte(0xFF23));
+        eprintln!("[$FF24] = {:02x} ($77) ; NR50", cpu.mmu.read_byte(0xFF24));
+        eprintln!("[$FF25] = {:02x} ($F3) ; NR51", cpu.mmu.read_byte(0xFF25));
+        eprintln!("[$FF26] = {:02x} ($F1) ; NR52", cpu.mmu.read_byte(0xFF26));
+        eprintln!("[$FF40] = {:02x} ($91) ; LCDC", cpu.mmu.read_byte(0xFF40));
+        eprintln!("[$FF42] = {:02x} ($00) ; SCY", cpu.mmu.read_byte(0xFF42));
+        eprintln!("[$FF43] = {:02x} ($00) ; SCX", cpu.mmu.read_byte(0xFF43));
+        eprintln!("[$FF45] = {:02x} ($00) ; LYC", cpu.mmu.read_byte(0xFF45));
+        eprintln!("[$FF47] = {:02x} ($FC) ; BGP", cpu.mmu.read_byte(0xFF47));
+        eprintln!("[$FF48] = {:02x} ($FF) ; OBP0", cpu.mmu.read_byte(0xFF48));
+        eprintln!("[$FF49] = {:02x} ($FF) ; OBP1", cpu.mmu.read_byte(0xFF49));
+        eprintln!("[$FF4A] = {:02x} ($00) ; W", cpu.mmu.read_byte(0xFF4A));
+
+
+//        cpu.mmu.write_byte(0xFF05, 0x00);
+//        cpu.mmu.write_byte(0xFF06, 0x00);
+//        cpu.mmu.write_byte(0xFF07, 0x00);
+//        cpu.mmu.write_byte(0xFF10, 0x80);
+//        cpu.mmu.write_byte(0xFF11, 0xBF);
+//        cpu.mmu.write_byte(0xFF12, 0xF3);
+//        cpu.mmu.write_byte(0xFF14, 0xBF);
+//        cpu.mmu.write_byte(0xFF16, 0x3F);
+//        cpu.mmu.write_byte(0xFF17, 0x00);
+//        cpu.mmu.write_byte(0xFF19, 0xBF);
+//        cpu.mmu.write_byte(0xFF1A, 0x7F);
+//        cpu.mmu.write_byte(0xFF1B, 0xFF);
+//        cpu.mmu.write_byte(0xFF1C, 0x9F);
+//        cpu.mmu.write_byte(0xFF1E, 0xBF);
+//        cpu.mmu.write_byte(0xFF20, 0xFF);
+//        cpu.mmu.write_byte(0xFF21, 0x00);
+//        cpu.mmu.write_byte(0xFF22, 0x00);
+//        cpu.mmu.write_byte(0xFF23, 0xBF);
+//        cpu.mmu.write_byte(0xFF24, 0x77);
+//        cpu.mmu.write_byte(0xFF25, 0xF3);
+//        cpu.mmu.write_byte(0xFF26, 0xF1);
+//        cpu.mmu.write_byte(0xFF40, 0x91);
+//        cpu.mmu.write_byte(0xFF42, 0x00);
+//        cpu.mmu.write_byte(0xFF43, 0x00);
+//        cpu.mmu.write_byte(0xFF45, 0x00);
+//        cpu.mmu.write_byte(0xFF47, 0xFC);
+//        cpu.mmu.write_byte(0xFF48, 0xFF);
+//        cpu.mmu.write_byte(0xFF49, 0xFF);
+//        cpu.mmu.write_byte(0xFF4A, 0x00);
+
+
+    }
+}
+
+fn do_debug_stuff(cpu: &Cpu, breakpoints: &mut Vec<u16>) -> bool {
+    print_registers(&cpu);
+    let mut line = String::new();
+    std::io::stdin().read_line(&mut line).unwrap();
+    let continue_debugging = match line.trim() {
+        "q" => false,
+        l => {
+            if let Ok(addr) = u16::from_str_radix(l, 16) {
+                *breakpoints = vec![addr];
+                false
+            } else { true }
+        }
+    };
+    continue_debugging
 }
 
 fn print_registers(cpu: &Cpu) {
@@ -170,7 +208,6 @@ fn print_registers(cpu: &Cpu) {
     eprintln!("pc: {:04X}", cpu.pc);
     eprintln!("FF42(SC_Y): {:02X}", cpu.mmu.read_byte(0xFF42));
     eprintln!("FF44: {:02X}", cpu.mmu.read_byte(0xFF44));
-
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
@@ -418,7 +455,10 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE0 => cpu.ldh_n_a(),
         0xE1 => cpu.pop_hl(),
         0xE2 => cpu.ld__c__a(),
-        0xE3 => handle_invalid_opcode(opcode),
+        0xE3 => {
+            eprintln!("PC = {:02x}", cpu.pc);
+            handle_invalid_opcode(opcode)
+        },
         0xE4 => handle_invalid_opcode(opcode),
         0xE5 => cpu.push_hl(),
         0xE6 => cpu.AND_n(),
@@ -444,7 +484,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xF9 => cpu.ld_sp_hl(),
         0xFA => cpu.ld_a_nn(),
         0xFB => cpu.ei(),
-        0xFC => handle_invalid_opcode(opcode),
+        0xFC => {eprintln!("{:02x}", cpu.pc); handle_invalid_opcode(opcode)},
         0xFD => handle_invalid_opcode(opcode),
         0xFE => cpu.CP_n(),
         0xFF => cpu.RST_38H(),
@@ -453,7 +493,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 }
 
 fn handle_invalid_opcode(opcode: u8) {
-    panic!("INVALID OPCODE {}", opcode)
+    panic!("INVALID OPCODE {:02x}", opcode)
 }
 
 

@@ -6,7 +6,7 @@ authors = ["Jakub Jagusztyn <jakub.jagusztyn@gmail.com.com>"]
 [dependencies]
 log = "0.3"
 env_logger = "0.3"
-
+glutin = "*"
 
 piston = "0.35.0"
 piston2d-graphics = "0.24.0"

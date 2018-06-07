@@ -3,7 +3,7 @@ use util;
 
 impl Cpu {
 
-    fn add16(&mut self, x: u8) {
+    fn add8(&mut self, x: u8) {
         let a = self.a;
         self.a = a.wrapping_add(x);
         let new_a = self.a;
@@ -15,19 +15,19 @@ impl Cpu {
 
     pub fn ADD(&mut self, r: Reg8) {
         let x = *(self.get_reg8(r));
-        self.add16(x);
+        self.add8(x);
     }
 
     pub fn ADD_HL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
-        self.add16(x);
+        self.add8(x);
     }
 
     pub fn ADD_n(&mut self) {
         self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
-        self.add16(n);
+        self.add8(n);
     }
 }
 

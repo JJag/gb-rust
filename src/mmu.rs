@@ -8,6 +8,7 @@ const IO_SIZE: usize = 128;
 const ZERO_RAM_SIZE: usize = 128;
 
 pub struct Mmu {
+    unused: u8,
     bootrom: Vec<u8>,
     rom: Vec<u8>,
     pub vram: [u8; VRAM_SIZE],
@@ -20,7 +21,8 @@ pub struct Mmu {
 
 impl Mmu {
     pub fn new(bootrom: Vec<u8>, rom: Vec<u8>) -> Mmu {
-        Mmu {
+        let mut mmu = Mmu {
+            unused: 0,
             bootrom,
             rom,
             vram: [0; 8 * 1024],
@@ -29,7 +31,10 @@ impl Mmu {
             oam: [0; 160],
             io: [0; 128],
             zero_ram: [0; 128],
-        }
+        };
+
+        mmu.io[0] = 0b00001111; // FIXME
+        mmu
     }
 
     pub fn read_word(&self, addr: u16) -> u16 {
@@ -50,7 +55,7 @@ impl Mmu {
 
     pub fn get_rom_name(&self) -> String {
         let ascii = &self.rom[0x134..0x144];
-        String::from_utf8(ascii.to_vec()).unwrap()
+        String::from_utf8(ascii.to_vec()).unwrap_or("unknown".to_string())
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
@@ -81,6 +86,7 @@ impl Mmu {
             0xFE00...0xFE9F => &self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &self.io[a - 0xFF00],
             0xFF80...0xFFFF => &self.zero_ram[a - 0xFF80],
+            0xFEA0...0xFEFF => &0, // accessing this memory is undefined behaviour
             _ => panic!("Unhandled address in memory map: {:X}", a),
         }
     }
@@ -98,6 +104,7 @@ impl Mmu {
             0xFE00...0xFE9F => &mut self.oam[a - 0xFE00],
             0xFF00...0xFF7F => &mut self.io[a - 0xFF00],
             0xFF80...0xFFFF => &mut self.zero_ram[a - 0xFF80],
+            0xFEA0...0xFEFF => &mut self.unused, // accessing this memory is undefined behaviour
             _ => panic!("Unhandled address in memory map: {:X}", a),
         }
     }

@@ -5,13 +5,16 @@ impl Cpu {
         self.pc += 1;
         let nn = self.mmu.read_word(self.pc);
         self.pc += 1;
-        if pred { self.pc = nn }
+        if pred {
+            println!("JP {:X}", nn);
+            self.pc = nn - 1;
+        }
     }
 
     pub fn JP_aHL(&mut self) {
         let hl = self.hl();
         let nn = self.mmu.read_word(hl);
-        self.pc = nn;
+        self.pc = nn - 1;
     }
 
     pub fn JP(&mut self) {
@@ -48,9 +51,9 @@ impl Cpu {
         };
         if pred {
             if n > 0 {
-                self.pc = self.pc.wrapping_add(n as u16)
+                self.pc = self.pc.wrapping_add(n as u16) - 1;
             } else {
-                self.pc = self.pc.wrapping_sub(-n as u16)
+                self.pc = self.pc.wrapping_sub(-n as u16) - 1;
             }
         }
     }

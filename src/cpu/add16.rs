@@ -35,8 +35,8 @@ impl Cpu {
 
         self.set_z(false);
         self.set_n(false);
-        self.set_h(util::half_carry_add(sp as u8, n)); // FIXME not sure if it should work this way
-        self.set_c(util::full_carry_add(sp as u8, n)); // FIXME
+        self.set_h(util::half_carry_add((sp >> 8) as u8, n)); // FIXME not sure if it should work this way
+        self.set_c(util::full_carry_add((sp >> 8) as u8, n)); // FIXME
     }
 }
 

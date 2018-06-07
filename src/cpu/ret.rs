@@ -5,7 +5,7 @@ impl Cpu {
         if pred {
             let addr = self.mmu.read_word(self.sp);
             self.sp = self.sp.wrapping_add(2);
-            self.pc = addr;
+            self.pc = addr - 1;
         }
     }
 

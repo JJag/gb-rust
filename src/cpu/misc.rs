@@ -31,6 +31,7 @@ impl Cpu {
 
     pub fn ei(&mut self) {
         self.ei_pending = true;
+//        self.pc = self.pc.wrapping_add(1);  // TODO not sure if this should skip next instruciton
     }
 
     pub fn di(&mut self) {
@@ -38,7 +39,8 @@ impl Cpu {
     }
 
     pub fn daa(&mut self) {
-        panic!("")
+        eprintln!("{:0x}", self.pc);
+//        unimplemented!()
     }
 }
 

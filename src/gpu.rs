@@ -1,8 +1,3 @@
-use std::time::{Duration, Instant};
-
-struct Tile {
-    pixels: [u8; 2 * 8 * 8] // each line is 2 bytes
-}
 
 enum GpuMode {
     OamAccess,
@@ -37,7 +32,6 @@ impl Gpu {
     }
 
     fn renderscan(&mut self, mmu: &mut super::mmu::Mmu) {
-        let now = Instant::now();
 
         let sc_x: u8 = mmu.read_byte(0xFF43);
         let sc_y: u8 = mmu.read_byte(0xFF42);
