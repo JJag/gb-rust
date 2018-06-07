@@ -29,8 +29,7 @@ impl Cpu {
     }
     pub fn ADD_SP_n(&mut self) {
         let sp = self.sp;
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         self.sp = sp.wrapping_add(n as u16);
 
         self.set_z(false);

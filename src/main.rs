@@ -48,7 +48,7 @@ fn main() {
     let opengl = OpenGL::V4_1;
 
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
-    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
+    let rom = load_rom("roms/cpu_instrs.gb").expect("error when loading a ROM");
 //    let rom = load_rom("roms/bgbtest.gb").expect("error when loading a ROM");
 //    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
 
@@ -499,7 +499,6 @@ fn handle_invalid_opcode(opcode: u8) {
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
     let opcode = cpu.mmu.read_byte(cpu.pc);
     cpu.pc += 1;
-//    debug!("GOT OPCODE CB{:X}", opcode);
     let reg_code = reg_code(opcode);
 
     match opcode & OPERATION_MASK {

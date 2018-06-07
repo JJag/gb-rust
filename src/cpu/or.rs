@@ -24,8 +24,7 @@ impl Cpu {
     }
 
     pub fn OR_n(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         self.or(n);
     }
 }

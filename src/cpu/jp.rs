@@ -2,10 +2,8 @@ use cpu::*;
 
 impl Cpu {
     fn jp(&mut self, pred: bool) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         if pred {
-            println!("JP {:X}", nn);
             self.pc = nn;
         }
     }

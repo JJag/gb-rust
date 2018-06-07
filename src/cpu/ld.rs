@@ -9,8 +9,7 @@ impl Cpu {
     }
 
     pub fn LD_rn(&mut self, to: Reg8) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         *(self.get_mut_reg8(to)) = n;
     }
 
@@ -28,15 +27,13 @@ impl Cpu {
     pub fn ld_a_bc(&mut self) { self.a = self.mmu.read_byte(self.bc()) }
     pub fn ld_a_de(&mut self) { self.a = self.mmu.read_byte(self.de()) }
     pub fn ld_a_nn(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.a = self.mmu.read_byte(nn)
     }
 
     /// LD (HL), n
     pub fn ld__hl__n(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         let hl = self.hl();
         self.mmu.write_byte(n, hl);
     }
@@ -50,8 +47,7 @@ impl Cpu {
         self.mmu.write_byte(self.a, de)
     }
     pub fn ld_nn_a(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.mmu.write_byte(self.a, nn)
     }
 
@@ -81,40 +77,33 @@ impl Cpu {
     }
 
     pub fn ldh_n_a(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         self.mmu.write_byte(self.a, 0xFF00 + n as u16)
     }
     pub fn ldh_a_n(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         self.a = self.mmu.read_byte(0xFF00 + n as u16)
     }
 
     pub fn ld_bc_nn(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.set_bc(nn)
     }
     pub fn ld_de_nn(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.set_de(nn)
     }
     pub fn ld_hl_nn(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.set_hl(nn)
     }
     pub fn ld_sp_nn(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.sp = nn
     }
 
     pub fn ld_nn_sp(&mut self) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         self.mmu.write_word(self.sp, nn)
     }
 
@@ -163,8 +152,7 @@ impl Cpu {
     }
 
     pub fn ldhl_sp_n(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         let sp = self.sp;
         self.set_hl(sp + n as u16);
 

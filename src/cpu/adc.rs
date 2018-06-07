@@ -27,8 +27,7 @@ impl Cpu {
     }
 
     pub fn ADC_n(&mut self) {
-        let n = self.mmu.read_byte(self.pc);
-        self.pc += 1;
+        let n = self.read_immediate_byte();
         self.adc(n)
     }
 }

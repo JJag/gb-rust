@@ -2,8 +2,7 @@ use cpu::*;
 
 impl Cpu {
     fn call_nn(&mut self, pred: bool) {
-        let nn = self.mmu.read_word(self.pc);
-        self.pc += 2;
+        let nn = self.read_immediate_word();
         if pred {
             let pc = self.pc;
             self.sp -= 2;

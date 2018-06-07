@@ -106,6 +106,19 @@ impl Cpu {
     pub fn get_h(&self) -> bool { (self.f & H_MASK) != 0 }
     pub fn get_c(&self) -> bool { (self.f & C_MASK) != 0 }
 
+
+    pub fn read_immediate_byte(&mut self) -> u8 {
+        let n = self.mmu.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        n
+    }
+
+    pub fn read_immediate_word(&mut self) -> u16 {
+        let nn = self.mmu.read_word(self.pc);
+        self.pc = self.pc.wrapping_add(2);
+        nn
+    }
+
     pub fn get_reg8(&self, r: Reg8) -> &u8 {
         match r {
             Reg8::A => &self.a,
