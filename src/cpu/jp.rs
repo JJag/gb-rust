@@ -2,19 +2,17 @@ use cpu::*;
 
 impl Cpu {
     fn jp(&mut self, pred: bool) {
-        self.pc += 1;
         let nn = self.mmu.read_word(self.pc);
-        self.pc += 1;
+        self.pc += 2;
         if pred {
             println!("JP {:X}", nn);
-            self.pc = nn - 1;
+            self.pc = nn;
         }
     }
 
     pub fn JP_aHL(&mut self) {
         let hl = self.hl();
-        let nn = self.mmu.read_word(hl);
-        self.pc = nn - 1;
+        self.pc = hl;
     }
 
     pub fn JP(&mut self) {
@@ -45,15 +43,15 @@ impl Cpu {
 
     fn jr(&mut self, pred: bool) {
         use std::mem;
-        self.pc += 1;
         let n = unsafe {
             mem::transmute::<u8, i8>(self.mmu.read_byte(self.pc))
         };
+        self.pc += 1;
         if pred {
             if n > 0 {
-                self.pc = self.pc.wrapping_add(n as u16) - 1;
+                self.pc = self.pc.wrapping_add(n as u16);
             } else {
-                self.pc = self.pc.wrapping_sub(-n as u16) - 1;
+                self.pc = self.pc.wrapping_sub(-n as u16);
             }
         }
     }

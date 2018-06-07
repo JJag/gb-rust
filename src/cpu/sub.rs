@@ -25,8 +25,8 @@ impl Cpu {
     }
 
     pub fn SUB_n(&mut self) {
-        self.pc += 1;
         let n = self.mmu.read_byte(self.pc);
+        self.pc += 1;
         self.sub(n);
     }
 }

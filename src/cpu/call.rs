@@ -2,14 +2,13 @@ use cpu::*;
 
 impl Cpu {
     fn call_nn(&mut self, pred: bool) {
-        self.pc += 1;
         let nn = self.mmu.read_word(self.pc);
-        self.pc += 1;
+        self.pc += 2;
         if pred {
             let pc = self.pc;
             self.sp -= 2;
             self.mmu.write_word(pc, self.sp);
-            self.pc = nn - 1;   // FIXME this hack works because the way I handle PC is totally fucked up
+            self.pc = nn;
         }
     }
 

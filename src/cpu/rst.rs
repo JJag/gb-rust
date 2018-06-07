@@ -5,7 +5,7 @@ impl Cpu {
             let pc = self.pc;
             self.sp -= 2;
             self.mmu.write_word(pc, self.sp);
-            self.pc = addr - 1;
+            self.pc = addr;
     }
 
     pub fn RST_00H(&mut self) { self.rst(0x00) }

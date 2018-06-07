@@ -48,7 +48,8 @@ fn main() {
     let opengl = OpenGL::V4_1;
 
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
-    let rom = load_rom("roms/cpu_instrs.gb").expect("error when loading a ROM");
+    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
+//    let rom = load_rom("roms/bgbtest.gb").expect("error when loading a ROM");
 //    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
 
 
@@ -111,10 +112,9 @@ const INPUT: u16 = 0xFF00;
 fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     cpu.clock += 1;
     let opcode = cpu.mmu.read_byte(cpu.pc);
-    execute(cpu, opcode);
     cpu.pc = cpu.pc.wrapping_add(1);
+    execute(cpu, opcode);
     gpu.step(&mut cpu.mmu);
-//eprintln!("{:02x}", cpu.pc);
     if cpu.pc == 0x100 {
         eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
         eprintln!("[$FF06] = {:02x} ($00) ; TMA", cpu.mmu.read_byte(0xFF06));
@@ -456,7 +456,6 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE1 => cpu.pop_hl(),
         0xE2 => cpu.ld__c__a(),
         0xE3 => {
-            eprintln!("PC = {:02x}", cpu.pc);
             handle_invalid_opcode(opcode)
         },
         0xE4 => handle_invalid_opcode(opcode),
@@ -498,8 +497,8 @@ fn handle_invalid_opcode(opcode: u8) {
 
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
-    cpu.pc += 1;
     let opcode = cpu.mmu.read_byte(cpu.pc);
+    cpu.pc += 1;
 //    debug!("GOT OPCODE CB{:X}", opcode);
     let reg_code = reg_code(opcode);
 
