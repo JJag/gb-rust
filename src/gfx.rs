@@ -164,10 +164,18 @@ impl Gfx {
                     draw_tile(&c, gl, offset_x, offset_y, tile);
                 }
             }
-            let square = rectangle::rectangle_by_corners(1.0, 1.0, 1.0 + 160.0, 1.0 + 144.0);
+
+            let SCREEN_WIDTH: f64 = 160.0;
+            let SCREEN_HEIGHT: f64 = 144.0;
+            let square = rectangle::rectangle_by_corners(1.0, 1.0, 1.0 + SCREEN_WIDTH, 1.0 + SCREEN_HEIGHT);
             let red = [1.0, 0.0, 0.0, 0.3];
-            let transform = c.transform.trans(sc_x as f64, sc_y as f64);
-            rectangle(red, square, transform, gl);
+            let sc_x = sc_x as f64;
+            let sc_y = sc_y as f64;
+            // 4 rectangles are drawn to achieve wrapping
+            rectangle(red, square, c.transform.trans(sc_x - SCREEN_WIDTH * 0.0, sc_y - SCREEN_HEIGHT * 0.0), gl);
+            rectangle(red, square, c.transform.trans(sc_x - SCREEN_WIDTH * 2.0, sc_y - SCREEN_HEIGHT * 0.0), gl);
+            rectangle(red, square, c.transform.trans(sc_x - SCREEN_WIDTH * 0.0, sc_y - SCREEN_HEIGHT * 2.0), gl);
+            rectangle(red, square, c.transform.trans(sc_x - SCREEN_WIDTH * 2.0, sc_y - SCREEN_HEIGHT * 2.0), gl);
         });
     }
 
