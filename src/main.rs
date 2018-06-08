@@ -47,11 +47,10 @@ fn main() {
     env_logger::init().unwrap();
     let opengl = OpenGL::V4_1;
 
+    let args: Vec<String> = std::env::args().collect();
+    let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
-    let rom = load_rom("roms/cpu_instrs.gb").expect("error when loading a ROM");
-//    let rom = load_rom("roms/bgbtest.gb").expect("error when loading a ROM");
-//    let rom = load_rom("roms/tetris.gb").expect("error when loading a ROM");
-
+    let rom = load_rom(filename).expect("error when loading a ROM");
 
     let mmu = Mmu::new(bootrom, rom);
     let mut cpu = Cpu::new(mmu);
