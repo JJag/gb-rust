@@ -53,7 +53,7 @@ impl Cpu {
             }
         } else { // subtraction was the last op
             if c_flag { self.a = a.wrapping_sub(0x60); }
-            if h_flag { self.a = a.wrapping_sub(0x6); }
+            if h_flag { self.a = a.wrapping_sub(0x06); }
         }
 
         let set_z = self.a == 0;
