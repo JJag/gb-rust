@@ -81,7 +81,7 @@ impl Cpu {
 
     pub fn set_af(&mut self, n: u16) -> () {
         self.a = (n >> 8) as u8;
-        self.f = n as u8
+        self.f = (n & 0xF0) as u8
     }
     pub fn set_bc(&mut self, n: u16) -> () {
         self.b = (n >> 8) as u8;
