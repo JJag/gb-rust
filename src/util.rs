@@ -33,23 +33,6 @@ pub fn check_bit(val: u8, bit: u8) -> bool {
     val & (1 << bit) != 0
 }
 
-fn random_framebuffer() {
-    use super::gpu::Color;
-    use super::rand::Rng;
-
-    let mut framebuffer = [Color::DARK; 160 * 144];
-    for i in 0..(160 * 144) {
-        let mut rng = rand::thread_rng();
-        let c = match rng.next_u32() % 4 {
-            0 => Color::LIGHTEST,
-            1 => Color::LIGHT,
-            2 => Color::DARK,
-            3 => Color::DARKEST,
-            _ => panic!("impossible"),
-        };
-        framebuffer[i] = c;
-    }
-}
 
 mod test {
     use super::*;
