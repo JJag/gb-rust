@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     pub fn nop(&mut self) {}
     pub fn halt(&mut self) {
         self.halted = true;
@@ -39,8 +38,27 @@ impl Cpu {
     }
 
     pub fn daa(&mut self) {
-        eprintln!("{:0x}", self.pc);
-//        unimplemented!()
+        let n_flag = self.get_n();
+        let c_flag = self.get_c();
+        let h_flag = self.get_h();
+
+        let a = self.a;
+        if !n_flag { // addition was the last op
+            if c_flag || a > 0x99 {
+                self.a = a.wrapping_add(0x60);
+                self.set_c(true);
+            }
+            if h_flag || (a & 0x0f) > 0x09 {
+                self.a = a.wrapping_add(0x06);
+            }
+        } else { // subtraction was the last op
+            if c_flag { self.a = a.wrapping_sub(0x60); }
+            if h_flag { self.a = a.wrapping_sub(0x6); }
+        }
+
+        let set_z = self.a == 0;
+        self.set_z(set_z);
+        self.set_h(false);
     }
 }
 
