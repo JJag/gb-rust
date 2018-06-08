@@ -60,9 +60,10 @@ impl Cpu {
     pub fn RLC_aHL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
-        self.mmu.write_byte(x.rotate_left(1), hl);
+        let result = x.rotate_left(1);
+        self.mmu.write_byte(result, hl);
         self.set_c(x >> 7 > 0);
-        self.set_z(false);
+        self.set_z(result == 0);
         self.set_h(false);
         self.set_n(false);
     }
@@ -70,19 +71,21 @@ impl Cpu {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         let old_c = self.get_c();
-        self.mmu.write_byte(x << 1 | if old_c { 1 } else { 0 }, hl);
+        let result = x << 1 | if old_c { 1 } else { 0 };
+        self.mmu.write_byte(result, hl);
         self.set_c(x >> 7 > 0);
 
-        self.set_z(false);
+        self.set_z(result == 0);
         self.set_h(false);
         self.set_n(false);
     }
     pub fn RRC_aHL(&mut self) {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
+        let result = x.rotate_right(1);
         self.set_c(x << 7 > 0);
-        self.mmu.write_byte(x.rotate_right(1), hl);
-        self.set_z(false);
+        self.mmu.write_byte(result, hl);
+        self.set_z(result == 0);
         self.set_h(false);
         self.set_n(false);
     }
@@ -90,9 +93,10 @@ impl Cpu {
         let hl = self.hl();
         let x = self.mmu.read_byte(hl);
         let old_c = self.get_c();
-        self.mmu.write_byte(x >> 1 | if old_c { 1 << 7 } else { 0 }, hl);
+        let result = x >> 1 | if old_c { 1 << 7 } else { 0 };
+        self.mmu.write_byte(result, hl);
         self.set_c(x << 7 > 0);
-        self.set_z(false);
+        self.set_z(result == 0);
         self.set_h(false);
         self.set_n(false);
     }

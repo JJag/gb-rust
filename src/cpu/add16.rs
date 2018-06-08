@@ -1,3 +1,4 @@
+use std::mem;
 use cpu::*;
 
 impl Cpu {
@@ -6,9 +7,9 @@ impl Cpu {
         let sum = hl.wrapping_add(x);
         self.set_hl(sum);
         // flag Z is not affected
+        self.set_h(util::half_carry_add16(hl, x));
+        self.set_c(util::full_carry_add16(hl, x));
         self.set_n(false);
-        self.set_h(util::half_carry_add((hl >> 8) as u8, (x >> 8) as u8));  // FIXME if carry goes all the way from the lower byte this wont work
-        self.set_c(util::full_carry_add((hl >> 8) as u8, (x >> 8) as u8));  // FIXME
     }
 
     pub fn ADD_HL_BC(&mut self) {
@@ -30,18 +31,22 @@ impl Cpu {
     pub fn ADD_SP_n(&mut self) {
         let sp = self.sp;
         let n = self.read_immediate_byte();
-        self.sp = sp.wrapping_add(n as u16);
+        let signed_n = unsafe { mem::transmute::<u8, i8>(n) };
+        if signed_n > 0 {
+            self.sp = sp.wrapping_add(signed_n as u16);
+        } else {
+            self.sp = sp.wrapping_sub(-signed_n as u16);
+        }
 
         self.set_z(false);
         self.set_n(false);
-        self.set_h(util::half_carry_add((sp >> 8) as u8, n)); // FIXME not sure if it should work this way
-        self.set_c(util::full_carry_add((sp >> 8) as u8, n)); // FIXME
+        self.set_h(util::half_carry_add(sp as u8, n));
+        self.set_c(util::full_carry_add(sp as u8, n));
     }
 }
 
 #[cfg(test)]
 mod tests {
-
     #[test]
     fn ADD_HL_rr() {
         let mut cpu = ::cpu::Cpu::new();

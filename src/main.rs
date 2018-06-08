@@ -380,7 +380,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0x9B => cpu.ADC(E),
         0x9C => cpu.ADC(H),
         0x9D => cpu.ADC(L),
-        0x9E => cpu.ADC_HL(),
+        0x9E => cpu.SBC_HL(),
         0x9F => cpu.ADC(A),
 
         0xA0 => cpu.AND(B),

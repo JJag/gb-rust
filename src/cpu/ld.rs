@@ -1,5 +1,6 @@
 use cpu::*;
 use cpu::Reg8;
+use std::mem;
 use util;
 
 impl Cpu {
@@ -152,9 +153,16 @@ impl Cpu {
     }
 
     pub fn ldhl_sp_n(&mut self) {
-        let n = self.read_immediate_byte();
         let sp = self.sp;
-        self.set_hl(sp + n as u16);
+        let n = self.read_immediate_byte();
+        let signed_n = unsafe { mem::transmute::<u8, i8>(n) };
+        let new_hl = if signed_n > 0 {
+            sp.wrapping_add(signed_n as u16)
+        } else {
+            sp.wrapping_sub(-signed_n as u16)
+        };
+
+        self.set_hl(new_hl);
 
         self.set_z(false);
         self.set_n(false);

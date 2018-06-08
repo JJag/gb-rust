@@ -20,10 +20,12 @@ pub fn to_u8(b: bool) -> u8 { if b { 1 } else { 0 } }
 
 pub fn half_carry_add(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
 pub fn full_carry_add(a: u8, b: u8) -> bool { (a as u16) + (b as u16) > 0xFF }
+pub fn half_carry_add16(a: u16, b: u16) -> bool { (a & 0xFFF) + (b & 0xFFF) > 0xFFF }
+pub fn full_carry_add16(a: u16, b: u16) -> bool { (a as u32) + (b as u32) > 0xFFFF }
 pub fn half_carry_adc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) + (b & 0x0F) + (c & 0x0F) > 0x0F }
 pub fn full_carry_adc(a: u8, b: u8, c: u8) -> bool { (a as u16) + (b as u16) + (c as u16) > 0xFF }
-pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) as i8 - (b & 0x0F) as i8 - (c  as i8) < 0 }
-pub fn full_borrow_sbc(a: u8, b: u8,c: u8) -> bool { (a as u16) < (b as u16 + c as u16) }
+pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) as i8 - (b & 0x0F) as i8 - (c as i8) < 0 }
+pub fn full_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a as u16) < (b as u16 + c as u16) }
 pub fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
 pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
 
@@ -51,6 +53,7 @@ fn random_framebuffer() {
 
 mod test {
     use super::*;
+
     #[test]
     fn concat_test() {
         assert_eq!(concat(0xAF, 0x30), 0xAF30);
