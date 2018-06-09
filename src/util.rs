@@ -24,8 +24,8 @@ pub fn half_carry_add16(a: u16, b: u16) -> bool { (a & 0xFFF) + (b & 0xFFF) > 0x
 pub fn full_carry_add16(a: u16, b: u16) -> bool { (a as u32) + (b as u32) > 0xFFFF }
 pub fn half_carry_adc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) + (b & 0x0F) + (c & 0x0F) > 0x0F }
 pub fn full_carry_adc(a: u8, b: u8, c: u8) -> bool { (a as u16) + (b as u16) + (c as u16) > 0xFF }
-pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) < (b + c) & 0x0F }
-pub fn full_borrow_sbc(a: u8, b: u8, c: u8) -> bool { a < b.wrapping_add(c) }
+pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) < (b & 0x0F) + c }
+pub fn full_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a as u16) < b as u16 + c as u16 }
 pub fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
 pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
 
