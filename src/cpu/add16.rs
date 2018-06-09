@@ -44,38 +44,3 @@ impl Cpu {
         self.set_c(util::full_carry_add(sp as u8, n));
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn ADD_HL_rr() {
-        let mut cpu = ::cpu::Cpu::new();
-        cpu.set_hl(0x8A23);
-        cpu.set_bc(0x0605);
-        cpu.ADD_HL_BC();
-        assert_eq!(cpu.hl(), 0x9028);
-        assert_eq!(cpu.get_h(), true);
-        assert_eq!(cpu.get_n(), false);
-        assert_eq!(cpu.get_c(), false);
-
-        cpu.set_hl(0x8A23);
-        cpu.ADD_HL_HL();
-        assert_eq!(cpu.hl(), 0x1446);
-        assert_eq!(cpu.get_h(), true);
-        assert_eq!(cpu.get_n(), false);
-        assert_eq!(cpu.get_c(), true);
-    }
-
-    #[test]
-    fn ADD_SP_n() {
-        let mut cpu = ::cpu::Cpu::new();
-        cpu.sp = 0xFFF8;
-        cpu.mmu.write_byte(0x02, (cpu.pc + 1));
-        cpu.ADD_SP_n();
-        assert_eq!(cpu.sp, 0xFFFA);
-        assert_eq!(cpu.get_z(), false);
-        assert_eq!(cpu.get_h(), false);
-        assert_eq!(cpu.get_n(), false);
-        assert_eq!(cpu.get_c(), false);
-    }
-}

@@ -23,33 +23,3 @@ impl Cpu {
     }
 
 }
-
-#[cfg(test)]
-mod tests {
-
-    use cpu::Reg8::*;
-
-    #[test]
-    fn SWAP_r() {
-        let mut cpu = ::cpu::Cpu::new();
-        cpu.b = 0x2F;
-        cpu.l = 0x00;
-        cpu.SWAP_r(B);
-        assert_eq!(cpu.b, 0xF2);
-        assert_eq!(cpu.get_z(), false);
-        cpu.SWAP_r(L);
-        assert_eq!(cpu.l, 0x00);
-        assert_eq!(cpu.get_z(), true);
-
-    }
-
-    #[test]
-    fn SWAP_aHL() {
-        let mut cpu = ::cpu::Cpu::new();
-        let hl = cpu.hl();
-        cpu.mmu.write_byte(0x40, hl);
-        cpu.SWAP_aHL();
-        assert_eq!(cpu.mmu.read_byte(hl), 0x04);
-        assert_eq!(cpu.get_z(), false);
-    }
-}

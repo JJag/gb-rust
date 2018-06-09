@@ -23,33 +23,3 @@ impl Cpu {
         // FLAG C is not affected
     }
 }
-
-#[cfg(test)]
-mod tests {
-
-    use cpu::Reg8::*;
-
-    #[test]
-    fn INC_r() {
-        let mut cpu = ::cpu::Cpu::new();
-        cpu.a = 0xFF;
-        cpu.INC(A);
-        assert_eq!(cpu.a, 0x00);
-        assert_eq!(cpu.get_z(), true);
-        assert_eq!(cpu.get_h(), true);
-        assert_eq!(cpu.get_n(), false);
-    }
-
-
-    #[test]
-    fn INC_HL() {
-        let mut cpu = ::cpu::Cpu::new();
-        let hl = cpu.hl();
-        cpu.mmu.write_byte(0x50, hl);
-        cpu.INC_aHL();
-        assert_eq!(cpu.mmu.read_byte(hl), 0x51);
-        assert_eq!(cpu.get_z(), false);
-        assert_eq!(cpu.get_h(), false);
-        assert_eq!(cpu.get_n(), false);
-    }
-}
