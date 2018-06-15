@@ -1,29 +1,7 @@
-mod ld;
-mod add;
-mod adc;
-mod sub;
-mod sbc;
-mod and;
-mod or;
-mod xor;
-mod cp;
-mod inc;
-mod dec;
-mod add16;
-mod inc16;
-mod dec16;
-mod swap;
-mod rot;
-mod shift;
-mod bit;
-mod jp;
-mod misc;
-mod call;
-mod rst;
-mod ret;
-
-use util;
 use mmu;
+use util;
+
+mod instrs;
 
 const Z_MASK: u8 = 0b_1000_0000;
 const N_MASK: u8 = 0b_0100_0000;
