@@ -1,14 +1,19 @@
 use cpu::*;
 
 impl Cpu {
-    fn call_nn(&mut self, pred: bool) {
-        let nn = self.read_immediate_word();
+
+    pub fn call(&mut self, nn: u16, pred: bool) {
         if pred {
             let pc = self.pc;
             self.sp -= 2;
             self.mmu.write_word(pc, self.sp);
             self.pc = nn;
         }
+    }
+
+    fn call_nn(&mut self, pred: bool) {
+        let nn = self.read_immediate_word();
+        self.call(nn, pred)
     }
 
     pub fn CALL(&mut self) {

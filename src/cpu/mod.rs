@@ -27,11 +27,36 @@ pub struct Cpu {
     pub halted: bool,
     pub stopped: bool,
 
-    pub interrupts_enabled: bool,
+    pub ei_pending: bool,
+    pub di_pending: bool,
 
-    ei_pending: bool,
-    di_pending: bool,
+    pub ime: bool, // Interrupt Master Enable Flag (Write Only)
 
+    // FFFF - IE - Interrupt Enable (R/W)
+    // Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
+    // Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
+    // Bit 2: Timer    Interrupt Enable  (INT 50h)  (1=Enable)
+    // Bit 3: Serial   Interrupt Enable  (INT 58h)  (1=Enable)
+    // Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
+    ie: u8,
+
+    // FF0F - IF - Interrupt Flag (R/W)
+    // Bit 0: V-Blank  Interrupt Request (INT 40h)  (1=Request)
+    // Bit 1: LCD STAT Interrupt Request (INT 48h)  (1=Request)
+    // Bit 2: Timer    Interrupt Request (INT 50h)  (1=Request)
+    // Bit 3: Serial   Interrupt Request (INT 58h)  (1=Request)
+    // Bit 4: Joypad   Interrupt Request (INT 60h)  (1=Request)
+    if_: u8,
+
+    // timers
+    div: u8,
+    // FF04 - DIV - Divider Register (R/W)
+    tima: u8,
+    // FF05 - TIMA - Timer counter (R/W)
+    tma: u8,
+    // FF06 - TMA - Timer Modulo (R/W)
+    tac: u8,  // FF07 - TAC - Timer Control (R/W)
+    // TODO what about INT 50 ?
 }
 
 impl Cpu {
@@ -46,9 +71,15 @@ impl Cpu {
             clock: 0,
             halted: false,
             stopped: false,
-            interrupts_enabled: false,
             ei_pending: false,
             di_pending: false,
+            ime: false,
+            ie: 0,
+            if_: 0,
+            div: 0,
+            tima: 0,
+            tma: 0,
+            tac: 0,
         }
     }
 
@@ -122,6 +153,28 @@ impl Cpu {
             Reg8::L => &mut self.l,
         }
     }
+
+    pub fn handle_interrupts(&mut self) -> () {
+        if self.ime {
+//            Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
+//            Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
+//            Bit 2: Timer    Interrupt Enable  (INT 50h)  (1=Enable)
+//            Bit 3: Serial   Interrupt Enable  (INT 58h)  (1=Enable)
+//            Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
+            for bit in 0..5 {
+                let int_addr = 0x40 + (0x08 * bit);
+                if self.check_interrupt(bit) {
+                    self.call(int_addr, true);
+                    self.ime = false;
+                    return;
+                }
+            }
+        }
+    }
+
+    fn check_interrupt(&self, bit_no: u16) -> bool {
+        self.ie & (1 << bit_no) != 0 && self.if_ & (1 << bit_no) != 0
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -129,5 +182,5 @@ pub enum Reg8 {
     A, F,
     B, C,
     D, E,
-    H, L
+    H, L,
 }

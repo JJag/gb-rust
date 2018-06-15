@@ -21,7 +21,6 @@ use piston::input::*;
 use piston::window::WindowSettings;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufRead;
 use std::io::Read;
 use std::time::Instant;
 
@@ -41,6 +40,8 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
     f.read_to_end(&mut contents)?;
     Result::Ok(contents)
 }
+
+const CLOCK_FREQUENCY_Hz: u32 = 4_194_304;
 
 fn main() {
     env_logger::init().unwrap();
@@ -113,6 +114,17 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     cpu.pc = cpu.pc.wrapping_add(1);
     execute(cpu, opcode);
     gpu.step(&mut cpu.mmu);
+    cpu.handle_interrupts();
+
+    if cpu.ei_pending {
+        cpu.ime = true;
+        cpu.ei_pending = false;
+    }
+    if cpu.di_pending {
+        cpu.ime = false;
+        cpu.di_pending = false;
+    }
+
     if cpu.pc == 0x100 {
         eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
         eprintln!("[$FF06] = {:02x} ($00) ; TMA", cpu.mmu.read_byte(0xFF06));
@@ -174,8 +186,6 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
 //        cpu.mmu.write_byte(0xFF48, 0xFF);
 //        cpu.mmu.write_byte(0xFF49, 0xFF);
 //        cpu.mmu.write_byte(0xFF4A, 0x00);
-
-
     }
 }
 
@@ -455,7 +465,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE2 => cpu.ld__c__a(),
         0xE3 => {
             handle_invalid_opcode(opcode)
-        },
+        }
         0xE4 => handle_invalid_opcode(opcode),
         0xE5 => cpu.push_hl(),
         0xE6 => cpu.AND_n(),
@@ -481,7 +491,10 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xF9 => cpu.ld_sp_hl(),
         0xFA => cpu.ld_a_nn(),
         0xFB => cpu.ei(),
-        0xFC => {eprintln!("{:02x}", cpu.pc); handle_invalid_opcode(opcode)},
+        0xFC => {
+            eprintln!("{:02x}", cpu.pc);
+            handle_invalid_opcode(opcode)
+        }
         0xFD => handle_invalid_opcode(opcode),
         0xFE => cpu.CP_n(),
         0xFF => cpu.RST_38H(),
