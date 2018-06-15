@@ -36,8 +36,7 @@ const OPERATION_MASK: u8 = 0b1111_1000;
 
 fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
     let mut f: File = File::open(filename)?;
-//    let size = f.metadata()?.len();
-    let size = 1000;
+    let size = f.metadata()?.len();
     let mut contents = Vec::with_capacity(size as usize);
     f.read_to_end(&mut contents)?;
     Result::Ok(contents)
