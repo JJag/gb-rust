@@ -28,7 +28,6 @@ pub struct Cpu {
     pub stopped: bool,
 
     pub ei_pending: bool,
-    pub di_pending: bool,
 
     pub ime: bool, // Interrupt Master Enable Flag (Write Only)
 
@@ -72,7 +71,6 @@ impl Cpu {
             halted: false,
             stopped: false,
             ei_pending: false,
-            di_pending: false,
             ime: false,
             ie: 0,
             if_: 0,

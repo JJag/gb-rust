@@ -113,17 +113,16 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     let opcode = cpu.mmu.read_byte(cpu.pc);
     cpu.pc = cpu.pc.wrapping_add(1);
     execute(cpu, opcode);
-    gpu.step(&mut cpu.mmu);
-    cpu.handle_interrupts();
 
-    if cpu.ei_pending {
+    let EI = 0xFB;
+    if cpu.ei_pending || opcode != EI {
         cpu.ime = true;
         cpu.ei_pending = false;
     }
-    if cpu.di_pending {
-        cpu.ime = false;
-        cpu.di_pending = false;
-    }
+
+    gpu.step(&mut cpu.mmu);
+    cpu.handle_interrupts();
+
 
     if cpu.pc == 0x100 {
         eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));

@@ -33,7 +33,7 @@ impl Cpu {
     }
 
     pub fn di(&mut self) {
-        self.di_pending = true;
+        self.ime = false;
     }
 
     pub fn daa(&mut self) {
