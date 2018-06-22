@@ -41,7 +41,7 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
     Result::Ok(contents)
 }
 
-const CLOCK_FREQUENCY_Hz: u32 = 4_194_304;
+const CLOCK_FREQUENCY_HZ: u32 = 4_194_304;
 
 fn main() {
     env_logger::init().unwrap();
