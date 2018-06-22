@@ -125,6 +125,7 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
 
 
     if cpu.pc == 0x100 {
+        eprintln!("[$FF04] = {:02x} ($AB) ; DIV", cpu.mmu.read_byte(0xFF04));
         eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
         eprintln!("[$FF06] = {:02x} ($00) ; TMA", cpu.mmu.read_byte(0xFF06));
         eprintln!("[$FF07] = {:02x} ($00) ; TAC", cpu.mmu.read_byte(0xFF07));

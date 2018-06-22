@@ -48,7 +48,7 @@ pub struct Cpu {
     if_: u8,
 
     // timers
-    div: u8,
+    counter: u8,
     // FF04 - DIV - Divider Register (R/W)
     tima: u8,
     // FF05 - TIMA - Timer counter (R/W)
@@ -74,12 +74,14 @@ impl Cpu {
             ime: false,
             ie: 0,
             if_: 0,
-            div: 0,
+            counter: 0,
             tima: 0,
             tma: 0,
             tac: 0,
         }
     }
+
+    pub fn div(&self) -> u8 { (self.div >> 8) as u8 }
 
     pub fn af(&self) -> u16 { util::concat(self.a, self.f) }
     pub fn de(&self) -> u16 { util::concat(self.d, self.e) }
