@@ -81,7 +81,7 @@ impl Cpu {
         }
     }
 
-    pub fn div(&self) -> u8 { (self.div >> 8) as u8 }
+    pub fn div(&self) -> u8 { (self.counter >> 8) as u8 }
 
     pub fn af(&self) -> u16 { util::concat(self.a, self.f) }
     pub fn de(&self) -> u16 { util::concat(self.d, self.e) }
