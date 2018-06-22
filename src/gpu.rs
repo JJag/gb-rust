@@ -1,5 +1,6 @@
 
-enum GpuMode {
+#[derive(Eq, PartialEq, Copy, Clone)]
+pub enum GpuMode {
     OamAccess,
     VramAccess,
     HBlank,
@@ -7,7 +8,7 @@ enum GpuMode {
 }
 
 pub struct Gpu {
-    mode: GpuMode,
+    pub mode: GpuMode,
     mode_time: u32,
     line: u8,
     pub framebuffer: [Color; 160 * 144],
@@ -133,7 +134,7 @@ impl Gpu {
                 if self.mode_time >= 172 {
                     self.mode_time = 0;
                     self.mode = GpuMode::HBlank;
-                    self.renderscan(mmu);
+//                    self.renderscan(mmu);
                 }
             }
             GpuMode::HBlank => {

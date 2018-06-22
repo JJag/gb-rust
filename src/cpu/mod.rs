@@ -45,7 +45,7 @@ pub struct Cpu {
     // Bit 2: Timer    Interrupt Request (INT 50h)  (1=Request)
     // Bit 3: Serial   Interrupt Request (INT 58h)  (1=Request)
     // Bit 4: Joypad   Interrupt Request (INT 60h)  (1=Request)
-    if_: u8,
+    pub if_: u8,
 
     // timers
     counter: u8,

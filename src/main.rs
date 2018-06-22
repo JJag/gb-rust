@@ -13,7 +13,7 @@ extern crate rand;
 
 use cpu::*;
 use glutin_window::GlutinWindow;
-use gpu::Gpu;
+use gpu::*;
 use mmu::Mmu;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::*;
@@ -110,10 +110,13 @@ const INPUT: u16 = 0xFF00;
 
 
 fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
-    cpu.clock += 1;
     let opcode = cpu.mmu.read_byte(cpu.pc);
     cpu.pc = cpu.pc.wrapping_add(1);
     execute(cpu, opcode);
+
+    let cycles_passed = 4; // let's pretend all instructions take 4 clock cycles
+    cpu.clock += 4;
+
 
     let EI = 0xFB;
     if cpu.ei_pending || opcode != EI {
@@ -121,7 +124,14 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
         cpu.ei_pending = false;
     }
 
+    let mode_before = gpu.mode;
     gpu.step(&mut cpu.mmu);
+    let mode_after = gpu.mode;
+    let v_blank_interrupt =  mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
+    if v_blank_interrupt {
+        cpu.if_ |= 1;
+    }
+
     cpu.handle_interrupts();
 
 
