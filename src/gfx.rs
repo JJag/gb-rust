@@ -114,7 +114,6 @@ fn draw_tile(c: &Context, gl: &mut GlGraphics, x_offset: i32, y_offset: i32, til
 impl Gfx {
     pub fn render_framebuffer(&mut self, args: &RenderArgs, framebuffer: &[Color]) {
         self.gl.draw(args.viewport(), |c, gl| {
-            let now = Instant::now();
             clear([0.3, 0.3, 0.3, 1.0], gl);
             for y in 0..145 {
                 for x in 0..161 {
@@ -133,7 +132,6 @@ impl Gfx {
     pub fn render_tileset(&mut self, args: &RenderArgs, vram: &[u8]) {
         let tileset = build_tileset(vram);
         self.gl.draw(args.viewport(), |c, gl| {
-            let now = Instant::now();
             clear([0.3, 0.0, 0.0, 1.0], gl);
 
             for tidx in 0..384 {
@@ -154,7 +152,6 @@ impl Gfx {
         let tilemap = build_tilemap(vram);
         use graphics::*;
         self.gl.draw(args.viewport(), |c, gl| {
-            let now = Instant::now();
             clear([0.3, 0.0, 0.0, 1.0], gl);
             for tile_x in 0..32 {
                 for tile_y in 0..32 {
