@@ -29,6 +29,7 @@ mod mmu;
 mod util;
 mod gfx;
 mod gpu;
+mod timer;
 
 
 const OPERATION_MASK: u8 = 0b1111_1000;
