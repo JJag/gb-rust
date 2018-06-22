@@ -525,35 +525,35 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
 
     match opcode & OPERATION_MASK {
         0b_0011_0000 => match reg_code {
-            RegOrHl::REG(r) => cpu.SWAP_r(r),
+            RegOrHl::Reg(r) => cpu.SWAP_r(r),
             RegOrHl::HL => cpu.SWAP_aHL(),
         },
         0b_0000_0000 => match reg_code {
-            RegOrHl::REG(r) => cpu.RLC(r),
+            RegOrHl::Reg(r) => cpu.RLC(r),
             RegOrHl::HL => cpu.RLC_aHL(),
         },
         0b_0000_1000 => match reg_code {
-            RegOrHl::REG(r) => cpu.RRC(r),
+            RegOrHl::Reg(r) => cpu.RRC(r),
             RegOrHl::HL => cpu.RRC_aHL(),
         },
         0b_0001_0000 => match reg_code {
-            RegOrHl::REG(r) => cpu.RL(r),
+            RegOrHl::Reg(r) => cpu.RL(r),
             RegOrHl::HL => cpu.RL_aHL(),
         },
         0b_0001_1000 => match reg_code {
-            RegOrHl::REG(r) => cpu.RR(r),
+            RegOrHl::Reg(r) => cpu.RR(r),
             RegOrHl::HL => cpu.RR_aHL(),
         },
         0b_0010_0000 => match reg_code {
-            RegOrHl::REG(r) => cpu.SLA_r(r),
+            RegOrHl::Reg(r) => cpu.SLA_r(r),
             RegOrHl::HL => cpu.SLA_aHL(),
         },
         0b_0010_1000 => match reg_code {
-            RegOrHl::REG(r) => cpu.SRA_r(r),
+            RegOrHl::Reg(r) => cpu.SRA_r(r),
             RegOrHl::HL => cpu.SRA_aHL(),
         },
         0b_0011_1000 => match reg_code {
-            RegOrHl::REG(r) => cpu.SRL_r(r),
+            RegOrHl::Reg(r) => cpu.SRL_r(r),
             RegOrHl::HL => cpu.SRL_aHL(),
         },
         _ => {
@@ -561,15 +561,15 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
             const BIT_OP_MASK: u8 = 0b_1100_0000;
             match opcode & BIT_OP_MASK {
                 0b_0100_0000 => match reg_code {
-                    RegOrHl::REG(r) => cpu.BIT_r(bit, r),
+                    RegOrHl::Reg(r) => cpu.BIT_r(bit, r),
                     RegOrHl::HL => cpu.BIT_aHL(bit),
                 },
                 0b_1000_0000 => match reg_code {
-                    RegOrHl::REG(r) => cpu.RES_r(bit, r),
+                    RegOrHl::Reg(r) => cpu.RES_r(bit, r),
                     RegOrHl::HL => cpu.RES_aHL(bit),
                 },
                 0b_1100_0000 => match reg_code {
-                    RegOrHl::REG(r) => cpu.SET_r(bit, r),
+                    RegOrHl::Reg(r) => cpu.SET_r(bit, r),
                     RegOrHl::HL => cpu.SET_aHL(bit),
                 },
                 _ => panic!("illegal state"),
@@ -584,19 +584,19 @@ pub fn reg_code(opcode: u8) -> RegOrHl {
     use RegOrHl::*;
     use cpu::Reg8::*;
     match opcode % 8 {
-        0 => REG(B),
-        1 => REG(C),
-        2 => REG(D),
-        3 => REG(E),
-        4 => REG(H),
-        5 => REG(L),
+        0 => Reg(B),
+        1 => Reg(C),
+        2 => Reg(D),
+        3 => Reg(E),
+        4 => Reg(H),
+        5 => Reg(L),
         6 => HL,
-        7 => REG(A),
+        7 => Reg(A),
         _ => panic!("illegal state")
     }
 }
 
 pub enum RegOrHl {
-    REG(Reg8),
+    Reg(Reg8),
     HL,
 }
