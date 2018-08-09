@@ -84,7 +84,7 @@ impl Array2D {
         Array2D {
             width,
             height,
-            buf: Vec::from_elem(0, x * y),
+            buf: vec![0; width * height],
         }
     }
 
