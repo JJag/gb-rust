@@ -19,14 +19,23 @@ pub fn swap_nibbles(x: u8) -> u8 {
 pub fn to_u8(b: bool) -> u8 { if b { 1 } else { 0 } }
 
 pub fn half_carry_add(a: u8, b: u8) -> bool { (a & 0x0F) + (b & 0x0F) > 0x0F }
+
 pub fn full_carry_add(a: u8, b: u8) -> bool { (a as u16) + (b as u16) > 0xFF }
+
 pub fn half_carry_add16(a: u16, b: u16) -> bool { (a & 0xFFF) + (b & 0xFFF) > 0xFFF }
+
 pub fn full_carry_add16(a: u16, b: u16) -> bool { (a as u32) + (b as u32) > 0xFFFF }
+
 pub fn half_carry_adc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) + (b & 0x0F) + (c & 0x0F) > 0x0F }
+
 pub fn full_carry_adc(a: u8, b: u8, c: u8) -> bool { (a as u16) + (b as u16) + (c as u16) > 0xFF }
+
 pub fn half_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a & 0x0F) < (b & 0x0F) + c }
+
 pub fn full_borrow_sbc(a: u8, b: u8, c: u8) -> bool { (a as u16) < b as u16 + c as u16 }
+
 pub fn half_borrow_sub(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
+
 pub fn full_borrow_sub(a: u8, b: u8) -> bool { a < b }
 
 pub fn check_bit(val: u8, bit: u8) -> bool {
@@ -62,4 +71,31 @@ mod test {
         assert_eq!(check_bit(0b1111_0000, 4), true);
         assert_eq!(check_bit(0b1111_0000, 7), true);
     }
+}
+
+pub struct Array2D {
+    width: usize,
+    height: usize,
+    buf: Vec<u8>,
+}
+
+impl Array2D {
+    pub fn new(width: usize, height: usize) -> Array2D {
+        Array2D {
+            width,
+            height,
+            buf: Vec::from_elem(0, x * y),
+        }
+    }
+
+    pub fn get(&self, x: usize, y: usize) -> u8 {
+        self.buf[y * self.height + x]
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, val: u8) {
+        self.buf[y * self.height + x] = val;
+    }
+
+    pub fn width(&self) -> usize { self.width }
+    pub fn height(&self) -> usize { self.height }
 }
