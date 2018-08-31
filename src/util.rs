@@ -89,11 +89,11 @@ impl Array2D {
     }
 
     pub fn get(&self, x: usize, y: usize) -> u8 {
-        self.buf[y * self.height + x]
+        self.buf[y * self.width + x]
     }
 
     pub fn set(&mut self, x: usize, y: usize, val: u8) {
-        self.buf[y * self.height + x] = val;
+        self.buf[y * self.width + x] = val;
     }
 
     pub fn width(&self) -> usize { self.width }
