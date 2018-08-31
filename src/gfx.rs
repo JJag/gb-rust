@@ -113,11 +113,25 @@ fn draw_tile(x_offset: i32, y_offset: i32, tile: &Tile, out_buf: &mut Array2D) {
 
 impl Gfx {
     pub fn build_framebuffer(&mut self, vram: &[u8], sc_x: u8, sc_y: u8) -> Array2D {
-        let sc_x = sc_x as f32;
-        let sc_y = sc_y as f32;
-        let first_tile_col_idx = (sc_x / 8.0) as u8;
-        let first_tile_row_idx = (sc_y / 8.0) as u8;
-        unimplemented!()
+        let sc_x = sc_x as i32;
+        let sc_x = sc_x as i32;
+        let sc_y = sc_y as i32;
+        let first_tile_col_idx = sc_x / 8;
+        let first_tile_row_idx = sc_y / 8;
+        let mut out_buf = Array2D::new(160, 144);
+
+        let tileset = build_tileset(vram);
+        let tilemap = build_tilemap(vram);
+
+        for x in 0..21 {
+            for y in 0..19 {
+                let tile_x = (first_tile_col_idx + x) % 32;
+                let tile_y = (first_tile_row_idx + y) % 32;
+                let tile = tilemap.get(&tileset, 0, tile_x, tile_y);
+                draw_tile(x * 8 - sc_x % 8, y * 8 - sc_y % 8, tile, &mut out_buf);
+            }
+        }
+        out_buf
     }
 
     //    pub fn render(&buf: )

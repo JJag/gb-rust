@@ -59,7 +59,11 @@ fn main() {
 
     let rom_name = cpu.mmu.get_rom_name();
 
-    let mut window: GlutinWindow = WindowSettings::new(rom_name, [32 * 8, 32 * 8])
+    let bg_map_dim = [32 * 8, 32 * 8];
+    let screen_dim = [160, 144];
+    let window_dim = screen_dim;
+
+    let mut window: GlutinWindow = WindowSettings::new(rom_name, window_dim)
         .opengl(opengl)
         .exit_on_esc(true)
         .build()
@@ -95,7 +99,9 @@ fn main() {
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
         if cpu.clock % 17_500 == 0 {
             if let Some(e) = events.next(&mut window) {
-                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
+
+                if let Some(r) = e.render_args() { gfx.render_framebuffer(&r, &cpu.mmu.vram, sc_x, sc_y); }
+//                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
 //                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
                 if let Some(u) = e.update_args() { gfx.update(&u); }
             }
