@@ -42,6 +42,32 @@ pub fn check_bit(val: u8, bit: u8) -> bool {
     val & (1 << bit) != 0
 }
 
+pub struct Array2D {
+    width: usize,
+    height: usize,
+    buf: Vec<u8>,
+}
+
+impl Array2D {
+    pub fn new(width: usize, height: usize) -> Array2D {
+        Array2D {
+            width,
+            height,
+            buf: vec![0; width * height],
+        }
+    }
+
+    pub fn get(&self, x: usize, y: usize) -> u8 {
+        self.buf[y * self.width + x]
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, val: u8) {
+        self.buf[y * self.width + x] = val;
+    }
+
+    pub fn width(&self) -> usize { self.width }
+    pub fn height(&self) -> usize { self.height }
+}
 
 mod test {
     use super::*;
@@ -71,31 +97,24 @@ mod test {
         assert_eq!(check_bit(0b1111_0000, 4), true);
         assert_eq!(check_bit(0b1111_0000, 7), true);
     }
-}
 
-pub struct Array2D {
-    width: usize,
-    height: usize,
-    buf: Vec<u8>,
-}
+    #[test]
+    fn array2D_test() {
+        let mut arr = Array2D::new(3, 2);
+        arr.set(0, 0, 0);
+        arr.set(1, 0, 1);
+        arr.set(2, 0, 2);
+        arr.set(0, 1, 3);
+        arr.set(1, 1, 4);
+        arr.set(2, 1, 5);
 
-impl Array2D {
-    pub fn new(width: usize, height: usize) -> Array2D {
-        Array2D {
-            width,
-            height,
-            buf: vec![0; width * height],
-        }
+        assert_eq!(arr.width(), 3);
+        assert_eq!(arr.height(), 2);
+        assert_eq!(arr.get(0, 0), 0);
+        assert_eq!(arr.get(1, 0), 1);
+        assert_eq!(arr.get(2, 0), 2);
+        assert_eq!(arr.get(0, 1), 3);
+        assert_eq!(arr.get(1, 1), 4);
+        assert_eq!(arr.get(2, 1), 5);
     }
-
-    pub fn get(&self, x: usize, y: usize) -> u8 {
-        self.buf[y * self.width + x]
-    }
-
-    pub fn set(&mut self, x: usize, y: usize, val: u8) {
-        self.buf[y * self.width + x] = val;
-    }
-
-    pub fn width(&self) -> usize { self.width }
-    pub fn height(&self) -> usize { self.height }
 }
