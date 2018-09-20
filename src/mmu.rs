@@ -7,6 +7,14 @@ const OAM_SIZE: usize = 160;
 const IO_SIZE: usize = 128;
 const ZERO_RAM_SIZE: usize = 128;
 
+pub const ADDR_DIV: u16 = 0xFF04;
+pub const ADDR_TIMA: u16 = 0xFF05;
+pub const ADDR_TMA: u16 = 0xFF06;
+pub const ADDR_TAC: u16 = 0xFF07;
+
+pub const ADDR_IF: u16 = 0xFF0F;
+pub const ADDR_IE: u16 = 0xFFFF;
+
 pub struct Mmu {
     unused: u8,
     bootrom: Vec<u8>,
