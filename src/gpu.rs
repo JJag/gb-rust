@@ -1,4 +1,3 @@
-
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub enum GpuMode {
     OamAccess,
@@ -33,10 +32,9 @@ impl Gpu {
     }
 
     fn renderscan(&mut self, mmu: &mut super::mmu::Mmu) {
-
         let sc_x: u8 = mmu.read_byte(0xFF43);
         let sc_y: u8 = mmu.read_byte(0xFF42);
-//        eprintln!("sc_x = {:?}\t sc_y = {:?}", sc_x, sc_y);
+        //        eprintln!("sc_x = {:?}\t sc_y = {:?}", sc_x, sc_y);
         let current_scanline = mmu.read_byte(0xFF44);
         let vram = &mmu.vram;
 
@@ -59,7 +57,11 @@ impl Gpu {
         let display_enabled = check_bit(lcdc, 7);
         let bg_tile_map = if bg_tile_map { tile_map1 } else { tile_map0 };
         let bg_tile_set = if bg_tile_set { tile_set1 } else { tile_set0 };
-        let window_tile_map = if window_tile_map { tile_map1 } else { tile_map0 };
+        let window_tile_map = if window_tile_map {
+            tile_map1
+        } else {
+            tile_map0
+        };
 
         let bg_palette_register = mmu.read_byte(0xFF47);
         let palette = color_palette(bg_palette_register);
@@ -67,36 +69,34 @@ impl Gpu {
         let bg_y = current_scanline.wrapping_add(sc_y);
         let bg_x0 = sc_x;
 
-
-//        eprintln!("bg_tile_set = {:?}", &bg_tile_set[..32]);
-//        eprintln!("bg_tile_map = {:?}", &bg_tile_map[128..]);
+        //        eprintln!("bg_tile_set = {:?}", &bg_tile_set[..32]);
+        //        eprintln!("bg_tile_map = {:?}", &bg_tile_map[128..]);
 
         let tile_row = bg_y / 32;
         let row_in_tile = bg_y % 8;
 
+        //        if y == 0 {
+        //            println!("y = ({})", current_scanline);
+        //        }
 
-//        if y == 0 {
-//            println!("y = ({})", current_scanline);
-//        }
-
-//        println!("y = ({})", current_scanline);
+        //        println!("y = ({})", current_scanline);
         for d_x in 0..160 {
             let bg_x = bg_x0.wrapping_add(d_x);
             let tile_col = bg_x / 32;
             let col_in_tile = bg_x % 8;
             let tile_idx = bg_tile_map[(32 * tile_row + tile_col) as usize];
             const TILE_SIZE: u16 = 16;
-            let tile = &bg_tile_set[(TILE_SIZE * tile_idx as u16) as usize..(TILE_SIZE * (tile_idx + 1) as u16) as usize];   // TODO im not sure if this indexing is correct for both tilesets
-//            eprintln!("tile_idx = {:?}", tile_idx);
-//            eprintln!("tile = {:?}", tile);
-            // tile is 8 * 8 * 2 bits
+            let tile = &bg_tile_set[(TILE_SIZE * tile_idx as u16) as usize
+                                        ..(TILE_SIZE * (tile_idx + 1) as u16) as usize]; // TODO im not sure if this indexing is correct for both tilesets
+                                                                                         //            eprintln!("tile_idx = {:?}", tile_idx);
+                                                                                         //            eprintln!("tile = {:?}", tile);
+                                                                                         // tile is 8 * 8 * 2 bits
 
-//            println!("{} {}", bg_x, bg_y);
-//            println!("TILE {}", tile_idx);
-//            println!("{}", row_in_tile);
-//            println!("{}", tile.len());
-//            println!("bg_y = {}, bg_x = {}", bg_y, bg_x);
-
+            //            println!("{} {}", bg_x, bg_y);
+            //            println!("TILE {}", tile_idx);
+            //            println!("{}", row_in_tile);
+            //            println!("{}", tile.len());
+            //            println!("bg_y = {}, bg_x = {}", bg_y, bg_x);
 
             let tile_row_lo = tile[(row_in_tile * 2) as usize];
             let tile_row_hi = tile[(row_in_tile * 2 + 1) as usize];
@@ -113,8 +113,7 @@ impl Gpu {
             }
         }
 
-
-//        println!("{}", now.elapsed().as_millis());
+        //        println!("{}", now.elapsed().as_millis());
     }
 
     // if true is returned canvas should be redrawn
@@ -134,7 +133,7 @@ impl Gpu {
                 if self.mode_time >= 172 {
                     self.mode_time = 0;
                     self.mode = GpuMode::HBlank;
-//                    self.renderscan(mmu);
+                    //                    self.renderscan(mmu);
                 }
             }
             GpuMode::HBlank => {
@@ -142,7 +141,8 @@ impl Gpu {
                     self.mode_time = 0;
                     mmu.write_byte(current_scanline + 1, 0xFF44);
 
-                    if current_scanline == 143 { // last line was rendered
+                    if current_scanline == 143 {
+                        // last line was rendered
                         self.mode = GpuMode::VBlank;
                     } else {
                         self.mode = GpuMode::OamAccess;
@@ -185,7 +185,7 @@ fn color_palette(palette_register: u8) -> [Color; 4] {
             1 => Color::LIGHT,
             2 => Color::DARK,
             3 => Color::DARKEST,
-            _ => panic!("invalid value for color")
+            _ => panic!("invalid value for color"),
         }
     }
     const MASK: u8 = 0b0000_0011;

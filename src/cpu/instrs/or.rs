@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     fn or(&mut self, x: u8) {
         let a = self.a;
         self.a = a | x;

@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     fn and(&mut self, x: u8) {
         let a = self.a;
         self.a = a & x;

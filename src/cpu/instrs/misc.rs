@@ -43,11 +43,22 @@ impl Cpu {
 
         let mut a = self.a as u16;
         if !n_flag {
-            if h_flag || (a & 0x000F) > 0x09 { a += 0x06; }
-            if c_flag || (a & 0xFFFF) > 0x9F { a += 0x60; }
+            if h_flag || (a & 0x000F) > 0x09 {
+                a += 0x06;
+            }
+            if c_flag || (a & 0xFFFF) > 0x9F {
+                a += 0x60;
+            }
         } else {
-            if h_flag { a -= 0x06; if !c_flag { a &= 0xFF; }}
-            if c_flag { a -= 0x60; }
+            if h_flag {
+                a -= 0x06;
+                if !c_flag {
+                    a &= 0xFF;
+                }
+            }
+            if c_flag {
+                a -= 0x60;
+            }
         }
 
         self.a = a as u8;
@@ -56,4 +67,3 @@ impl Cpu {
         self.set_h(false);
     }
 }
-

@@ -1,5 +1,5 @@
-use std::mem;
 use cpu::*;
+use std::mem;
 
 impl Cpu {
     fn add(&mut self, x: u16) {

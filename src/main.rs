@@ -27,12 +27,11 @@ use std::io::Read;
 use std::time::Instant;
 
 mod cpu;
-mod mmu;
-mod util;
 mod gfx;
 mod gpu;
+mod mmu;
 mod timer;
-
+mod util;
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
@@ -74,20 +73,19 @@ fn main() {
         .build()
         .unwrap();
     let mut gfx = gfx::Gfx {
-        gl: GlGraphics::new(opengl)
+        gl: GlGraphics::new(opengl),
     };
     let mut events: Events = Events::new(EventSettings::new());
 
-
     let mut breakpoints: Vec<u16> = vec![
-//        0x0100,
-0x8014,
-//0x0B79,
-//0x45C,
-//0x45F,
-//0x035B,
-//0x0360,
-//0x0363,
+        //        0x0100,
+        0x8014,
+        //0x0B79,
+        //0x45C,
+        //0x45F,
+        //0x035B,
+        //0x0360,
+        //0x0363,
     ];
     let mut is_debug = false;
 
@@ -104,21 +102,22 @@ fn main() {
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
         if cpu.clock % 17_500 == 0 {
             if let Some(e) = events.next(&mut window) {
-
-                if let Some(r) = e.render_args() { gfx.render_framebuffer(&r, &cpu.mmu.vram, sc_x, sc_y); }
-//                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
-//                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
-                if let Some(u) = e.update_args() { gfx.update(&u); }
+                if let Some(r) = e.render_args() {
+                    gfx.render_framebuffer(&r, &cpu.mmu.vram, sc_x, sc_y);
+                }
+                //                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
+                //                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
+                if let Some(u) = e.update_args() {
+                    gfx.update(&u);
+                }
             }
         }
     }
 }
 
-
 const SC_X: u16 = 0xFF43;
 const SC_Y: u16 = 0xFF42;
 const INPUT: u16 = 0xFF00;
-
 
 fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     let opcode = cpu.mmu.read_byte(cpu.pc);
@@ -127,7 +126,6 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
 
     let cycles_passed = 4; // let's pretend all instructions take 4 clock cycles
     cpu.clock += 4;
-
 
     let EI = 0xFB;
     if cpu.ei_pending && opcode != EI {
@@ -138,7 +136,7 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     let mode_before = gpu.mode;
     gpu.step(&mut cpu.mmu);
     let mode_after = gpu.mode;
-    let v_blank_interrupt =  mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
+    let v_blank_interrupt = mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
     if v_blank_interrupt {
         let _if = cpu.mmu.read_byte(mmu::ADDR_IF);
         let new_if = Interrupts::from_bits_truncate(_if) | Interrupts::VBLANK;
@@ -146,7 +144,6 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     }
 
     cpu.handle_interrupts();
-
 
     if cpu.pc == 0x100 {
         eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
@@ -180,36 +177,35 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
         eprintln!("[$FF49] = {:02x} ($FF) ; OBP1", cpu.mmu.read_byte(0xFF49));
         eprintln!("[$FF4A] = {:02x} ($00) ; W   ", cpu.mmu.read_byte(0xFF4A));
 
-
-//        cpu.mmu.write_byte(0xFF05, 0x00);
-//        cpu.mmu.write_byte(0xFF06, 0x00);
-//        cpu.mmu.write_byte(0xFF07, 0x00);
-//        cpu.mmu.write_byte(0xFF10, 0x80);
-//        cpu.mmu.write_byte(0xFF11, 0xBF);
-//        cpu.mmu.write_byte(0xFF12, 0xF3);
-//        cpu.mmu.write_byte(0xFF14, 0xBF);
-//        cpu.mmu.write_byte(0xFF16, 0x3F);
-//        cpu.mmu.write_byte(0xFF17, 0x00);
-//        cpu.mmu.write_byte(0xFF19, 0xBF);
-//        cpu.mmu.write_byte(0xFF1A, 0x7F);
-//        cpu.mmu.write_byte(0xFF1B, 0xFF);
-//        cpu.mmu.write_byte(0xFF1C, 0x9F);
-//        cpu.mmu.write_byte(0xFF1E, 0xBF);
-//        cpu.mmu.write_byte(0xFF20, 0xFF);
-//        cpu.mmu.write_byte(0xFF21, 0x00);
-//        cpu.mmu.write_byte(0xFF22, 0x00);
-//        cpu.mmu.write_byte(0xFF23, 0xBF);
-//        cpu.mmu.write_byte(0xFF24, 0x77);
-//        cpu.mmu.write_byte(0xFF25, 0xF3);
-//        cpu.mmu.write_byte(0xFF26, 0xF1);
-//        cpu.mmu.write_byte(0xFF40, 0x91);
-//        cpu.mmu.write_byte(0xFF42, 0x00);
-//        cpu.mmu.write_byte(0xFF43, 0x00);
-//        cpu.mmu.write_byte(0xFF45, 0x00);
-//        cpu.mmu.write_byte(0xFF47, 0xFC);
-//        cpu.mmu.write_byte(0xFF48, 0xFF);
-//        cpu.mmu.write_byte(0xFF49, 0xFF);
-//        cpu.mmu.write_byte(0xFF4A, 0x00);
+        //        cpu.mmu.write_byte(0xFF05, 0x00);
+        //        cpu.mmu.write_byte(0xFF06, 0x00);
+        //        cpu.mmu.write_byte(0xFF07, 0x00);
+        //        cpu.mmu.write_byte(0xFF10, 0x80);
+        //        cpu.mmu.write_byte(0xFF11, 0xBF);
+        //        cpu.mmu.write_byte(0xFF12, 0xF3);
+        //        cpu.mmu.write_byte(0xFF14, 0xBF);
+        //        cpu.mmu.write_byte(0xFF16, 0x3F);
+        //        cpu.mmu.write_byte(0xFF17, 0x00);
+        //        cpu.mmu.write_byte(0xFF19, 0xBF);
+        //        cpu.mmu.write_byte(0xFF1A, 0x7F);
+        //        cpu.mmu.write_byte(0xFF1B, 0xFF);
+        //        cpu.mmu.write_byte(0xFF1C, 0x9F);
+        //        cpu.mmu.write_byte(0xFF1E, 0xBF);
+        //        cpu.mmu.write_byte(0xFF20, 0xFF);
+        //        cpu.mmu.write_byte(0xFF21, 0x00);
+        //        cpu.mmu.write_byte(0xFF22, 0x00);
+        //        cpu.mmu.write_byte(0xFF23, 0xBF);
+        //        cpu.mmu.write_byte(0xFF24, 0x77);
+        //        cpu.mmu.write_byte(0xFF25, 0xF3);
+        //        cpu.mmu.write_byte(0xFF26, 0xF1);
+        //        cpu.mmu.write_byte(0xFF40, 0x91);
+        //        cpu.mmu.write_byte(0xFF42, 0x00);
+        //        cpu.mmu.write_byte(0xFF43, 0x00);
+        //        cpu.mmu.write_byte(0xFF45, 0x00);
+        //        cpu.mmu.write_byte(0xFF47, 0xFC);
+        //        cpu.mmu.write_byte(0xFF48, 0xFF);
+        //        cpu.mmu.write_byte(0xFF49, 0xFF);
+        //        cpu.mmu.write_byte(0xFF4A, 0x00);
     }
 }
 
@@ -223,7 +219,9 @@ fn do_debug_stuff(cpu: &Cpu, breakpoints: &mut Vec<u16>) -> bool {
             if let Ok(addr) = u16::from_str_radix(l, 16) {
                 *breakpoints = vec![addr];
                 false
-            } else { true }
+            } else {
+                true
+            }
         }
     };
     continue_debugging
@@ -487,9 +485,7 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xE0 => cpu.ldh_n_a(),
         0xE1 => cpu.pop_hl(),
         0xE2 => cpu.ld__c__a(),
-        0xE3 => {
-            handle_invalid_opcode(opcode)
-        }
+        0xE3 => handle_invalid_opcode(opcode),
         0xE4 => handle_invalid_opcode(opcode),
         0xE5 => cpu.push_hl(),
         0xE6 => cpu.AND_n(),
@@ -529,7 +525,6 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
 fn handle_invalid_opcode(opcode: u8) {
     panic!("INVALID OPCODE {:02x}", opcode)
 }
-
 
 pub fn execute_CB_prefixed(cpu: &mut Cpu) {
     let opcode = cpu.mmu.read_byte(cpu.pc);
@@ -591,11 +586,13 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
     }
 }
 
-pub fn bit_code(opcode: u8) -> u8 { opcode << 2 >> 5 }
+pub fn bit_code(opcode: u8) -> u8 {
+    opcode << 2 >> 5
+}
 
 pub fn reg_code(opcode: u8) -> RegOrHl {
-    use RegOrHl::*;
     use cpu::Reg8::*;
+    use RegOrHl::*;
     match opcode % 8 {
         0 => Reg(B),
         1 => Reg(C),
@@ -605,7 +602,7 @@ pub fn reg_code(opcode: u8) -> RegOrHl {
         5 => Reg(L),
         6 => HL,
         7 => Reg(A),
-        _ => panic!("illegal state")
+        _ => panic!("illegal state"),
     }
 }
 

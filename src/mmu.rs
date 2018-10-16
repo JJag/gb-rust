@@ -49,7 +49,7 @@ impl Mmu {
         let h = self.read_byte(addr);
         let l = self.read_byte(addr + 1);
         let val = util::concat(l, h);
-//        println!("Reading {:04X} from {:04X}", val, addr);
+        //        println!("Reading {:04X} from {:04X}", val, addr);
         val
     }
     pub fn read_byte(&self, addr: u16) -> u8 {
@@ -67,14 +67,14 @@ impl Mmu {
     }
 
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
-//        eprintln!("Writing word {:4X} to ${:04X}", val, addr);
+        //        eprintln!("Writing word {:4X} to ${:04X}", val, addr);
         let (lo, hi) = util::split_word(val);
         *(self.map_addr_mut(addr)) = hi;
         *(self.map_addr_mut(addr + 1)) = lo;
     }
 
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
-//        eprintln!("Writing byte {:2X} to ${:04X}", val, addr);
+        //        eprintln!("Writing byte {:2X} to ${:04X}", val, addr);
         *(self.map_addr_mut(addr)) = val;
     }
 
@@ -102,7 +102,7 @@ impl Mmu {
     fn map_addr_mut(&mut self, addr: u16) -> &mut u8 {
         let a = addr as usize;
         match a {
-//            0x0000 ... 0x3FFF => panic!("Write to read-only memory"),
+            //            0x0000 ... 0x3FFF => panic!("Write to read-only memory"),
             0x0000...0x3FFF => &mut self.rom[a],
             0x4000...0x7FFF => &mut self.rom[a],
             0x8000...0x9FFF => &mut self.vram[a - 0x8000],

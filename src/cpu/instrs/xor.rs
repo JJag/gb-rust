@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     fn xor(&mut self, x: u8) {
         let a = self.a;
         self.a = a ^ x;

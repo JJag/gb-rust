@@ -25,7 +25,6 @@ impl Cpu {
         let x = *self.get_reg8(r);
         let new_x = x | (1 << bit);
         *self.get_mut_reg8(r) = new_x;
-
     }
 
     pub fn SET_aHL(&mut self, bit: u8) {
@@ -40,7 +39,6 @@ impl Cpu {
         let x = *self.get_reg8(r);
         let new_x = x & !(1 << bit);
         *self.get_mut_reg8(r) = new_x;
-
     }
 
     pub fn RES_aHL(&mut self, bit: u8) {
@@ -50,6 +48,4 @@ impl Cpu {
         let new_x = x & !(1 << bit);
         self.mmu.write_byte(new_x, hl);
     }
-
-
 }

@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     pub fn SLA_r(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
 
@@ -31,7 +30,6 @@ impl Cpu {
         self.set_h(false);
         self.set_n(false);
     }
-
 
     pub fn SLA_aHL(&mut self) {
         let hl = self.hl();
@@ -64,5 +62,4 @@ impl Cpu {
         self.set_h(false);
         self.set_n(false);
     }
-
 }

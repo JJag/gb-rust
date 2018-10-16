@@ -2,7 +2,6 @@ use cpu::*;
 use util;
 
 impl Cpu {
-
     fn add8(&mut self, x: u8) {
         let a = self.a;
         self.a = a.wrapping_add(x);

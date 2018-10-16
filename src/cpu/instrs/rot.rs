@@ -47,17 +47,35 @@ impl Cpu {
         self.set_n(false);
     }
 
+    pub fn RLCA(&mut self) {
+        self.rlc(Reg8::A);
+        self.set_z(false)
+    }
+    pub fn RLA(&mut self) {
+        self.rl(Reg8::A);
+        self.set_z(false)
+    }
+    pub fn RRCA(&mut self) {
+        self.rrc(Reg8::A);
+        self.set_z(false)
+    }
+    pub fn RRA(&mut self) {
+        self.rr(Reg8::A);
+        self.set_z(false)
+    }
 
-    pub fn RLCA(&mut self) { self.rlc(Reg8::A); self.set_z(false) }
-    pub fn RLA(&mut self) { self.rl(Reg8::A); self.set_z(false) }
-    pub fn RRCA(&mut self) { self.rrc(Reg8::A); self.set_z(false) }
-    pub fn RRA(&mut self) { self.rr(Reg8::A); self.set_z(false) }
-
-
-    pub fn RLC(&mut self, r: Reg8) { self.rlc(r) }
-    pub fn RL(&mut self, r: Reg8) { self.rl(r) }
-    pub fn RRC(&mut self, r: Reg8) { self.rrc(r) }
-    pub fn RR(&mut self, r: Reg8) { self.rr(r) }
+    pub fn RLC(&mut self, r: Reg8) {
+        self.rlc(r)
+    }
+    pub fn RL(&mut self, r: Reg8) {
+        self.rl(r)
+    }
+    pub fn RRC(&mut self, r: Reg8) {
+        self.rrc(r)
+    }
+    pub fn RR(&mut self, r: Reg8) {
+        self.rr(r)
+    }
 
     pub fn RLC_aHL(&mut self) {
         let hl = self.hl();

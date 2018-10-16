@@ -2,7 +2,6 @@ use cpu::*;
 use util;
 
 impl Cpu {
-
     pub fn INC(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         (*self.get_mut_reg8(r)) = x.wrapping_add(1);

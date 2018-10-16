@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     fn cp(&mut self, x: u8) {
         let a = self.a;
         let result = a.wrapping_sub(x);
@@ -28,5 +27,9 @@ impl Cpu {
     }
 }
 
-fn half_borrow_cp(a: u8, b: u8) -> bool { (a & 0x0F) < (b & 0x0F) }
-fn full_borrow_cp(a: u8, b: u8) -> bool { a < b }
+fn half_borrow_cp(a: u8, b: u8) -> bool {
+    (a & 0x0F) < (b & 0x0F)
+}
+fn full_borrow_cp(a: u8, b: u8) -> bool {
+    a < b
+}

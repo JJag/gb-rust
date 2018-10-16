@@ -1,7 +1,6 @@
 use cpu::*;
 
 impl Cpu {
-
     pub fn INC_BC(&mut self) {
         let x = self.bc().wrapping_add(1);
         self.set_bc(x);

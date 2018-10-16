@@ -3,7 +3,6 @@ use util;
 use util::to_u8;
 
 impl Cpu {
-
     fn adc(&mut self, x: u8) {
         let a = self.a;
         let c = to_u8(self.get_c());

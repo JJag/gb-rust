@@ -1,5 +1,5 @@
-use cpu::*;
 use cpu::Reg8;
+use cpu::*;
 use std::mem;
 use util;
 
@@ -25,8 +25,12 @@ impl Cpu {
         self.mmu.write_byte(x, hl);
     }
 
-    pub fn ld_a_bc(&mut self) { self.a = self.mmu.read_byte(self.bc()) }
-    pub fn ld_a_de(&mut self) { self.a = self.mmu.read_byte(self.de()) }
+    pub fn ld_a_bc(&mut self) {
+        self.a = self.mmu.read_byte(self.bc())
+    }
+    pub fn ld_a_de(&mut self) {
+        self.a = self.mmu.read_byte(self.de())
+    }
     pub fn ld_a_nn(&mut self) {
         let nn = self.read_immediate_word();
         self.a = self.mmu.read_byte(nn)
@@ -52,8 +56,12 @@ impl Cpu {
         self.mmu.write_byte(self.a, nn)
     }
 
-    pub fn ld__c__a(&mut self) { self.mmu.write_byte(self.a, 0xFF00 + self.c as u16) }
-    pub fn ld_a__c_(&mut self) { self.a = self.mmu.read_byte(0xFF00 + self.c as u16) }
+    pub fn ld__c__a(&mut self) {
+        self.mmu.write_byte(self.a, 0xFF00 + self.c as u16)
+    }
+    pub fn ld_a__c_(&mut self) {
+        self.a = self.mmu.read_byte(0xFF00 + self.c as u16)
+    }
 
     pub fn ldd_a_hl(&mut self) {
         let hl = self.hl();
@@ -108,7 +116,9 @@ impl Cpu {
         self.mmu.write_word(self.sp, nn)
     }
 
-    pub fn ld_sp_hl(&mut self) { self.sp = self.hl() }
+    pub fn ld_sp_hl(&mut self) {
+        self.sp = self.hl()
+    }
 
     pub fn push_bc(&mut self) {
         let bc = self.bc();
@@ -170,4 +180,3 @@ impl Cpu {
         self.set_c(util::full_carry_add(sp as u8, n));
     }
 }
-

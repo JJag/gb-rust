@@ -22,7 +22,6 @@ impl Cpu {
         self.jp(z);
     }
 
-
     pub fn JP_NZ(&mut self) {
         let z = self.get_z();
         self.jp(!z);
@@ -33,7 +32,6 @@ impl Cpu {
         self.jp(c);
     }
 
-
     pub fn JP_NC(&mut self) {
         let c = self.get_c();
         self.jp(!c);
@@ -41,9 +39,7 @@ impl Cpu {
 
     fn jr(&mut self, pred: bool) {
         use std::mem;
-        let n = unsafe {
-            mem::transmute::<u8, i8>(self.mmu.read_byte(self.pc))
-        };
+        let n = unsafe { mem::transmute::<u8, i8>(self.mmu.read_byte(self.pc)) };
         self.pc += 1;
         if pred {
             if n > 0 {
@@ -63,7 +59,6 @@ impl Cpu {
         self.jr(z);
     }
 
-
     pub fn JR_NZ(&mut self) {
         let z = self.get_z();
         self.jr(!z);
@@ -73,7 +68,6 @@ impl Cpu {
         let c = self.get_c();
         self.jr(c);
     }
-
 
     pub fn JR_NC(&mut self) {
         let c = self.get_c();

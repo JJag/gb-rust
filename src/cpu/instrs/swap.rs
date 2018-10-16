@@ -2,7 +2,6 @@ use cpu::*;
 use util::swap_nibbles;
 
 impl Cpu {
-
     pub fn SWAP_r(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         (*self.get_mut_reg8(r)) = swap_nibbles(x);
@@ -21,5 +20,4 @@ impl Cpu {
         self.set_h(false);
         self.set_c(false);
     }
-
 }

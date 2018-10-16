@@ -64,10 +64,18 @@ impl Cpu {
         }
     }
 
-    pub fn af(&self) -> u16 { util::concat(self.a, self.f) }
-    pub fn de(&self) -> u16 { util::concat(self.d, self.e) }
-    pub fn bc(&self) -> u16 { util::concat(self.b, self.c) }
-    pub fn hl(&self) -> u16 { util::concat(self.h, self.l) }
+    pub fn af(&self) -> u16 {
+        util::concat(self.a, self.f)
+    }
+    pub fn de(&self) -> u16 {
+        util::concat(self.d, self.e)
+    }
+    pub fn bc(&self) -> u16 {
+        util::concat(self.b, self.c)
+    }
+    pub fn hl(&self) -> u16 {
+        util::concat(self.h, self.l)
+    }
 
     pub fn set_af(&mut self, n: u16) -> () {
         self.a = (n >> 8) as u8;
@@ -86,16 +94,47 @@ impl Cpu {
         self.l = n as u8
     }
 
-    pub fn set_z(&mut self, set: bool) { if set { self.f |= Z_MASK } else { self.f &= !Z_MASK } }
-    pub fn set_n(&mut self, set: bool) { if set { self.f |= N_MASK } else { self.f &= !N_MASK } }
-    pub fn set_h(&mut self, set: bool) { if set { self.f |= H_MASK } else { self.f &= !H_MASK } }
-    pub fn set_c(&mut self, set: bool) { if set { self.f |= C_MASK } else { self.f &= !C_MASK } }
+    pub fn set_z(&mut self, set: bool) {
+        if set {
+            self.f |= Z_MASK
+        } else {
+            self.f &= !Z_MASK
+        }
+    }
+    pub fn set_n(&mut self, set: bool) {
+        if set {
+            self.f |= N_MASK
+        } else {
+            self.f &= !N_MASK
+        }
+    }
+    pub fn set_h(&mut self, set: bool) {
+        if set {
+            self.f |= H_MASK
+        } else {
+            self.f &= !H_MASK
+        }
+    }
+    pub fn set_c(&mut self, set: bool) {
+        if set {
+            self.f |= C_MASK
+        } else {
+            self.f &= !C_MASK
+        }
+    }
 
-    pub fn get_z(&self) -> bool { (self.f & Z_MASK) != 0 }
-    pub fn get_n(&self) -> bool { (self.f & N_MASK) != 0 }
-    pub fn get_h(&self) -> bool { (self.f & H_MASK) != 0 }
-    pub fn get_c(&self) -> bool { (self.f & C_MASK) != 0 }
-
+    pub fn get_z(&self) -> bool {
+        (self.f & Z_MASK) != 0
+    }
+    pub fn get_n(&self) -> bool {
+        (self.f & N_MASK) != 0
+    }
+    pub fn get_h(&self) -> bool {
+        (self.f & H_MASK) != 0
+    }
+    pub fn get_c(&self) -> bool {
+        (self.f & C_MASK) != 0
+    }
 
     pub fn read_immediate_byte(&mut self) -> u8 {
         let n = self.mmu.read_byte(self.pc);
@@ -137,11 +176,11 @@ impl Cpu {
 
     pub fn handle_interrupts(&mut self) -> () {
         if self.ime {
-//            Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
-//            Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
-//            Bit 2: Timer    Interrupt Enable  (INT 50h)  (1=Enable)
-//            Bit 3: Serial   Interrupt Enable  (INT 58h)  (1=Enable)
-//            Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
+            //            Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
+            //            Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
+            //            Bit 2: Timer    Interrupt Enable  (INT 50h)  (1=Enable)
+            //            Bit 3: Serial   Interrupt Enable  (INT 58h)  (1=Enable)
+            //            Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
             for bit in 0..5 {
                 let int_addr = 0x40 + (0x08 * bit);
                 if self.check_interrupt(bit) {

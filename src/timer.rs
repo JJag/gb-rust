@@ -4,14 +4,12 @@ pub struct Timers {
     // sets IF bit-2 on overflow
     pub tma: u8,
     tac: TimerControl,
-
 }
 
 impl Timers {
     /// Increment timers appropriately and returns true if TIMA has overflown
     fn pass_time(&mut self, cycles: u32) -> bool {
         let tima_w = self.tima as u32 + cycles;
-
 
         let tima_overflown = tima_w > 0xFF;
         if tima_overflown {
@@ -73,19 +71,35 @@ impl TacFrequency {
 #[test]
 fn to_u8_test() {
     assert_eq!(
-        TimerControl { enabled: true, clock_freq: TacFrequency::Hz4096 }.to_u8(),
-        0b0000_0100);
+        TimerControl {
+            enabled: true,
+            clock_freq: TacFrequency::Hz4096
+        }.to_u8(),
+        0b0000_0100
+    );
     assert_eq!(
-        TimerControl { enabled: false, clock_freq: TacFrequency::Hz16384 }.to_u8(),
-        0b0000_0011);
+        TimerControl {
+            enabled: false,
+            clock_freq: TacFrequency::Hz16384
+        }.to_u8(),
+        0b0000_0011
+    );
 }
 
 #[test]
 fn from_u8_test() {
     assert_eq!(
         TimerControl::from_u8(0b0000_0100),
-        TimerControl { enabled: true, clock_freq: TacFrequency::Hz4096 });
+        TimerControl {
+            enabled: true,
+            clock_freq: TacFrequency::Hz4096
+        }
+    );
     assert_eq!(
         TimerControl::from_u8(0b0000_0011),
-        TimerControl { enabled: false, clock_freq: TacFrequency::Hz16384 });
+        TimerControl {
+            enabled: false,
+            clock_freq: TacFrequency::Hz16384
+        }
+    );
 }

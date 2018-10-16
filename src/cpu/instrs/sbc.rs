@@ -3,7 +3,6 @@ use util;
 use util::to_u8;
 
 impl Cpu {
-
     fn sbc(&mut self, x: u8) {
         let a = self.a;
         let c = to_u8(self.get_c());
@@ -19,7 +18,6 @@ impl Cpu {
         let x = *(self.get_reg8(r));
         self.sbc(x);
     }
-
 
     pub fn SBC_HL(&mut self) {
         let hl = self.hl();

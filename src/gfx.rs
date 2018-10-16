@@ -1,3 +1,4 @@
+use super::gpu::Color;
 use glutin_window::GlutinWindow as Window;
 use graphics::*;
 use opengl_graphics::GlGraphics;
@@ -6,11 +7,10 @@ use piston::input::*;
 use piston::window::WindowSettings;
 use std::time::{Duration, Instant};
 use util::Array2D;
-use super::gpu::Color;
 
 #[derive(Copy, Clone)]
 pub struct Tile {
-    pixels: [u8; 64] // despite u8 type it only contains values 0-3
+    pixels: [u8; 64], // despite u8 type it only contains values 0-3
 }
 
 impl Tile {
@@ -20,7 +20,7 @@ impl Tile {
 }
 
 pub struct Tileset {
-    tiles: [Tile; 256 + 128]
+    tiles: [Tile; 256 + 128],
 }
 
 impl Tileset {
@@ -34,7 +34,7 @@ impl Tileset {
 }
 
 pub struct Tilemap {
-    tile_idxs: [u8; 32 * 32]
+    tile_idxs: [u8; 32 * 32],
 }
 
 impl Tilemap {
@@ -44,9 +44,8 @@ impl Tilemap {
     }
 }
 
-
 pub struct Gfx {
-    pub gl: GlGraphics
+    pub gl: GlGraphics,
 }
 
 fn from_hex(rgba: u32) -> [f32; 4] {
@@ -97,14 +96,17 @@ fn build_tilemap(vram: &[u8]) -> Tilemap {
     Tilemap { tile_idxs }
 }
 
-
 fn draw_tile(x_offset: i32, y_offset: i32, tile: &Tile, out_buf: &mut Array2D) {
     for y in 0..8 {
         for x in 0..8 {
             let color_idx = tile.get_pixel(x, y);
             let global_x = (x_offset + x);
             let global_y = (y_offset + y);
-            if global_x >= 0 && global_x < out_buf.width() as i32 && global_y >= 0 && global_y < out_buf.height() as i32 {
+            if global_x >= 0
+                && global_x < out_buf.width() as i32
+                && global_y >= 0
+                && global_y < out_buf.height() as i32
+            {
                 out_buf.set(global_x as usize, global_y as usize, color_idx)
             }
         }
@@ -180,7 +182,6 @@ impl Gfx {
         out_buf
     }
 
-
     pub fn update(&mut self, _args: &UpdateArgs) {}
 
     fn render_buf(&mut self, args: &RenderArgs, buf: &Array2D) {
@@ -198,7 +199,8 @@ impl Gfx {
 
             let SCREEN_WIDTH: f64 = 160.0;
             let SCREEN_HEIGHT: f64 = 144.0;
-            let square = rectangle::rectangle_by_corners(1.0, 1.0, 1.0 + SCREEN_WIDTH, 1.0 + SCREEN_HEIGHT);
+            let square =
+                rectangle::rectangle_by_corners(1.0, 1.0, 1.0 + SCREEN_WIDTH, 1.0 + SCREEN_HEIGHT);
             let red = [1.0, 0.0, 0.0, 0.3];
         });
     }

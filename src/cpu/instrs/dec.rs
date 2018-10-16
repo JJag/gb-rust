@@ -2,7 +2,6 @@ use cpu::*;
 use util;
 
 impl Cpu {
-
     pub fn DEC(&mut self, r: Reg8) {
         let x = *self.get_reg8(r);
         (*self.get_mut_reg8(r)) = x.wrapping_sub(1);
