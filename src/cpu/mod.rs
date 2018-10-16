@@ -8,6 +8,16 @@ const N_MASK: u8 = 0b_0100_0000;
 const H_MASK: u8 = 0b_0010_0000;
 const C_MASK: u8 = 0b_0001_0000;
 
+bitflags! {
+    pub struct Interrupts: u8 {
+        const VBLANK   = 1 << 0;
+        const LCD_STAT = 1 << 1;
+        const TIMER    = 1 << 2;
+        const SERIAL   = 1 << 3;
+        const JOYPAD   = 1 << 4;
+    }
+}
+
 pub struct Cpu {
     pub mmu: mmu::Mmu,
 
@@ -30,58 +40,29 @@ pub struct Cpu {
     pub ei_pending: bool,
 
     pub ime: bool, // Interrupt Master Enable Flag (Write Only)
-
-    // FFFF - IE - Interrupt Enable (R/W)
-    // Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
-    // Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
-    // Bit 2: Timer    Interrupt Enable  (INT 50h)  (1=Enable)
-    // Bit 3: Serial   Interrupt Enable  (INT 58h)  (1=Enable)
-    // Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
-    ie: u8,
-
-    // FF0F - IF - Interrupt Flag (R/W)
-    // Bit 0: V-Blank  Interrupt Request (INT 40h)  (1=Request)
-    // Bit 1: LCD STAT Interrupt Request (INT 48h)  (1=Request)
-    // Bit 2: Timer    Interrupt Request (INT 50h)  (1=Request)
-    // Bit 3: Serial   Interrupt Request (INT 58h)  (1=Request)
-    // Bit 4: Joypad   Interrupt Request (INT 60h)  (1=Request)
-    pub if_: u8,
-
-    // timers
-    counter: u8,
-    // FF04 - DIV - Divider Register (R/W)
-    tima: u8,
-    // FF05 - TIMA - Timer counter (R/W)
-    tma: u8,
-    // FF06 - TMA - Timer Modulo (R/W)
-    tac: u8,  // FF07 - TAC - Timer Control (R/W)
-    // TODO what about INT 50 ?
 }
 
 impl Cpu {
     pub fn new(mmu: mmu::Mmu) -> Cpu {
         Cpu {
             mmu,
-            a: 0, f: 0,
-            b: 0, c: 0,
-            d: 0, e: 0,
-            h: 0, l: 0,
-            sp: 0, pc: 0,
+            a: 0,
+            f: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+            h: 0,
+            l: 0,
+            sp: 0,
+            pc: 0,
             clock: 0,
             halted: false,
             stopped: false,
             ei_pending: false,
             ime: false,
-            ie: 0,
-            if_: 0,
-            counter: 0,
-            tima: 0,
-            tma: 0,
-            tac: 0,
         }
     }
-
-    pub fn div(&self) -> u8 { (self.counter >> 8) as u8 }
 
     pub fn af(&self) -> u16 { util::concat(self.a, self.f) }
     pub fn de(&self) -> u16 { util::concat(self.d, self.e) }
@@ -165,7 +146,7 @@ impl Cpu {
                 let int_addr = 0x40 + (0x08 * bit);
                 if self.check_interrupt(bit) {
                     self.call(int_addr, true);
-                    self.ime = false;
+                    self.ime = false; // FIXME should I reset IME or only clear one flag
                     return;
                 }
             }
@@ -173,14 +154,20 @@ impl Cpu {
     }
 
     fn check_interrupt(&self, bit_no: u16) -> bool {
-        self.ie & (1 << bit_no) != 0 && self.if_ & (1 << bit_no) != 0
+        let ie = self.mmu.read_byte(mmu::ADDR_IE);
+        let _if = self.mmu.read_byte(mmu::ADDR_IF);
+        ie & (1 << bit_no) != 0 && _if & (1 << bit_no) != 0
     }
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Reg8 {
-    A, F,
-    B, C,
-    D, E,
-    H, L,
+    A,
+    F,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
 }

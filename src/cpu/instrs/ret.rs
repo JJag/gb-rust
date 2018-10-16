@@ -35,7 +35,7 @@ impl Cpu {
 
     pub fn RETI(&mut self) {
         self.ret(true);
-        self.ime = true;
+        self.ei_pending = true; // TODO or should I enable IME immediately
 
     }
 }

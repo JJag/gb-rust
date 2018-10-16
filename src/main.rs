@@ -10,6 +10,8 @@ extern crate log;
 extern crate opengl_graphics;
 extern crate piston;
 extern crate rand;
+#[macro_use]
+extern crate bitflags;
 
 use cpu::*;
 use glutin_window::GlutinWindow;
@@ -61,6 +63,9 @@ fn main() {
 
     let bg_map_dim = [32 * 8, 32 * 8];
     let screen_dim = [160, 144];
+
+    let window_dim = bg_map_dim;
+    let window_dim = [64 * 8, 64 * 8];
     let window_dim = screen_dim;
 
     let mut window: GlutinWindow = WindowSettings::new(rom_name, window_dim)
@@ -125,7 +130,7 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
 
 
     let EI = 0xFB;
-    if cpu.ei_pending || opcode != EI {
+    if cpu.ei_pending && opcode != EI {
         cpu.ime = true;
         cpu.ei_pending = false;
     }
@@ -135,17 +140,19 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     let mode_after = gpu.mode;
     let v_blank_interrupt =  mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
     if v_blank_interrupt {
-        cpu.if_ |= 1;
+        let _if = cpu.mmu.read_byte(mmu::ADDR_IF);
+        let new_if = Interrupts::from_bits_truncate(_if) | Interrupts::VBLANK;
+        cpu.mmu.write_byte(new_if.bits(), mmu::ADDR_IF);
     }
 
     cpu.handle_interrupts();
 
 
     if cpu.pc == 0x100 {
-        eprintln!("[$FF04] = {:02x} ($AB) ; DIV", cpu.mmu.read_byte(0xFF04));
+        eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
         eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
-        eprintln!("[$FF06] = {:02x} ($00) ; TMA", cpu.mmu.read_byte(0xFF06));
-        eprintln!("[$FF07] = {:02x} ($00) ; TAC", cpu.mmu.read_byte(0xFF07));
+        eprintln!("[$FF06] = {:02x} ($00) ; TMA ", cpu.mmu.read_byte(0xFF06));
+        eprintln!("[$FF07] = {:02x} ($00) ; TAC ", cpu.mmu.read_byte(0xFF07));
         eprintln!("[$FF10] = {:02x} ($80) ; NR10", cpu.mmu.read_byte(0xFF10));
         eprintln!("[$FF11] = {:02x} ($BF) ; NR11", cpu.mmu.read_byte(0xFF11));
         eprintln!("[$FF12] = {:02x} ($F3) ; NR12", cpu.mmu.read_byte(0xFF12));
@@ -165,13 +172,13 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
         eprintln!("[$FF25] = {:02x} ($F3) ; NR51", cpu.mmu.read_byte(0xFF25));
         eprintln!("[$FF26] = {:02x} ($F1) ; NR52", cpu.mmu.read_byte(0xFF26));
         eprintln!("[$FF40] = {:02x} ($91) ; LCDC", cpu.mmu.read_byte(0xFF40));
-        eprintln!("[$FF42] = {:02x} ($00) ; SCY", cpu.mmu.read_byte(0xFF42));
-        eprintln!("[$FF43] = {:02x} ($00) ; SCX", cpu.mmu.read_byte(0xFF43));
-        eprintln!("[$FF45] = {:02x} ($00) ; LYC", cpu.mmu.read_byte(0xFF45));
-        eprintln!("[$FF47] = {:02x} ($FC) ; BGP", cpu.mmu.read_byte(0xFF47));
+        eprintln!("[$FF42] = {:02x} ($00) ; SCY ", cpu.mmu.read_byte(0xFF42));
+        eprintln!("[$FF43] = {:02x} ($00) ; SCX ", cpu.mmu.read_byte(0xFF43));
+        eprintln!("[$FF45] = {:02x} ($00) ; LYC ", cpu.mmu.read_byte(0xFF45));
+        eprintln!("[$FF47] = {:02x} ($FC) ; BGP ", cpu.mmu.read_byte(0xFF47));
         eprintln!("[$FF48] = {:02x} ($FF) ; OBP0", cpu.mmu.read_byte(0xFF48));
         eprintln!("[$FF49] = {:02x} ($FF) ; OBP1", cpu.mmu.read_byte(0xFF49));
-        eprintln!("[$FF4A] = {:02x} ($00) ; W", cpu.mmu.read_byte(0xFF4A));
+        eprintln!("[$FF4A] = {:02x} ($00) ; W   ", cpu.mmu.read_byte(0xFF4A));
 
 
 //        cpu.mmu.write_byte(0xFF05, 0x00);
