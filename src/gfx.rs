@@ -100,8 +100,8 @@ fn draw_tile(x_offset: i32, y_offset: i32, tile: &Tile, out_buf: &mut Array2D) {
     for y in 0..8 {
         for x in 0..8 {
             let color_idx = tile.get_pixel(x, y);
-            let global_x = (x_offset + x);
-            let global_y = (y_offset + y);
+            let global_x = x_offset + x;
+            let global_y = y_offset + y;
             if global_x >= 0
                 && global_x < out_buf.width() as i32
                 && global_y >= 0
