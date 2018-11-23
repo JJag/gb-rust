@@ -100,14 +100,10 @@ fn draw_tile(x_offset: i32, y_offset: i32, tile: &Tile, out_buf: &mut Array2D) {
     for y in 0..8 {
         for x in 0..8 {
             let color_idx = tile.get_pixel(x, y);
-            let global_x = x_offset + x;
-            let global_y = y_offset + y;
-            if global_x >= 0
-                && global_x < out_buf.width() as i32
-                && global_y >= 0
-                && global_y < out_buf.height() as i32
-            {
-                out_buf.set(global_x as usize, global_y as usize, color_idx)
+            let global_x = (x_offset + x) as usize;
+            let global_y = (y_offset + y) as usize;
+            if out_buf.in_bounds(global_x, global_y) {
+                out_buf.set(global_x, global_y, color_idx)
             }
         }
     }

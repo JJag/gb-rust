@@ -97,6 +97,10 @@ impl Array2D {
     pub fn height(&self) -> usize {
         self.height
     }
+
+    pub fn in_bounds(&self, x: usize, y: usize) -> bool {
+        x < self.width && y < self.height
+    }
 }
 
 mod test {
@@ -147,4 +151,14 @@ mod test {
         assert_eq!(arr.get(1, 1), 4);
         assert_eq!(arr.get(2, 1), 5);
     }
+
+    #[test]
+    fn array2D_in_bounds() {
+        let arr = Array2D::new(1 ,2);
+        assert!(arr.in_bounds(0, 0));
+        assert!(arr.in_bounds(0, 1));
+        assert!(!arr.in_bounds(1, 0));
+        assert!(!arr.in_bounds(0, 3));
+    }
+
 }
