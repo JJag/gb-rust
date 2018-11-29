@@ -192,12 +192,6 @@ impl Gfx {
                     rectangle(rgba, square, transform, gl);
                 }
             }
-
-            let SCREEN_WIDTH: f64 = 160.0;
-            let SCREEN_HEIGHT: f64 = 144.0;
-            let square =
-                rectangle::rectangle_by_corners(1.0, 1.0, 1.0 + SCREEN_WIDTH, 1.0 + SCREEN_HEIGHT);
-            let red = [1.0, 0.0, 0.0, 0.3];
         });
     }
 }
