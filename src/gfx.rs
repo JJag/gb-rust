@@ -1,11 +1,7 @@
+use image::ImageBuffer;
+use image::Rgba;
+use piston_window::*;
 use super::gpu::Color;
-use glutin_window::GlutinWindow as Window;
-use graphics::*;
-use opengl_graphics::GlGraphics;
-use piston::event_loop::*;
-use piston::input::*;
-use piston::window::WindowSettings;
-use std::time::{Duration, Instant};
 use util::Array2D;
 
 #[derive(Copy, Clone)]
@@ -44,9 +40,7 @@ impl Tilemap {
     }
 }
 
-pub struct Gfx {
-    pub gl: GlGraphics,
-}
+pub struct Gfx {}
 
 fn from_hex(rgba: u32) -> [f32; 4] {
     use std::mem::transmute;
@@ -133,14 +127,14 @@ impl Gfx {
     }
 
     //    pub fn render(&buf: )
-    pub fn render_framebuffer(&mut self, args: &RenderArgs, vram: &[u8], sc_x: u8, sc_y: u8) {
+    pub fn render_framebuffer(&mut self, window: &mut PistonWindow, e: &Event, vram: &[u8], sc_x: u8, sc_y: u8) {
         let buf = self.build_framebuffer(vram, sc_x, sc_y);
-        self.render_buf(args, &buf);
+        self.render_buf(window, e, &buf);
     }
 
-    pub fn render_tileset(&mut self, args: &RenderArgs, vram: &[u8]) {
+    pub fn render_tileset(&mut self, window: &mut PistonWindow, e: &Event, vram: &[u8]) {
         let buf = self.render_tileset_to_buf(vram);
-        self.render_buf(args, &buf);
+        self.render_buf(window, e, &buf);
     }
 
     /// 24 rows - 16 tiles each
@@ -158,15 +152,14 @@ impl Gfx {
         out_buf
     }
 
-    pub fn render_tilemap(&mut self, args: &RenderArgs, vram: &[u8], sc_x: u8, sc_y: u8) {
+    pub fn render_tilemap(&mut self, window: &mut PistonWindow, e: &Event, vram: &[u8], sc_x: u8, sc_y: u8) {
         let buf = self.render_tilemap_to_buf(vram, sc_x, sc_y);
-        self.render_buf(args, &buf);
+        self.render_buf(window, e, &buf);
     }
     fn render_tilemap_to_buf(&mut self, vram: &[u8], sc_x: u8, sc_y: u8) -> Array2D {
         let mut out_buf = Array2D::new(32 * 8, 32 * 8);
         let tileset = build_tileset(vram);
         let tilemap = build_tilemap(vram);
-        use graphics::*;
         for tile_x in 0..32 {
             for tile_y in 0..32 {
                 let tile = tilemap.get(&tileset, 0, tile_x, tile_y);
@@ -178,22 +171,32 @@ impl Gfx {
         out_buf
     }
 
-    pub fn update(&mut self, _args: &UpdateArgs) {}
-
-    fn render_buf(&mut self, args: &RenderArgs, buf: &Array2D) {
-        self.gl.draw(args.viewport(), |c, gl| {
+    fn render_buf(&mut self, w: &mut PistonWindow, e: &Event, buf: &Array2D) {
+        use piston_window::*;
+        let canvas = render_to_canvas(buf);
+        let mut texture: G2dTexture = Texture::from_image(
+            &mut w.factory,
+            &canvas,
+            &TextureSettings::new()).unwrap();
+        w.draw_2d(e, |c, gl| {
             clear([0.3, 0.0, 0.0, 1.0], gl);
-            let square = rectangle::square(1.0, 1.0, 1.0);
-            for x in 0..buf.width() {
-                for y in 0..buf.height() {
-                    let color = 1f32 - buf.get(x, y) as f32 / 4f32;
-                    let transform = c.transform.trans(x as f64, y as f64);
-                    let rgba = [color, color, color, 1f32];
-                    rectangle(rgba, square, transform, gl);
-                }
-            }
+            image(&texture, c.transform, gl);
         });
     }
+}
+
+fn render_to_canvas(buf: &Array2D) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    let width = buf.width() as u32;
+    let height = buf.height() as u32;
+    let mut canvas = ImageBuffer::new(width, height);
+    for y in 0..height {
+        for x in 0..width {
+            let color = 255 - buf.get(x as usize, y as usize) * 64;
+            let rgba = [color, color, color, 255];
+            canvas.put_pixel(x, y, Rgba(rgba));
+        }
+    }
+    canvas
 }
 
 fn to_rgba(c: Color) -> [f32; 4] {

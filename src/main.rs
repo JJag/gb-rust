@@ -1,37 +1,24 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-extern crate env_logger;
-extern crate glutin;
-extern crate glutin_window;
-extern crate graphics;
-#[macro_use]
-extern crate log;
-extern crate opengl_graphics;
-extern crate piston;
-extern crate rand;
 #[macro_use]
 extern crate bitflags;
+extern crate piston_window;
+extern crate image;
 
 use cpu::*;
-use glutin_window::GlutinWindow;
 use gpu::*;
 use mmu::Mmu;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::*;
-use piston::input::*;
-use piston::window::WindowSettings;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use std::time::Instant;
-
 mod cpu;
 mod gfx;
 mod gpu;
 mod mmu;
 mod timer;
 mod util;
+
+use piston_window::*;
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
@@ -46,8 +33,6 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
 const CLOCK_FREQUENCY_HZ: u32 = 4_194_304;
 
 fn main() {
-    env_logger::init().unwrap();
-    let opengl = OpenGL::V4_1;
 
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
@@ -67,25 +52,25 @@ fn main() {
     let window_dim = [64 * 8, 64 * 8];
     let window_dim = screen_dim;
 
-    let mut window: GlutinWindow = WindowSettings::new(rom_name, window_dim)
-        .opengl(opengl)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
-    let mut gfx = gfx::Gfx {
-        gl: GlGraphics::new(opengl),
-    };
-    let mut events: Events = Events::new(EventSettings::new());
+    let mut window: PistonWindow =
+        WindowSettings::new("GB", window_dim)
+            .exit_on_esc(true)
+            .build()
+            .unwrap();
+
+    let opengl = OpenGL::V4_5;
+
+    let mut gfx = gfx::Gfx {};
 
     let mut breakpoints: Vec<u16> = vec![
-        //        0x0100,
-        0x8014,
-        //0x0B79,
-        //0x45C,
-        //0x45F,
-        //0x035B,
-        //0x0360,
-        //0x0363,
+//        0x0100,
+//        0x8014,
+//        0x0B79,
+//        0x45C,
+//        0x45F,
+//        0x035B,
+//        0x0360,
+//        0x0363,
     ];
     let mut is_debug = false;
 
@@ -101,15 +86,12 @@ fn main() {
         let sc_x: u8 = cpu.mmu.read_byte(SC_X);
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
         if cpu.clock % 17_500 == 0 {
-            if let Some(e) = events.next(&mut window) {
-                if let Some(r) = e.render_args() {
-                    gfx.render_framebuffer(&r, &cpu.mmu.vram, sc_x, sc_y);
+            if let Some(e) = window.next() {
+                if let Some(_) = e.render_args() {
+                    gfx.render_framebuffer(&mut window, &e, &cpu.mmu.vram, sc_x, sc_y);
                 }
                 //                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
                 //                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
-                if let Some(u) = e.update_args() {
-                    gfx.update(&u);
-                }
             }
         }
     }

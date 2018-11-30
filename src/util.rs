@@ -1,4 +1,3 @@
-extern crate rand;
 
 pub fn concat(x: u8, y: u8) -> u16 {
     let x16 = x as u16;

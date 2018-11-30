@@ -4,18 +4,7 @@ version = "0.1.0"
 authors = ["Jakub Jagusztyn <jakub.jagusztyn@gmail.com.com>"]
 
 [dependencies]
-log = "0.3"
-env_logger = "0.3"
-glutin = "*"
 
-piston = "0.35.0"
-piston2d-graphics = "0.24.0"
-pistoncore-glutin_window = "0.43.0"
-piston2d-opengl_graphics = "0.50.0"
-
-rand = "0.3"
+piston_window = "0.85.0"
+image = "0.20.0"
 bitflags = "1"
-
-[[bin]]
-name = "gb"
-path = "src/main.rs"
