@@ -3,8 +3,8 @@
 
 #[macro_use]
 extern crate bitflags;
-extern crate piston_window;
 extern crate image;
+extern crate piston_window;
 
 use cpu::*;
 use gpu::*;
@@ -33,7 +33,6 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
 const CLOCK_FREQUENCY_HZ: u32 = 4_194_304;
 
 fn main() {
-
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
@@ -52,11 +51,10 @@ fn main() {
     let window_dim = [64 * 8, 64 * 8];
     let window_dim = screen_dim;
 
-    let mut window: PistonWindow =
-        WindowSettings::new("GB", window_dim)
-            .exit_on_esc(true)
-            .build()
-            .unwrap();
+    let mut window: PistonWindow = WindowSettings::new("GB", window_dim)
+        .exit_on_esc(true)
+        .build()
+        .unwrap();
 
     let opengl = OpenGL::V4_5;
 

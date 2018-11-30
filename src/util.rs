@@ -1,4 +1,3 @@
-
 pub fn concat(x: u8, y: u8) -> u16 {
     let x16 = x as u16;
     let y16 = y as u16;
@@ -153,7 +152,7 @@ mod test {
 
     #[test]
     fn array2D_in_bounds() {
-        let arr = Array2D::new(1 ,2);
+        let arr = Array2D::new(1, 2);
         assert!(arr.in_bounds(0, 0));
         assert!(arr.in_bounds(0, 1));
         assert!(!arr.in_bounds(1, 0));

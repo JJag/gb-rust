@@ -1,7 +1,7 @@
+use super::gpu::Color;
 use image::ImageBuffer;
 use image::Rgba;
 use piston_window::*;
-use super::gpu::Color;
 use util::Array2D;
 
 #[derive(Copy, Clone)]
@@ -127,7 +127,14 @@ impl Gfx {
     }
 
     //    pub fn render(&buf: )
-    pub fn render_framebuffer(&mut self, window: &mut PistonWindow, e: &Event, vram: &[u8], sc_x: u8, sc_y: u8) {
+    pub fn render_framebuffer(
+        &mut self,
+        window: &mut PistonWindow,
+        e: &Event,
+        vram: &[u8],
+        sc_x: u8,
+        sc_y: u8,
+    ) {
         let buf = self.build_framebuffer(vram, sc_x, sc_y);
         self.render_buf(window, e, &buf);
     }
@@ -152,7 +159,14 @@ impl Gfx {
         out_buf
     }
 
-    pub fn render_tilemap(&mut self, window: &mut PistonWindow, e: &Event, vram: &[u8], sc_x: u8, sc_y: u8) {
+    pub fn render_tilemap(
+        &mut self,
+        window: &mut PistonWindow,
+        e: &Event,
+        vram: &[u8],
+        sc_x: u8,
+        sc_y: u8,
+    ) {
         let buf = self.render_tilemap_to_buf(vram, sc_x, sc_y);
         self.render_buf(window, e, &buf);
     }
@@ -174,10 +188,8 @@ impl Gfx {
     fn render_buf(&mut self, w: &mut PistonWindow, e: &Event, buf: &Array2D) {
         use piston_window::*;
         let canvas = render_to_canvas(buf);
-        let mut texture: G2dTexture = Texture::from_image(
-            &mut w.factory,
-            &canvas,
-            &TextureSettings::new()).unwrap();
+        let mut texture: G2dTexture =
+            Texture::from_image(&mut w.factory, &canvas, &TextureSettings::new()).unwrap();
         w.draw_2d(e, |c, gl| {
             clear([0.3, 0.0, 0.0, 1.0], gl);
             image(&texture, c.transform, gl);
