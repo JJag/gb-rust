@@ -41,29 +41,17 @@ impl Cpu {
         let c_flag = self.get_c();
         let h_flag = self.get_h();
 
-        let mut a = self.a as u16;
+        let mut a = self.a;
         if !n_flag {
-            if h_flag || (a & 0x000F) > 0x09 {
-                a += 0x06;
-            }
-            if c_flag || (a & 0xFFFF) > 0x9F {
-                a += 0x60;
-            }
+            if c_flag || a > 0x99 { a = a.wrapping_add(0x60); self.set_c(true); }
+            if h_flag || (a & 0x0F) > 0x09 { a = a.wrapping_add(0x06); }
         } else {
-            if h_flag {
-                a -= 0x06;
-                if !c_flag {
-                    a &= 0xFF;
-                }
-            }
-            if c_flag {
-                a -= 0x60;
-            }
+            if c_flag { a = a.wrapping_sub(0x60); }
+            if h_flag { a = a.wrapping_sub(0x06); }
         }
 
-        self.a = a as u8;
-        self.set_c(a > 0xFF);
-        self.set_z(a & 0xFF == 0);
+        self.a = a;
+        self.set_z(a == 0);
         self.set_h(false);
     }
 }
