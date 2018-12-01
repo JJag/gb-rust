@@ -9,6 +9,22 @@ pub struct Tile {
     pixels: [u8; 64], // despite u8 type it only contains values 0-3
 }
 
+struct OamEntry {
+    pos_x: u8,
+    pos_y: u8,
+    tile_idx: u8,
+    flip_x: bool,
+    flip_y: bool,
+
+    // 1 - draw on top of white pixels
+    // 0 - draw on top of everything
+    priority: u8,
+
+    // 0 or 1 from existing pallettes
+    palette: u8,
+
+}
+
 impl Tile {
     pub fn get_pixel(&self, x: i32, y: i32) -> u8 {
         self.pixels[(y * 8 + x) as usize]
@@ -125,6 +141,8 @@ impl Gfx {
         }
         out_buf
     }
+
+
 
     //    pub fn render(&buf: )
     pub fn render_framebuffer(
