@@ -1,12 +1,26 @@
 #[derive(Eq, PartialEq, Debug)]
-pub struct Timers {
+pub struct Timer {
+    pub div: u8,
     pub tima: u8,
     // sets IF bit-2 on overflow
     pub tma: u8,
-    tac: TimerControl,
+    pub tac: TimerControl,
 }
 
-impl Timers {
+impl Timer {
+
+    // TODO check proper init values
+    pub fn new() -> Timer {
+        Timer {
+            div: 0,
+            tima: 0,
+            tma: 0,
+            tac: TimerControl {
+                enabled: true,
+                clock_freq: TacFrequency::Hz4096,
+            }
+        }
+    }
     /// Increment timers appropriately and returns true if TIMA has overflown
     fn pass_time(&mut self, cycles: u32) -> bool {
         let tima_w = self.tima as u32 + cycles;
@@ -22,18 +36,18 @@ impl Timers {
 }
 
 #[derive(Eq, PartialEq, Debug)]
-struct TimerControl {
+pub struct TimerControl {
     enabled: bool,
     // TODO find out what's purpose of this really
     clock_freq: TacFrequency,
 }
 
 impl TimerControl {
-    fn to_u8(&self) -> u8 {
+    pub fn to_u8(&self) -> u8 {
         (self.enabled as u8) << 2 | (self.clock_freq as u8)
     }
 
-    fn from_u8(n: u8) -> TimerControl {
+    pub fn from_u8(n: u8) -> TimerControl {
         let clock_freq = match n & 0b11 {
             0b00 => TacFrequency::Hz4096,
             0b01 => TacFrequency::Hz262144,

@@ -8,17 +8,22 @@ extern crate piston_window;
 
 use cpu::*;
 use gpu::*;
+use joypad::Joypad;
+use joypad::JoypadInterrupt;
+use timer::Timer;
 use mmu::Mmu;
+use piston_window::*;
 use std::fs::File;
 use std::io::Read;
+use ::Interrupts;
+
+mod joypad;
 mod cpu;
 mod gfx;
 mod gpu;
 mod mmu;
 mod timer;
 mod util;
-
-use piston_window::*;
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
@@ -37,8 +42,9 @@ fn main() {
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
     let rom = load_rom(filename).expect("error when loading a ROM");
-
-    let mmu = Mmu::new(bootrom, rom);
+    let joypad = Joypad::new();
+    let timer = Timer::new();
+    let mmu = Mmu::new(bootrom, rom, joypad, timer);
     let mut cpu = Cpu::new(mmu);
     let mut gpu = Gpu::new();
 
@@ -73,6 +79,7 @@ fn main() {
     let mut is_debug = false;
 
     loop {
+
         run_machine_cycle(&mut cpu, &mut gpu, is_debug);
         if breakpoints.contains(&cpu.pc) {
             is_debug = true;
@@ -84,7 +91,16 @@ fn main() {
         let sc_x: u8 = cpu.mmu.read_byte(SC_X);
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
         if cpu.clock % 17_500 == 0 {
-            if let Some(e) = window.next() {
+            let opt_event = window.next();
+            if let Some(ref e) = opt_event {
+                let joypad_interrupt: Option<JoypadInterrupt> = cpu.mmu.joypad.on_event(&e);
+
+                if joypad_interrupt.is_some() {
+                    println!("{:?}", cpu.mmu.joypad);
+                    cpu.mmu.ie |= Interrupts::JOYPAD;
+                    cpu.mmu._if |= Interrupts::JOYPAD;
+                }
+
                 if let Some(_) = e.render_args() {
                     gfx.render_framebuffer(&mut window, &e, &cpu.mmu.vram, sc_x, sc_y);
                 }
@@ -124,7 +140,6 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
         let new_if = Interrupts::from_bits_truncate(_if) | Interrupts::VBLANK;
         cpu.mmu.write_byte(new_if.bits(), mmu::ADDR_IF);
     }
-
 
     if cpu.pc == 0x100 {
         eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
