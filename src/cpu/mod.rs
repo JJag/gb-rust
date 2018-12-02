@@ -1,4 +1,5 @@
 use mmu;
+use mmu::Mmu;
 use util;
 
 mod instrs;
@@ -19,7 +20,7 @@ bitflags! {
 }
 
 pub struct Cpu {
-    pub mmu: mmu::Mmu,
+    pub mmu:  Mmu,
 
     pub a: u8,
     pub f: u8,
@@ -43,7 +44,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn new(mmu: mmu::Mmu) -> Cpu {
+    pub fn new(mmu: Mmu) -> Cpu {
         Cpu {
             mmu,
             a: 0,
