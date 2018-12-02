@@ -100,6 +100,8 @@ const SC_Y: u16 = 0xFF42;
 const INPUT: u16 = 0xFF00;
 
 fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
+    cpu.handle_interrupts();
+
     let opcode = cpu.mmu.read_byte(cpu.pc);
     cpu.pc = cpu.pc.wrapping_add(1);
     execute(cpu, opcode);
@@ -123,7 +125,6 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
         cpu.mmu.write_byte(new_if.bits(), mmu::ADDR_IF);
     }
 
-    cpu.handle_interrupts();
 
     if cpu.pc == 0x100 {
         eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
