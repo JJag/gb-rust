@@ -6,7 +6,7 @@
 // Bit 2 - P12 Input Up    or Select   (0=Pressed) (Read Only)
 // Bit 1 - P11 Input Left  or Button B (0=Pressed) (Read Only)
 // Bit 0 - P10 Input Right or Button A (0=Pressed) (Read Only)
-struct Joypad {
+pub struct Joypad {
     down: bool,
     up: bool,
     left: bool,
