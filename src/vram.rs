@@ -123,6 +123,15 @@ impl Default for Tile {
 pub struct Oam {
     sprites: [OamEntry; 40]
 }
+impl Oam {
+    pub fn from_bytes(bytes: &[u8]) -> Oam {
+        let mut oam: Oam = Default::default();
+        for i in 0..40 {
+            oam.sprites[i] = OamEntry::from_bytes(&bytes[i..i+4])
+        }
+        oam
+    }
+}
 
 impl Default for Oam {
     fn default() -> Self {
@@ -139,13 +148,27 @@ pub struct OamEntry {
     flip_x: bool,
     flip_y: bool,
 
-    // 1 - draw on top of white pixels
-    // 0 - draw on top of everything
-    priority: u8,
+    // if true, draw only on top of white BG pixels, if false on top of everything
+    low_priority: bool,
 
     // 0 or 1 from existing pallettes
-    palette: u8,
+    palette1: bool,
 
+}
+
+impl OamEntry {
+    pub fn from_bytes(bytes: &[u8]) -> OamEntry {
+        let flags = bytes[3];
+        OamEntry {
+            pos_y: bytes[0],
+            pos_x: bytes[1],
+            tile_idx: bytes[2],
+            low_priority: (flags & (1 << 7)) != 0,
+            flip_y: (flags & (1 << 6)) != 0,
+            flip_x: (flags & (1 << 5)) != 0,
+            palette1: (flags & (1 << 4)) != 0,
+        }
+    }
 }
 
 
