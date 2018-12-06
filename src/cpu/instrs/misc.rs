@@ -30,6 +30,7 @@ impl Cpu {
 
     pub fn ei(&mut self) {
         self.ei_pending = true;
+//        self.ime = true;
     }
 
     pub fn di(&mut self) {

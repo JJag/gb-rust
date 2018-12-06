@@ -3,6 +3,7 @@ use joypad::Joypad;
 use timer::Timer;
 use ::Interrupts;
 use timer::TimerControl;
+use vram::*;
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;
 const WORK_RAM_SIZE: usize = 8 * 1024;
@@ -134,5 +135,10 @@ impl Mmu {
 
     fn bootrom_enabled(&self) -> bool {
         self.read_byte(0xFF50) == 0
+    }
+
+    fn read_vram(&self, addr: u16) {
+        assert!(addr >= 0x8000 && addr < 0xA000);
+
     }
 }

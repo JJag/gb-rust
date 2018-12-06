@@ -16,7 +16,9 @@ use piston_window::*;
 use std::fs::File;
 use std::io::Read;
 use ::Interrupts;
+use vram::*;
 
+mod vram;
 mod joypad;
 mod cpu;
 mod gfx;
@@ -90,6 +92,13 @@ fn main() {
 
         let sc_x: u8 = cpu.mmu.read_byte(SC_X);
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
+
+        let nanos_passed = 238.4;
+        let timer_interrupt = cpu.mmu.timer.pass_time(4);
+        if timer_interrupt {
+            cpu.mmu._if |= Interrupts::TIMER;
+        }
+
         if cpu.clock % 17_500 == 0 {
             let opt_event = window.next();
             if let Some(ref e) = opt_event {
@@ -102,7 +111,8 @@ fn main() {
                 }
 
                 if let Some(_) = e.render_args() {
-                    gfx.render_framebuffer(&mut window, &e, &cpu.mmu.vram, sc_x, sc_y);
+                    let vram = Vram::from_bytes(&cpu.mmu.vram);
+                    gfx.render_framebuffer(&mut window, &e, &vram, sc_x, sc_y);
                 }
                 //                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
                 //                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }

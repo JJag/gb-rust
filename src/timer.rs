@@ -22,7 +22,7 @@ impl Timer {
         }
     }
     /// Increment timers appropriately and returns true if TIMA has overflown
-    fn pass_time(&mut self, cycles: u32) -> bool {
+    pub fn pass_time(&mut self, cycles: u32) -> bool {
         let tima_w = self.tima as u32 + cycles;
 
         let tima_overflown = tima_w > 0xFF;
