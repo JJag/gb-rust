@@ -142,67 +142,74 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     }
 
     if cpu.pc == 0x100 {
-        eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
-        eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
-        eprintln!("[$FF06] = {:02x} ($00) ; TMA ", cpu.mmu.read_byte(0xFF06));
-        eprintln!("[$FF07] = {:02x} ($00) ; TAC ", cpu.mmu.read_byte(0xFF07));
-        eprintln!("[$FF10] = {:02x} ($80) ; NR10", cpu.mmu.read_byte(0xFF10));
-        eprintln!("[$FF11] = {:02x} ($BF) ; NR11", cpu.mmu.read_byte(0xFF11));
-        eprintln!("[$FF12] = {:02x} ($F3) ; NR12", cpu.mmu.read_byte(0xFF12));
-        eprintln!("[$FF14] = {:02x} ($BF) ; NR14", cpu.mmu.read_byte(0xFF14));
-        eprintln!("[$FF16] = {:02x} ($3F) ; NR21", cpu.mmu.read_byte(0xFF16));
-        eprintln!("[$FF17] = {:02x} ($00) ; NR22", cpu.mmu.read_byte(0xFF17));
-        eprintln!("[$FF19] = {:02x} ($BF) ; NR24", cpu.mmu.read_byte(0xFF19));
-        eprintln!("[$FF1A] = {:02x} ($7F) ; NR30", cpu.mmu.read_byte(0xFF1A));
-        eprintln!("[$FF1B] = {:02x} ($FF) ; NR31", cpu.mmu.read_byte(0xFF1B));
-        eprintln!("[$FF1C] = {:02x} ($9F) ; NR32", cpu.mmu.read_byte(0xFF1C));
-        eprintln!("[$FF1E] = {:02x} ($BF) ; NR33", cpu.mmu.read_byte(0xFF1E));
-        eprintln!("[$FF20] = {:02x} ($FF) ; NR41", cpu.mmu.read_byte(0xFF20));
-        eprintln!("[$FF21] = {:02x} ($00) ; NR42", cpu.mmu.read_byte(0xFF21));
-        eprintln!("[$FF22] = {:02x} ($00) ; NR43", cpu.mmu.read_byte(0xFF22));
-        eprintln!("[$FF23] = {:02x} ($BF) ; NR30", cpu.mmu.read_byte(0xFF23));
-        eprintln!("[$FF24] = {:02x} ($77) ; NR50", cpu.mmu.read_byte(0xFF24));
-        eprintln!("[$FF25] = {:02x} ($F3) ; NR51", cpu.mmu.read_byte(0xFF25));
-        eprintln!("[$FF26] = {:02x} ($F1) ; NR52", cpu.mmu.read_byte(0xFF26));
-        eprintln!("[$FF40] = {:02x} ($91) ; LCDC", cpu.mmu.read_byte(0xFF40));
-        eprintln!("[$FF42] = {:02x} ($00) ; SCY ", cpu.mmu.read_byte(0xFF42));
-        eprintln!("[$FF43] = {:02x} ($00) ; SCX ", cpu.mmu.read_byte(0xFF43));
-        eprintln!("[$FF45] = {:02x} ($00) ; LYC ", cpu.mmu.read_byte(0xFF45));
-        eprintln!("[$FF47] = {:02x} ($FC) ; BGP ", cpu.mmu.read_byte(0xFF47));
-        eprintln!("[$FF48] = {:02x} ($FF) ; OBP0", cpu.mmu.read_byte(0xFF48));
-        eprintln!("[$FF49] = {:02x} ($FF) ; OBP1", cpu.mmu.read_byte(0xFF49));
-        eprintln!("[$FF4A] = {:02x} ($00) ; W   ", cpu.mmu.read_byte(0xFF4A));
-
-        //        cpu.mmu.write_byte(0xFF05, 0x00);
-        //        cpu.mmu.write_byte(0xFF06, 0x00);
-        //        cpu.mmu.write_byte(0xFF07, 0x00);
-        //        cpu.mmu.write_byte(0xFF10, 0x80);
-        //        cpu.mmu.write_byte(0xFF11, 0xBF);
-        //        cpu.mmu.write_byte(0xFF12, 0xF3);
-        //        cpu.mmu.write_byte(0xFF14, 0xBF);
-        //        cpu.mmu.write_byte(0xFF16, 0x3F);
-        //        cpu.mmu.write_byte(0xFF17, 0x00);
-        //        cpu.mmu.write_byte(0xFF19, 0xBF);
-        //        cpu.mmu.write_byte(0xFF1A, 0x7F);
-        //        cpu.mmu.write_byte(0xFF1B, 0xFF);
-        //        cpu.mmu.write_byte(0xFF1C, 0x9F);
-        //        cpu.mmu.write_byte(0xFF1E, 0xBF);
-        //        cpu.mmu.write_byte(0xFF20, 0xFF);
-        //        cpu.mmu.write_byte(0xFF21, 0x00);
-        //        cpu.mmu.write_byte(0xFF22, 0x00);
-        //        cpu.mmu.write_byte(0xFF23, 0xBF);
-        //        cpu.mmu.write_byte(0xFF24, 0x77);
-        //        cpu.mmu.write_byte(0xFF25, 0xF3);
-        //        cpu.mmu.write_byte(0xFF26, 0xF1);
-        //        cpu.mmu.write_byte(0xFF40, 0x91);
-        //        cpu.mmu.write_byte(0xFF42, 0x00);
-        //        cpu.mmu.write_byte(0xFF43, 0x00);
-        //        cpu.mmu.write_byte(0xFF45, 0x00);
-        //        cpu.mmu.write_byte(0xFF47, 0xFC);
-        //        cpu.mmu.write_byte(0xFF48, 0xFF);
-        //        cpu.mmu.write_byte(0xFF49, 0xFF);
-        //        cpu.mmu.write_byte(0xFF4A, 0x00);
+        print_io_registers(cpu);
+//        init_io_registers(cpu);
     }
+}
+
+fn print_io_registers(cpu: &Cpu) {
+    eprintln!("[$FF04] = {:02x} ($AB) ; DIV ", cpu.mmu.read_byte(0xFF04));
+    eprintln!("[$FF05] = {:02x} ($00) ; TIMA", cpu.mmu.read_byte(0xFF05));
+    eprintln!("[$FF06] = {:02x} ($00) ; TMA ", cpu.mmu.read_byte(0xFF06));
+    eprintln!("[$FF07] = {:02x} ($00) ; TAC ", cpu.mmu.read_byte(0xFF07));
+    eprintln!("[$FF10] = {:02x} ($80) ; NR10", cpu.mmu.read_byte(0xFF10));
+    eprintln!("[$FF11] = {:02x} ($BF) ; NR11", cpu.mmu.read_byte(0xFF11));
+    eprintln!("[$FF12] = {:02x} ($F3) ; NR12", cpu.mmu.read_byte(0xFF12));
+    eprintln!("[$FF14] = {:02x} ($BF) ; NR14", cpu.mmu.read_byte(0xFF14));
+    eprintln!("[$FF16] = {:02x} ($3F) ; NR21", cpu.mmu.read_byte(0xFF16));
+    eprintln!("[$FF17] = {:02x} ($00) ; NR22", cpu.mmu.read_byte(0xFF17));
+    eprintln!("[$FF19] = {:02x} ($BF) ; NR24", cpu.mmu.read_byte(0xFF19));
+    eprintln!("[$FF1A] = {:02x} ($7F) ; NR30", cpu.mmu.read_byte(0xFF1A));
+    eprintln!("[$FF1B] = {:02x} ($FF) ; NR31", cpu.mmu.read_byte(0xFF1B));
+    eprintln!("[$FF1C] = {:02x} ($9F) ; NR32", cpu.mmu.read_byte(0xFF1C));
+    eprintln!("[$FF1E] = {:02x} ($BF) ; NR33", cpu.mmu.read_byte(0xFF1E));
+    eprintln!("[$FF20] = {:02x} ($FF) ; NR41", cpu.mmu.read_byte(0xFF20));
+    eprintln!("[$FF21] = {:02x} ($00) ; NR42", cpu.mmu.read_byte(0xFF21));
+    eprintln!("[$FF22] = {:02x} ($00) ; NR43", cpu.mmu.read_byte(0xFF22));
+    eprintln!("[$FF23] = {:02x} ($BF) ; NR30", cpu.mmu.read_byte(0xFF23));
+    eprintln!("[$FF24] = {:02x} ($77) ; NR50", cpu.mmu.read_byte(0xFF24));
+    eprintln!("[$FF25] = {:02x} ($F3) ; NR51", cpu.mmu.read_byte(0xFF25));
+    eprintln!("[$FF26] = {:02x} ($F1) ; NR52", cpu.mmu.read_byte(0xFF26));
+    eprintln!("[$FF40] = {:02x} ($91) ; LCDC", cpu.mmu.read_byte(0xFF40));
+    eprintln!("[$FF42] = {:02x} ($00) ; SCY ", cpu.mmu.read_byte(0xFF42));
+    eprintln!("[$FF43] = {:02x} ($00) ; SCX ", cpu.mmu.read_byte(0xFF43));
+    eprintln!("[$FF45] = {:02x} ($00) ; LYC ", cpu.mmu.read_byte(0xFF45));
+    eprintln!("[$FF47] = {:02x} ($FC) ; BGP ", cpu.mmu.read_byte(0xFF47));
+    eprintln!("[$FF48] = {:02x} ($FF) ; OBP0", cpu.mmu.read_byte(0xFF48));
+    eprintln!("[$FF49] = {:02x} ($FF) ; OBP1", cpu.mmu.read_byte(0xFF49));
+    eprintln!("[$FF4A] = {:02x} ($00) ; W   ", cpu.mmu.read_byte(0xFF4A));
+}
+
+fn init_io_registers(cpu: &mut Cpu) {
+    cpu.mmu.write_byte(0xFF05, 0x00);
+    cpu.mmu.write_byte(0xFF06, 0x00);
+    cpu.mmu.write_byte(0xFF07, 0x00);
+    cpu.mmu.write_byte(0xFF10, 0x80);
+    cpu.mmu.write_byte(0xFF11, 0xBF);
+    cpu.mmu.write_byte(0xFF12, 0xF3);
+    cpu.mmu.write_byte(0xFF14, 0xBF);
+    cpu.mmu.write_byte(0xFF16, 0x3F);
+    cpu.mmu.write_byte(0xFF17, 0x00);
+    cpu.mmu.write_byte(0xFF19, 0xBF);
+    cpu.mmu.write_byte(0xFF1A, 0x7F);
+    cpu.mmu.write_byte(0xFF1B, 0xFF);
+    cpu.mmu.write_byte(0xFF1C, 0x9F);
+    cpu.mmu.write_byte(0xFF1E, 0xBF);
+    cpu.mmu.write_byte(0xFF20, 0xFF);
+    cpu.mmu.write_byte(0xFF21, 0x00);
+    cpu.mmu.write_byte(0xFF22, 0x00);
+    cpu.mmu.write_byte(0xFF23, 0xBF);
+    cpu.mmu.write_byte(0xFF24, 0x77);
+    cpu.mmu.write_byte(0xFF25, 0xF3);
+    cpu.mmu.write_byte(0xFF26, 0xF1);
+    cpu.mmu.write_byte(0xFF40, 0x91);
+    cpu.mmu.write_byte(0xFF42, 0x00);
+    cpu.mmu.write_byte(0xFF43, 0x00);
+    cpu.mmu.write_byte(0xFF45, 0x00);
+    cpu.mmu.write_byte(0xFF47, 0xFC);
+    cpu.mmu.write_byte(0xFF48, 0xFF);
+    cpu.mmu.write_byte(0xFF49, 0xFF);
+    cpu.mmu.write_byte(0xFF4A, 0x00);
 }
 
 fn do_debug_stuff(cpu: &Cpu, breakpoints: &mut Vec<u16>) -> bool {
