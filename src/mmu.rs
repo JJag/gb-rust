@@ -34,6 +34,7 @@ pub struct Mmu {
     pub ie: Interrupts,
     pub timer: Timer,
     pub joypad: Joypad,
+    pub ppu: Ppu,
 }
 
 impl Mmu {
@@ -42,6 +43,7 @@ impl Mmu {
         rom: Vec<u8>,
         joypad: Joypad,
         timer: Timer,
+        ppu: Ppu,
     ) -> Mmu {
         let mut mmu = Mmu {
             bootrom,
@@ -56,6 +58,7 @@ impl Mmu {
             ie: Interrupts::from_bits_truncate(0),
             timer: timer,
             joypad: joypad,
+            ppu: ppu,
 
         };
 
@@ -89,6 +92,7 @@ impl Mmu {
                 0xFF07          => self.timer.tac.to_u8(),
                 0xFF0E          => self.ie.bits(),
                 0xFF0F          => self._if.bits(),
+                0xFF40          => self.ppu.lcdc.to_byte(),
                 0xFF00...0xFF7F => self.io[addr - 0xFF00],
                 0xFF80...0xFFFF => self.zero_ram[addr - 0xFF80],
                 0xFEA0...0xFEFF => 0, // accessing this memory is undefined behaviour
@@ -126,6 +130,7 @@ impl Mmu {
             0xFF07          => self.timer.tac = TimerControl::from_u8(val),
             0xFF0E          => self.ie = Interrupts::from_bits_truncate(val),
             0xFF0F          => self._if = Interrupts::from_bits_truncate(val),
+            0xFF40          => self.ppu.lcdc = Lcdc::from_byte(val),
             0xFF01...0xFF7F => self.io[addr - 0xFF00] = val,
             0xFF80...0xFFFF => self.zero_ram[addr - 0xFF80] = val,
             0xFEA0...0xFEFF => {}, // accessing this memory is undefined behaviour

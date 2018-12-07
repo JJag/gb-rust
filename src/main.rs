@@ -46,7 +46,8 @@ fn main() {
     let rom = load_rom(filename).expect("error when loading a ROM");
     let joypad = Joypad::new();
     let timer = Timer::new();
-    let mmu = Mmu::new(bootrom, rom, joypad, timer);
+    let ppu = Ppu::default();
+    let mmu = Mmu::new(bootrom, rom, joypad, timer, ppu);
     let mut cpu = Cpu::new(mmu);
     let mut gpu = Gpu::new();
 
@@ -191,35 +192,35 @@ fn print_io_registers(cpu: &Cpu) {
 }
 
 fn init_io_registers(cpu: &mut Cpu) {
-    cpu.mmu.write_byte(0xFF05, 0x00);
-    cpu.mmu.write_byte(0xFF06, 0x00);
-    cpu.mmu.write_byte(0xFF07, 0x00);
-    cpu.mmu.write_byte(0xFF10, 0x80);
-    cpu.mmu.write_byte(0xFF11, 0xBF);
-    cpu.mmu.write_byte(0xFF12, 0xF3);
-    cpu.mmu.write_byte(0xFF14, 0xBF);
-    cpu.mmu.write_byte(0xFF16, 0x3F);
-    cpu.mmu.write_byte(0xFF17, 0x00);
-    cpu.mmu.write_byte(0xFF19, 0xBF);
-    cpu.mmu.write_byte(0xFF1A, 0x7F);
-    cpu.mmu.write_byte(0xFF1B, 0xFF);
-    cpu.mmu.write_byte(0xFF1C, 0x9F);
-    cpu.mmu.write_byte(0xFF1E, 0xBF);
-    cpu.mmu.write_byte(0xFF20, 0xFF);
-    cpu.mmu.write_byte(0xFF21, 0x00);
-    cpu.mmu.write_byte(0xFF22, 0x00);
-    cpu.mmu.write_byte(0xFF23, 0xBF);
-    cpu.mmu.write_byte(0xFF24, 0x77);
-    cpu.mmu.write_byte(0xFF25, 0xF3);
-    cpu.mmu.write_byte(0xFF26, 0xF1);
-    cpu.mmu.write_byte(0xFF40, 0x91);
-    cpu.mmu.write_byte(0xFF42, 0x00);
-    cpu.mmu.write_byte(0xFF43, 0x00);
-    cpu.mmu.write_byte(0xFF45, 0x00);
-    cpu.mmu.write_byte(0xFF47, 0xFC);
-    cpu.mmu.write_byte(0xFF48, 0xFF);
-    cpu.mmu.write_byte(0xFF49, 0xFF);
-    cpu.mmu.write_byte(0xFF4A, 0x00);
+    cpu.mmu.write_byte(0x00, 0xFF05);
+    cpu.mmu.write_byte(0x00, 0xFF06);
+    cpu.mmu.write_byte(0x00, 0xFF07);
+    cpu.mmu.write_byte(0x80, 0xFF10);
+    cpu.mmu.write_byte(0xBF, 0xFF11);
+    cpu.mmu.write_byte(0xF3, 0xFF12);
+    cpu.mmu.write_byte(0xBF, 0xFF14);
+    cpu.mmu.write_byte(0x3F, 0xFF16);
+    cpu.mmu.write_byte(0x00, 0xFF17);
+    cpu.mmu.write_byte(0xBF, 0xFF19);
+    cpu.mmu.write_byte(0x7F, 0xFF1A);
+    cpu.mmu.write_byte(0xFF, 0xFF1B);
+    cpu.mmu.write_byte(0x9F, 0xFF1C);
+    cpu.mmu.write_byte(0xBF, 0xFF1E);
+    cpu.mmu.write_byte(0xFF, 0xFF20);
+    cpu.mmu.write_byte(0x00, 0xFF21);
+    cpu.mmu.write_byte(0x00, 0xFF22);
+    cpu.mmu.write_byte(0xBF, 0xFF23);
+    cpu.mmu.write_byte(0x77, 0xFF24);
+    cpu.mmu.write_byte(0xF3, 0xFF25);
+    cpu.mmu.write_byte(0xF1, 0xFF26);
+    cpu.mmu.write_byte(0x91, 0xFF40);
+    cpu.mmu.write_byte(0x00, 0xFF42);
+    cpu.mmu.write_byte(0x00, 0xFF43);
+    cpu.mmu.write_byte(0x00, 0xFF45);
+    cpu.mmu.write_byte(0xFC, 0xFF47);
+    cpu.mmu.write_byte(0xFF, 0xFF48);
+    cpu.mmu.write_byte(0xFF, 0xFF49);
+    cpu.mmu.write_byte(0x00, 0xFF4A);
 }
 
 fn do_debug_stuff(cpu: &Cpu, breakpoints: &mut Vec<u16>) -> bool {
