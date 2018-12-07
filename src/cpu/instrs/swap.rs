@@ -1,5 +1,5 @@
-use cpu::*;
-use util::swap_nibbles;
+use crate::cpu::*;
+use crate::util::swap_nibbles;
 
 impl Cpu {
     pub fn SWAP_r(&mut self, r: Reg8) {

@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 
 impl Cpu {
     pub fn DEC_BC(&mut self) {

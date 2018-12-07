@@ -89,10 +89,6 @@ pub struct Vram {
 impl Vram {
     pub fn from_bytes(bytes: &[u8]) -> Vram {
         const VRAM_OFFSET: usize = 0x8000;
-        let tile_set0: &[u8] = &bytes[0x8000 - VRAM_OFFSET..0x9000 - VRAM_OFFSET];
-        let tile_set1: &[u8] = &bytes[0x87FF - VRAM_OFFSET..0x97FF - VRAM_OFFSET];
-        let tile_map0: &[u8] = &bytes[0x9800 - VRAM_OFFSET..0x9BFF - VRAM_OFFSET];
-        let tile_map1: &[u8] = &bytes[0x9C00 - VRAM_OFFSET..0x9FFF - VRAM_OFFSET];
         Vram {
             tileset: build_tileset(bytes),
             bg_tilemap: build_tilemap(bytes),
@@ -238,7 +234,7 @@ impl Default for Tilemap {
 }
 
 impl Tilemap {
-    pub fn get<'a>(&self, tileset: &'a Tileset, mode: u8, x: i32, y: i32) -> &'a Tile {
+    pub fn get<'a>(&self, tileset: &'a Tileset, _mode: u8, x: i32, y: i32) -> &'a Tile {
         let idx = self.tile_idxs[(y * 32 + x) as usize];
         tileset.get_tile_mode_0(idx) // FIXME MODE 0 hardcoded for now
     }

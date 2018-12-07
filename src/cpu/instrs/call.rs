@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 
 impl Cpu {
     pub fn call(&mut self, nn: u16, pred: bool) {

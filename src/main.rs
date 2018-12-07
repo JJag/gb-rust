@@ -6,17 +6,17 @@ extern crate bitflags;
 extern crate image;
 extern crate piston_window;
 
-use cpu::*;
-use gpu::*;
-use joypad::Joypad;
-use joypad::JoypadInterrupt;
-use timer::Timer;
-use mmu::Mmu;
+use crate::cpu::*;
+use crate::gpu::*;
+use crate::joypad::Joypad;
+use crate::joypad::JoypadInterrupt;
+use crate::timer::Timer;
+use crate::mmu::Mmu;
 use piston_window::*;
 use std::fs::File;
 use std::io::Read;
-use ::Interrupts;
-use vram::*;
+use crate::Interrupts;
+use crate::vram::*;
 
 mod vram;
 mod joypad;
@@ -51,13 +51,13 @@ fn main() {
     let mut cpu = Cpu::new(mmu);
     let mut gpu = Gpu::new();
 
-    let rom_name = cpu.mmu.get_rom_name();
+    let _rom_name = cpu.mmu.get_rom_name();
 
     let bg_map_dim = [32 * 8, 32 * 8];
     let screen_dim = [160, 144];
 
-    let window_dim = bg_map_dim;
-    let window_dim = [64 * 8, 64 * 8];
+    let _window_dim = bg_map_dim;
+    let _window_dim = [64 * 8, 64 * 8];
     let window_dim = screen_dim;
 
     let mut window: PistonWindow = WindowSettings::new("GB", window_dim)
@@ -65,7 +65,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let opengl = OpenGL::V4_5;
+    let _opengl = OpenGL::V4_5;
 
     let mut gfx = gfx::Gfx {};
 
@@ -94,7 +94,7 @@ fn main() {
         let sc_x: u8 = cpu.mmu.read_byte(SC_X);
         let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
 
-        let nanos_passed = 238.4;
+        let _nanos_passed = 238.4;
         let timer_interrupt = cpu.mmu.timer.pass_time(4);
         if timer_interrupt {
             cpu.mmu._if |= Interrupts::TIMER;
@@ -126,7 +126,7 @@ const SC_X: u16 = 0xFF43;
 const SC_Y: u16 = 0xFF42;
 const INPUT: u16 = 0xFF00;
 
-fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
+fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, _debug_mode: bool) {
     cpu.handle_interrupts();
 
     let opcode = cpu.mmu.read_byte(cpu.pc);
@@ -134,7 +134,7 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, debug_mode: bool) {
     execute(cpu, opcode);
 
     let cycles_passed = 4; // let's pretend all instructions take 4 clock cycles
-    cpu.clock += 4;
+    cpu.clock += cycles_passed;
 
     let EI = 0xFB;
     if cpu.ei_pending && opcode != EI {
@@ -255,7 +255,7 @@ fn print_registers(cpu: &Cpu) {
 }
 
 fn execute(cpu: &mut Cpu, opcode: u8) {
-    use cpu::Reg8::*;
+    use crate::cpu::Reg8::*;
 
     match opcode {
         0x00 => cpu.nop(),
@@ -605,8 +605,8 @@ pub fn bit_code(opcode: u8) -> u8 {
 }
 
 pub fn reg_code(opcode: u8) -> RegOrHl {
-    use cpu::Reg8::*;
-    use RegOrHl::*;
+    use crate::cpu::Reg8::*;
+    use crate::RegOrHl::*;
     match opcode % 8 {
         0 => Reg(B),
         1 => Reg(C),

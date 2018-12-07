@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 use std::mem;
 
 impl Cpu {

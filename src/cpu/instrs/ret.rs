@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 
 impl Cpu {
     fn ret(&mut self, pred: bool) {

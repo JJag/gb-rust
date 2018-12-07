@@ -1,6 +1,6 @@
-use mmu;
-use mmu::Mmu;
-use util;
+use crate::mmu;
+use crate::mmu::Mmu;
+use crate::util;
 
 mod instrs;
 

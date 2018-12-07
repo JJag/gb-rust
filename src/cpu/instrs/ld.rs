@@ -1,7 +1,7 @@
-use cpu::Reg8;
-use cpu::*;
+use crate::cpu::Reg8;
+use crate::cpu::*;
 use std::mem;
-use util;
+use crate::util;
 
 impl Cpu {
     pub fn LD_rr(&mut self, to: Reg8, from: Reg8) {

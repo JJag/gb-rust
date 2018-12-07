@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 
 impl Cpu {
     pub fn BIT_r(&mut self, bit: u8, r: Reg8) {

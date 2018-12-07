@@ -1,4 +1,4 @@
-use cpu::*;
+use crate::cpu::*;
 
 impl Cpu {
     pub fn SLA_r(&mut self, r: Reg8) {

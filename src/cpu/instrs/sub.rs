@@ -1,5 +1,5 @@
-use cpu::*;
-use util;
+use crate::cpu::*;
+use crate::util;
 
 impl Cpu {
     fn sub(&mut self, x: u8) {

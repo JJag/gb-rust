@@ -1,6 +1,6 @@
-use cpu::*;
-use util;
-use util::to_u8;
+use crate::cpu::*;
+use crate::util;
+use crate::util::to_u8;
 
 impl Cpu {
     fn sbc(&mut self, x: u8) {

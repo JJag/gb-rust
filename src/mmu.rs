@@ -1,9 +1,9 @@
-use util;
-use joypad::Joypad;
-use timer::Timer;
-use ::Interrupts;
-use timer::TimerControl;
-use vram::*;
+use crate::util;
+use crate::joypad::Joypad;
+use crate::timer::Timer;
+use crate::Interrupts;
+use crate::timer::TimerControl;
+use crate::vram::*;
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;
 const WORK_RAM_SIZE: usize = 8 * 1024;
@@ -45,7 +45,7 @@ impl Mmu {
         timer: Timer,
         ppu: Ppu,
     ) -> Mmu {
-        let mut mmu = Mmu {
+        let mmu = Mmu {
             bootrom,
             rom,
             vram: [0; 8 * 1024],

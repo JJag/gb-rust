@@ -1,9 +1,9 @@
 use super::gpu::Color;
-use image::ImageBuffer;
-use image::Rgba;
+use ::image::ImageBuffer;
+use ::image::Rgba;
 use piston_window::*;
-use util::Array2D;
-use vram::*;
+use crate::util::Array2D;
+use crate::vram::*;
 
 pub struct Gfx {}
 
@@ -101,7 +101,7 @@ impl Gfx {
         let buf = self.render_tilemap_to_buf(vram, sc_x, sc_y);
         self.render_buf(window, e, &buf);
     }
-    fn render_tilemap_to_buf(&mut self, vram: &Vram, sc_x: u8, sc_y: u8) -> Array2D {
+    fn render_tilemap_to_buf(&mut self, vram: &Vram, _sc_x: u8, _sc_y: u8) -> Array2D {
         let mut out_buf = Array2D::new(32 * 8, 32 * 8);
         let tileset = &vram.tileset;
         let tilemap = &vram.bg_tilemap;
@@ -119,7 +119,7 @@ impl Gfx {
     fn render_buf(&mut self, w: &mut PistonWindow, e: &Event, buf: &Array2D) {
         use piston_window::*;
         let canvas = render_to_canvas(buf);
-        let mut texture: G2dTexture =
+        let texture: G2dTexture =
             Texture::from_image(&mut w.factory, &canvas, &TextureSettings::new()).unwrap();
         w.draw_2d(e, |c, gl| {
             clear([0.3, 0.0, 0.0, 1.0], gl);

@@ -1,5 +1,5 @@
-use cpu::*;
-use util;
+use crate::cpu::*;
+use crate::util;
 
 impl Cpu {
     pub fn DEC(&mut self, r: Reg8) {
