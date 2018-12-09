@@ -42,11 +42,9 @@ impl Cpu {
         let n = unsafe { mem::transmute::<u8, i8>(self.mmu.read_byte(self.pc)) };
         self.pc += 1;
         if pred {
-            if n > 0 {
-                self.pc = self.pc.wrapping_add(n as u16);
-            } else {
-                self.pc = self.pc.wrapping_sub(-n as u16);
-            }
+            let pc = self.pc as i32;
+            let new_pc = pc.wrapping_add(n as i32);
+            self.pc = new_pc as u16;
         }
     }
 
