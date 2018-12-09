@@ -7,17 +7,16 @@ extern crate image;
 extern crate piston_window;
 
 use crate::cpu::*;
+use crate::Interrupts;
 use crate::joypad::Joypad;
 use crate::joypad::JoypadInterrupt;
-use crate::timer::Timer;
 use crate::mmu::Mmu;
+use crate::ppu::*;
+use crate::timer::Timer;
+use crate::vram::*;
 use piston_window::*;
 use std::fs::File;
 use std::io::Read;
-use crate::Interrupts;
-use crate::vram::*;
-use crate::ppu::*;
-
 
 mod vram;
 mod joypad;
@@ -70,14 +69,6 @@ fn main() {
     let mut gfx = gfx::Gfx {};
 
     let mut breakpoints: Vec<u16> = vec![
-//        0x0100,
-//        0x8014,
-//        0x0B79,
-//        0x45C,
-//        0x45F,
-//        0x035B,
-//        0x0360,
-//        0x0363,
     ];
     let mut is_debug = false;
 
@@ -90,9 +81,6 @@ fn main() {
         if is_debug {
             is_debug = do_debug_stuff(&cpu, &mut breakpoints);
         }
-
-        let sc_x: u8 = cpu.mmu.read_byte(SC_X);
-        let sc_y: u8 = cpu.mmu.read_byte(SC_Y);
 
         let _nanos_passed = 238.4;
         let timer_interrupt = cpu.mmu.timer.pass_time(4);
@@ -116,10 +104,6 @@ fn main() {
         }
     }
 }
-
-const SC_X: u16 = 0xFF43;
-const SC_Y: u16 = 0xFF42;
-const INPUT: u16 = 0xFF00;
 
 fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
     cpu.handle_interrupts();
