@@ -1,18 +1,17 @@
-use crate::util;
-use crate::joypad::Joypad;
-use crate::timer::Timer;
 use crate::Interrupts;
+use crate::joypad::Joypad;
+use crate::ppu::*;
+use crate::timer::Timer;
 use crate::timer::TimerControl;
+use crate::util;
 use crate::vram::*;
+
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;
 const WORK_RAM_SIZE: usize = 8 * 1024;
 const OAM_SIZE: usize = 160;
 const IO_SIZE: usize = 128;
 const ZERO_RAM_SIZE: usize = 128;
-
-pub const ADDR_IF: u16 = 0xFF0F;
-pub const ADDR_IE: u16 = 0xFFFF;
 
 pub struct Mmu {
     bootrom: Vec<u8>,
@@ -21,7 +20,7 @@ pub struct Mmu {
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
     oam: [u8; OAM_SIZE],    // TODO use struct
-    io: [u8; IO_SIZE], // TODO split
+    unhandled_io: [u8; IO_SIZE], // TODO split
     zero_ram: [u8; ZERO_RAM_SIZE],
 
     // IO registers
@@ -47,14 +46,13 @@ impl Mmu {
             ext_ram: [0; 8 * 1024],
             work_ram: [0; 8 * 1024],
             oam: [0; 160],
-            io: [0; 128],
+            unhandled_io: [0; 128],
             zero_ram: [0; 128],
             _if: Interrupts::from_bits_truncate(0),
             ie: Interrupts::from_bits_truncate(0),
             timer: timer,
             joypad: joypad,
             ppu: ppu,
-
         };
 
         mmu
@@ -85,10 +83,25 @@ impl Mmu {
                 0xFF05          => self.timer.tima,
                 0xFF06          => self.timer.tma,
                 0xFF07          => self.timer.tac.to_u8(),
+
                 0xFFFF          => self.ie.bits(),
                 0xFF0F          => self._if.bits(),
+
+                // PPU
                 0xFF40          => self.ppu.lcdc.to_byte(),
-                0xFF00...0xFF7F => self.io[addr - 0xFF00],
+                0xFF41          => self.ppu.read_lcdstat(),
+                0xFF42          => self.ppu.sc_y,
+                0xFF43          => self.ppu.sc_x,
+                0xFF44          => self.ppu.ly,
+                0xFF45          => self.ppu.lyc,
+                0xFF46          => 0,   // DMA transfer
+                0xFF47          => self.ppu.bg_palette.to_u8(),
+                0xFF48          => self.ppu.obj0_palette.to_u8(),
+                0xFF49          => self.ppu.obj1_palette.to_u8(),
+                0xFF4A          => self.ppu.w_y,
+                0xFF4B          => self.ppu.w_x,
+
+                0xFF00...0xFF7F => self.unhandled_io[addr - 0xFF00],
                 0xFF80...0xFFFF => self.zero_ram[addr - 0xFF80],
                 0xFEA0...0xFEFF => 0, // accessing this memory is undefined behaviour
                 _               => panic!("Unhandled address in memory map: {:X}", addr)
@@ -125,8 +138,23 @@ impl Mmu {
             0xFF07          => self.timer.tac = TimerControl::from_u8(val),
             0xFFFF          => self.ie = Interrupts::from_bits_truncate(val),
             0xFF0F          => self._if = Interrupts::from_bits_truncate(val),
+
+
+            // PPU
             0xFF40          => self.ppu.lcdc = Lcdc::from_byte(val),
-            0xFF01...0xFF7F => self.io[addr - 0xFF00] = val,
+            0xFF41          => {},  // Write to LCDSTAT attempt - do nothing probably
+            0xFF42          => self.ppu.sc_y = val ,
+            0xFF43          => self.ppu.sc_x = val,
+            0xFF44          => self.ppu.ly = val,
+            0xFF45          => self.ppu.lyc = val,
+            0xFF46          => {},   // init DMA transfer
+            0xFF47          => self.ppu.bg_palette = DmgPalette::from_u8(val),
+            0xFF48          => self.ppu.obj0_palette = DmgPalette::from_u8(val),
+            0xFF49          => self.ppu.obj1_palette = DmgPalette::from_u8(val),
+            0xFF4A          => self.ppu.w_y = val,
+            0xFF4B          => self.ppu.w_x = val,
+
+            0xFF01...0xFF7F => self.unhandled_io[addr - 0xFF00] = val,
             0xFF80...0xFFFF => self.zero_ram[addr - 0xFF80] = val,
             0xFEA0...0xFEFF => {}, // accessing this memory is undefined behaviour
             _ => panic!("Unhandled address in memory map: {:X}", addr),

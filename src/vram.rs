@@ -1,21 +1,5 @@
-#[derive(Default)]
-pub struct Ppu {
-    pub lcdc: Lcdc,
 
-    pub ly: u8,
-    pub lyc: u8,
-    pub sc_x: u8,
-    pub sc_y: u8,
-
-    pub w_x: u8,
-    pub w_y: u8,
-
-    pub bg_palette: [DmgColor; 4],
-    pub obj0_palette: [DmgColor; 4],
-    pub obj1_palette: [DmgColor; 4],
-}
-
-
+#[derive(Copy, Clone)]
 pub enum DmgColor {
     Black,
     DarkGray,
@@ -26,56 +10,6 @@ pub enum DmgColor {
 impl Default for DmgColor {
     fn default() -> Self {
         DmgColor::White
-    }
-}
-
-/*
- Bit 7 - LCD Display Enable             (0=Off, 1=On)
- Bit 6 - Window Tile Map Display Select (0=9800-9BFF, 1=9C00-9FFF)
- Bit 5 - Window Display Enable          (0=Off, 1=On)
- Bit 4 - BG & Window Tile Data Select   (0=8800-97FF, 1=8000-8FFF)
- Bit 3 - BG Tile Map Display Select     (0=9800-9BFF, 1=9C00-9FFF)
- Bit 2 - OBJ (Sprite) Size              (0=8x8, 1=8x16)
- Bit 1 - OBJ (Sprite) Display Enable    (0=Off, 1=On)
- Bit 0 - BG/Window Display/Priority     (0=Off, 1=On)
- */
-#[derive(Default)]
-pub struct Lcdc {
-    pub lcd_display_enable: bool,
-    pub window_tilemap_select: bool,
-    pub window_enabled: bool,
-    pub bg_window_tile_data_select1: bool,
-    pub bg_tilemap_select1: bool,
-    pub tall_sprites: bool,
-    pub sprites_enabled: bool,
-    pub bg_window_priority: bool,
-}
-
-impl Lcdc {
-    pub fn to_byte(&self) -> u8 {
-        (
-           (self.lcd_display_enable          as u8) << 7 |
-           (self.window_tilemap_select       as u8) << 6 |
-           (self.window_enabled              as u8) << 5 |
-           (self.bg_window_tile_data_select1 as u8) << 4 |
-           (self.bg_tilemap_select1          as u8) << 3 |
-           (self.tall_sprites                as u8) << 2 |
-           (self.sprites_enabled             as u8) << 2 |
-           (self.bg_window_priority          as u8) << 0
-        )
-    }
-
-    pub fn from_byte(b: u8) -> Lcdc {
-        Lcdc {
-            lcd_display_enable:          (b & (1 << 7) != 0),
-            window_tilemap_select:       (b & (1 << 6) != 0),
-            window_enabled:              (b & (1 << 5) != 0),
-            bg_window_tile_data_select1: (b & (1 << 4) != 0),
-            bg_tilemap_select1:          (b & (1 << 3) != 0),
-            tall_sprites:                (b & (1 << 2) != 0),
-            sprites_enabled:             (b & (1 << 2) != 0),
-            bg_window_priority:          (b & (1 << 0) != 0),
-        }
     }
 }
 

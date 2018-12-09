@@ -7,7 +7,6 @@ extern crate image;
 extern crate piston_window;
 
 use crate::cpu::*;
-use crate::gpu::*;
 use crate::joypad::Joypad;
 use crate::joypad::JoypadInterrupt;
 use crate::timer::Timer;
@@ -17,15 +16,17 @@ use std::fs::File;
 use std::io::Read;
 use crate::Interrupts;
 use crate::vram::*;
+use crate::ppu::*;
+
 
 mod vram;
 mod joypad;
 mod cpu;
 mod gfx;
-mod gpu;
 mod mmu;
 mod timer;
 mod util;
+mod ppu;
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
@@ -46,10 +47,9 @@ fn main() {
     let rom = load_rom(filename).expect("error when loading a ROM");
     let joypad = Joypad::new();
     let timer = Timer::new();
-    let ppu = Ppu::default();
+    let ppu = Ppu::new();
     let mmu = Mmu::new(bootrom, rom, joypad, timer, ppu);
     let mut cpu = Cpu::new(mmu);
-    let mut gpu = Gpu::new();
 
     let _rom_name = cpu.mmu.get_rom_name();
 
@@ -83,7 +83,7 @@ fn main() {
 
     loop {
 
-        run_machine_cycle(&mut cpu, &mut gpu, is_debug);
+        run_machine_cycle(&mut cpu, is_debug);
         if breakpoints.contains(&cpu.pc) {
             is_debug = true;
         }
@@ -125,7 +125,7 @@ const SC_X: u16 = 0xFF43;
 const SC_Y: u16 = 0xFF42;
 const INPUT: u16 = 0xFF00;
 
-fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, _debug_mode: bool) {
+fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
     cpu.handle_interrupts();
 
     let opcode = cpu.mmu.read_byte(cpu.pc);
@@ -141,14 +141,12 @@ fn run_machine_cycle(cpu: &mut Cpu, gpu: &mut Gpu, _debug_mode: bool) {
         cpu.ei_pending = false;
     }
 
-    let mode_before = gpu.mode;
-    gpu.step(&mut cpu.mmu);
-    let mode_after = gpu.mode;
+    let mode_before = cpu.mmu.ppu.mode;
+    cpu.mmu.ppu.step();
+    let mode_after = cpu.mmu.ppu.mode;
     let v_blank_interrupt = mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
     if v_blank_interrupt {
-        let _if = cpu.mmu.read_byte(mmu::ADDR_IF);
-        let new_if = Interrupts::from_bits_truncate(_if) | Interrupts::VBLANK;
-        cpu.mmu.write_byte(new_if.bits(), mmu::ADDR_IF);
+        cpu.mmu._if |= Interrupts::VBLANK;
     }
 
     if cpu.pc == 0x100 {

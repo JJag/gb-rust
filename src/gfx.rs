@@ -1,4 +1,3 @@
-use super::gpu::Color;
 use ::image::ImageBuffer;
 use ::image::Rgba;
 use piston_window::*;
@@ -140,13 +139,4 @@ fn render_to_canvas(buf: &Array2D) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         }
     }
     canvas
-}
-
-fn to_rgba(c: Color) -> [f32; 4] {
-    match c {
-        Color::DARKEST => from_hex(0x0f380fff),
-        Color::DARK => from_hex(0x306230ff),
-        Color::LIGHT => from_hex(0x8bac0fff),
-        Color::LIGHTEST => from_hex(0x9bbc0fff),
-    }
 }
