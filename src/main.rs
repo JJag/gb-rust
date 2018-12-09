@@ -50,7 +50,7 @@ fn main() {
     let mmu = Mmu::new(bootrom, rom, joypad, timer, ppu);
     let mut cpu = Cpu::new(mmu);
 
-    let _rom_name = cpu.mmu.get_rom_name();
+    let rom_name = cpu.mmu.get_rom_name();
 
     let bg_map_dim = [32 * 8, 32 * 8];
     let screen_dim = [160, 144];
@@ -59,7 +59,7 @@ fn main() {
     let _window_dim = [64 * 8, 64 * 8];
     let window_dim = screen_dim;
 
-    let mut window: PistonWindow = WindowSettings::new("GB", window_dim)
+    let mut window: PistonWindow = WindowSettings::new(rom_name, window_dim)
         .exit_on_esc(true)
         .build()
         .unwrap();
@@ -116,7 +116,7 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
     cpu.clock += cycles_passed;
 
     let EI = 0xFB;
-    if cpu.ei_pending && opcode != EI {
+    if cpu.ei_pending && cpu.mmu.read_byte(cpu.pc) != EI {
         cpu.ime = true;
         cpu.ei_pending = false;
     }
