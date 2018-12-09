@@ -29,6 +29,10 @@ impl DmgPalette {
             to_u2(self.colors[2]) << 2 |
             to_u2(self.colors[3]) << 0
     }
+
+    pub fn get_color(&self, i: u8) -> DmgColor {
+        self.colors[i as usize]
+    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone)]

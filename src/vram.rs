@@ -80,7 +80,7 @@ impl Default for Tile {
 }
 
 pub struct Oam {
-    sprites: [OamEntry; 40]
+    pub sprites: [OamEntry; 40]
 }
 impl Oam {
     pub fn from_bytes(bytes: &[u8]) -> Oam {
@@ -101,17 +101,17 @@ impl Default for Oam {
 
 #[derive(Default, Clone, Copy)]
 pub struct OamEntry {
-    pos_x: u8,
-    pos_y: u8,
-    tile_idx: u8,
-    flip_x: bool,
-    flip_y: bool,
+    pub pos_x: u8,
+    pub pos_y: u8,
+    pub tile_idx: u8,
+    pub flip_x: bool,
+    pub flip_y: bool,
 
     // if true, draw only on top of white BG pixels, if false on top of everything
-    low_priority: bool,
+    pub low_priority: bool,
 
     // 0 or 1 from existing pallettes
-    palette1: bool,
+    pub palette1: bool,
 
 }
 

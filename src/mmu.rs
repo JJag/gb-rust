@@ -19,7 +19,7 @@ pub struct Mmu {
     pub vram: [u8; VRAM_SIZE],  // TODO use struct
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
-    oam: [u8; OAM_SIZE],    // TODO use struct
+    pub oam: [u8; OAM_SIZE],    // TODO use struct
     unhandled_io: [u8; IO_SIZE], // TODO split
     zero_ram: [u8; ZERO_RAM_SIZE],
 
@@ -78,6 +78,7 @@ impl Mmu {
                 0xC000...0xDFFF => self.work_ram[addr - 0xC000],
                 0xE000...0xFDFF => self.work_ram[addr - 0xE000],
                 0xFE00...0xFE9F => self.oam[addr - 0xFE00],
+
                 0xFF00          => self.joypad.read_byte(),
                 0xFF04          => self.timer.div,
                 0xFF05          => self.timer.tima,
@@ -147,7 +148,7 @@ impl Mmu {
             0xFF43          => self.ppu.sc_x = val,
             0xFF44          => self.ppu.ly = val,
             0xFF45          => self.ppu.lyc = val,
-            0xFF46          => {},   // init DMA transfer
+            0xFF46          => self.dma(val),   // init DMA transfer
             0xFF47          => self.ppu.bg_palette = DmgPalette::from_u8(val),
             0xFF48          => self.ppu.obj0_palette = DmgPalette::from_u8(val),
             0xFF49          => self.ppu.obj1_palette = DmgPalette::from_u8(val),
@@ -158,6 +159,17 @@ impl Mmu {
             0xFF80...0xFFFF => self.zero_ram[addr - 0xFF80] = val,
             0xFEA0...0xFEFF => {}, // accessing this memory is undefined behaviour
             _ => panic!("Unhandled address in memory map: {:X}", addr),
+        }
+    }
+
+    fn dma(&mut self, src: u8) {
+        assert!(src <= 0xF1);
+        let src_from = (src as u16) << 8;
+        let dst_from = 0xFE00;
+
+        for i in 0x00..=0x9F {
+            let b = self.read_byte(src_from + i);
+            self.write_byte(b, dst_from + i);
         }
     }
 
