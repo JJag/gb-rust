@@ -184,20 +184,21 @@ impl Cpu {
             //            Bit 4: Joypad   Interrupt Enable  (INT 60h)  (1=Enable)
             for bit in 0..5 {
                 let int_addr = 0x40 + (0x08 * bit);
-                if self.check_interrupt(bit) {
+                let flag = Interrupts::from_bits_truncate(1 << bit);
+                if self.check_interrupt(flag) {
                     self.call(int_addr, true);
                     self.ime = false;
-                    self.mmu._if -= Interrupts::from_bits_truncate(1 << bit);
+                    self.mmu._if -= flag;
                     return;
                 }
             }
         }
     }
 
-    fn check_interrupt(&self, bit_no: u16) -> bool {
+    fn check_interrupt(&self, flag: Interrupts) -> bool {
         let ie = self.mmu.ie;
         let _if = self.mmu._if;
-        (ie & _if).bits & (1 << bit_no) != 0
+        (ie & _if).contains(flag)
     }
 }
 
