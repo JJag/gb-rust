@@ -107,7 +107,6 @@ fn main() {
 
                 if joypad_interrupt.is_some() {
                     println!("{:?}", cpu.mmu.joypad);
-                    cpu.mmu.ie |= Interrupts::JOYPAD;
                     cpu.mmu._if |= Interrupts::JOYPAD;
                 }
 
