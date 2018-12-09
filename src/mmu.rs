@@ -11,11 +11,6 @@ const OAM_SIZE: usize = 160;
 const IO_SIZE: usize = 128;
 const ZERO_RAM_SIZE: usize = 128;
 
-pub const ADDR_DIV: u16 = 0xFF04;
-pub const ADDR_TIMA: u16 = 0xFF05;
-pub const ADDR_TMA: u16 = 0xFF06;
-pub const ADDR_TAC: u16 = 0xFF07;
-
 pub const ADDR_IF: u16 = 0xFF0F;
 pub const ADDR_IE: u16 = 0xFFFF;
 
@@ -90,7 +85,7 @@ impl Mmu {
                 0xFF05          => self.timer.tima,
                 0xFF06          => self.timer.tma,
                 0xFF07          => self.timer.tac.to_u8(),
-                0xFF0E          => self.ie.bits(),
+                0xFFFF          => self.ie.bits(),
                 0xFF0F          => self._if.bits(),
                 0xFF40          => self.ppu.lcdc.to_byte(),
                 0xFF00...0xFF7F => self.io[addr - 0xFF00],
@@ -128,7 +123,7 @@ impl Mmu {
             0xFF05          => self.timer.tima = val,
             0xFF06          => self.timer.tma = val,
             0xFF07          => self.timer.tac = TimerControl::from_u8(val),
-            0xFF0E          => self.ie = Interrupts::from_bits_truncate(val),
+            0xFFFF          => self.ie = Interrupts::from_bits_truncate(val),
             0xFF0F          => self._if = Interrupts::from_bits_truncate(val),
             0xFF40          => self.ppu.lcdc = Lcdc::from_byte(val),
             0xFF01...0xFF7F => self.io[addr - 0xFF00] = val,

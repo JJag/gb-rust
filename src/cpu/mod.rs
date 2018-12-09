@@ -20,7 +20,7 @@ bitflags! {
 }
 
 pub struct Cpu {
-    pub mmu:  Mmu,
+    pub mmu: Mmu,
 
     pub a: u8,
     pub f: u8,
@@ -194,9 +194,9 @@ impl Cpu {
     }
 
     fn check_interrupt(&self, bit_no: u16) -> bool {
-        let ie = self.mmu.read_byte(mmu::ADDR_IE);
-        let _if = self.mmu.read_byte(mmu::ADDR_IF);
-        ie & (1 << bit_no) != 0 && _if & (1 << bit_no) != 0
+        let ie = self.mmu.ie;
+        let _if = self.mmu._if;
+        (ie & _if).bits & (1 << bit_no) != 0
     }
 }
 
