@@ -112,8 +112,6 @@ fn main() {
                 if let Some(_) = e.render_args() {
                     gfx.render_framebuffer(&mut window, &e, &cpu.mmu);
                 }
-                //                if let Some(r) = e.render_args() { gfx.render_tilemap(&r, &cpu.mmu.vram, sc_x, sc_y); }
-                //                if let Some(r) = e.render_args() { gfx.render_tileset(&r, &cpu.mmu.vram); }
             }
         }
     }
