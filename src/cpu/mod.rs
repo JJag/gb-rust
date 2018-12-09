@@ -186,7 +186,8 @@ impl Cpu {
                 let int_addr = 0x40 + (0x08 * bit);
                 if self.check_interrupt(bit) {
                     self.call(int_addr, true);
-                    self.ime = false; // FIXME should I reset IME or only clear one flag
+                    self.ime = false;
+                    self.mmu._if -= Interrupts::from_bits_truncate(1 << bit);
                     return;
                 }
             }
