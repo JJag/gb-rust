@@ -141,12 +141,12 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
         cpu.ei_pending = false;
     }
 
-    let mode_before = cpu.mmu.ppu.mode;
-    cpu.mmu.ppu.step();
-    let mode_after = cpu.mmu.ppu.mode;
-    let v_blank_interrupt = mode_after == GpuMode::VBlank && mode_before != GpuMode::VBlank;
-    if v_blank_interrupt {
+    let (vblank_int, stat_int) = cpu.mmu.ppu.step();
+    if vblank_int.is_some() {
         cpu.mmu._if |= Interrupts::VBLANK;
+    }
+    if stat_int.is_some() {
+        cpu.mmu._if |= Interrupts::LCD_STAT;
     }
 
     if cpu.pc == 0x100 {

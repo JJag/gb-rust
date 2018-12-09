@@ -1,5 +1,9 @@
 use crate::vram::DmgColor;
 
+pub struct VBlankInterrupt {}
+
+pub struct StatInterrupt {}
+
 #[derive(Default)]
 pub struct DmgPalette {
     colors: [DmgColor; 4]
@@ -21,9 +25,9 @@ impl DmgPalette {
             }
         }
         to_u2(self.colors[0]) << 6 |
-        to_u2(self.colors[1]) << 4 |
-        to_u2(self.colors[2]) << 2 |
-        to_u2(self.colors[3]) << 0
+            to_u2(self.colors[1]) << 4 |
+            to_u2(self.colors[2]) << 2 |
+            to_u2(self.colors[3]) << 0
     }
 }
 
@@ -60,6 +64,9 @@ pub struct Ppu {
     pub bg_palette: DmgPalette,
     pub obj0_palette: DmgPalette,
     pub obj1_palette: DmgPalette,
+
+    prev_mode: GpuMode,
+    prev_ly: u8,
 }
 
 impl Ppu {
@@ -89,6 +96,9 @@ impl Ppu {
             bg_palette: DmgPalette::default(),
             obj0_palette: DmgPalette::default(),
             obj1_palette: DmgPalette::default(),
+
+            prev_mode: GpuMode::OamAccess,
+            prev_ly: 0,
         }
     }
 
@@ -115,11 +125,12 @@ impl Ppu {
         self.hblank_interrupt_enable = val & (1 << 3) != 0;
     }
 
-    // if true is returned canvas should be redrawn
     // TODO design it better
-    pub fn step(&mut self) -> bool {
+    pub fn step(&mut self) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
         self.mode_time += 1; // TODO delta time?
         self.mode_time += 3; // TODO delta time?
+        self.prev_mode = self.mode;
+        self.prev_ly = self.ly;
         match self.mode {
             GpuMode::OamAccess => {
                 if self.mode_time >= 80 {
@@ -143,7 +154,6 @@ impl Ppu {
                         self.mode = GpuMode::VBlank;
                     } else {
                         self.mode = GpuMode::OamAccess;
-                        return true;
                     }
                 }
             }
@@ -159,7 +169,18 @@ impl Ppu {
                 }
             }
         }
-        return false;
+
+        let vblank_interrupt = self.mode == GpuMode::VBlank && self.mode != self.prev_mode;
+        let mut stat_interrupt = false;
+        stat_interrupt |= self.lyc_interrupt_enable && self.ly != self.prev_ly && self.ly == self.lyc;
+        stat_interrupt |= self.hblank_interrupt_enable && self.mode == GpuMode::HBlank && self.mode != self.prev_mode;
+        stat_interrupt |= self.vblank_interrupt_enable && vblank_interrupt; // TODO not sure if flag is for STAT interrupt
+        stat_interrupt |= self.oam_interrupt_enable && self.mode == GpuMode::OamAccess && self.mode != self.prev_mode;
+
+        let vblank_interrupt = if vblank_interrupt { Some(VBlankInterrupt {}) } else { None };
+        let stat_interrupt = if stat_interrupt { Some(StatInterrupt {}) } else { None };
+
+        (vblank_interrupt, stat_interrupt)
     }
 }
 
