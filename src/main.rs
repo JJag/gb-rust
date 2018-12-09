@@ -106,7 +106,6 @@ fn main() {
                 let joypad_interrupt: Option<JoypadInterrupt> = cpu.mmu.joypad.on_event(&e);
 
                 if joypad_interrupt.is_some() {
-                    println!("{:?}", cpu.mmu.joypad);
                     cpu.mmu._if |= Interrupts::JOYPAD;
                 }
 
