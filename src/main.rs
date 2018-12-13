@@ -106,33 +106,31 @@ fn main() {
 }
 
 fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
-    cpu.handle_interrupts();
-
-    let opcode = cpu.mmu.read_byte(cpu.pc);
-    cpu.pc = cpu.pc.wrapping_add(1);
-    execute(cpu, opcode);
-
-    let cycles_passed = 4; // let's pretend all instructions take 4 clock cycles
-    cpu.clock += cycles_passed;
-
-    let EI = 0xFB;
-    if cpu.ei_pending && cpu.mmu.read_byte(cpu.pc) != EI {
-        cpu.ime = true;
-        cpu.ei_pending = false;
+    if !cpu.is_busy() {
+        let interrupt_handled = cpu.handle_interrupts();
+        cpu.handle_ei_delay();
+        if interrupt_handled {
+            let interrupt_routine_cycles = 4; // TODO use proper value
+            cpu.set_busy(interrupt_routine_cycles);
+        } else {
+            let opcode = cpu.fetch_opcode_byte();
+            let instr_cycles = 4;   // TODO use proper value
+            execute(cpu, opcode);
+            cpu.set_busy(instr_cycles);
+        }
+        cpu.handle_ei_delay();
     }
 
     let (vblank_int, stat_int) = cpu.mmu.ppu.step();
-    if vblank_int.is_some() {
-        cpu.mmu._if |= Interrupts::VBLANK;
-    }
-    if stat_int.is_some() {
-        cpu.mmu._if |= Interrupts::LCD_STAT;
-    }
+    if vblank_int.is_some() { cpu.mmu._if |= Interrupts::VBLANK }
+    if stat_int.is_some() { cpu.mmu._if |= Interrupts::LCD_STAT }
 
     if cpu.pc == 0x100 {
         print_io_registers(cpu);
 //        init_io_registers(cpu);
     }
+
+    cpu.pass_cycle()
 }
 
 fn print_io_registers(cpu: &Cpu) {

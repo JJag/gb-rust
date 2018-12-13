@@ -38,9 +38,11 @@ pub struct Cpu {
     pub halted: bool,
     pub stopped: bool,
 
-    pub ei_pending: bool,
+    ei_pending: bool,
 
     pub ime: bool, // Interrupt Master Enable Flag (Write Only)
+
+    cycles_busy: u32,
 }
 
 impl Cpu {
@@ -62,7 +64,34 @@ impl Cpu {
             stopped: false,
             ei_pending: false,
             ime: false,
+            cycles_busy: 0,
         }
+    }
+
+    pub fn is_busy(&self) -> bool {
+        self.cycles_busy > 0
+    }
+
+    pub fn set_busy(&mut self, cycles: u32) {
+        self.cycles_busy = cycles
+    }
+
+    pub fn handle_ei_delay(&mut self) {
+        if self.ei_pending {
+            self.ime = true;
+            self.ei_pending = false;
+        }
+    }
+
+    pub fn pass_cycle(&mut self) {
+        self.cycles_busy -= 1;
+        self.clock += 1;
+    }
+
+    pub fn fetch_opcode_byte(&mut self) -> u8 {
+        let opcode = self.mmu.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        opcode
     }
 
     pub fn af(&self) -> u16 {
@@ -175,7 +204,8 @@ impl Cpu {
         }
     }
 
-    pub fn handle_interrupts(&mut self) -> () {
+    /// Returns true if any interrupt got handled
+    pub fn handle_interrupts(&mut self) -> bool {
         if self.ime {
             //            Bit 0: V-Blank  Interrupt Enable  (INT 40h)  (1=Enable)
             //            Bit 1: LCD STAT Interrupt Enable  (INT 48h)  (1=Enable)
@@ -189,10 +219,11 @@ impl Cpu {
                     self.call(int_addr, true);
                     self.ime = false;
                     self.mmu._if -= flag;
-                    return;
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     fn check_interrupt(&self, flag: Interrupts) -> bool {

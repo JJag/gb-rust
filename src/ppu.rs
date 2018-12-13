@@ -131,8 +131,7 @@ impl Ppu {
 
     // TODO design it better
     pub fn step(&mut self) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
-        self.mode_time += 1; // TODO delta time?
-        self.mode_time += 3; // TODO delta time?
+        self.mode_time += 1;
         self.prev_mode = self.mode;
         self.prev_ly = self.ly;
         match self.mode {
