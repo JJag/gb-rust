@@ -40,6 +40,7 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
 const CLOCK_FREQUENCY_HZ: u32 = 4_194_304;
 
 fn main() {
+    let skip_bootrom = true;
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
@@ -71,6 +72,11 @@ fn main() {
     let mut breakpoints: Vec<u16> = vec![
     ];
     let mut is_debug = false;
+
+    if skip_bootrom {
+        cpu.pc = 0x100;
+        init_io_registers(&mut cpu);
+    }
 
     loop {
 
@@ -124,11 +130,6 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
     let (vblank_int, stat_int) = cpu.mmu.ppu.step();
     if vblank_int.is_some() { cpu.mmu._if |= Interrupts::VBLANK }
     if stat_int.is_some() { cpu.mmu._if |= Interrupts::LCD_STAT }
-
-    if cpu.pc == 0x100 {
-        print_io_registers(cpu);
-//        init_io_registers(cpu);
-    }
 
     cpu.pass_cycle()
 }
@@ -196,6 +197,7 @@ fn init_io_registers(cpu: &mut Cpu) {
     cpu.mmu.write_byte(0xFF, 0xFF48);
     cpu.mmu.write_byte(0xFF, 0xFF49);
     cpu.mmu.write_byte(0x00, 0xFF4A);
+    cpu.mmu.write_byte(0xFF, 0xFF50);   // disable bootrom
 }
 
 fn do_debug_stuff(cpu: &Cpu, breakpoints: &mut Vec<u16>) -> bool {
