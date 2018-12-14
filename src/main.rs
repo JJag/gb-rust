@@ -70,6 +70,8 @@ fn main() {
     let mut gfx = gfx::Gfx {};
 
     let mut breakpoints: Vec<u16> = vec![
+        0x50,
+        0xC2B5,
     ];
     let mut is_debug = false;
 
@@ -80,21 +82,21 @@ fn main() {
 
     loop {
 
-        run_machine_cycle(&mut cpu, is_debug);
+        let should_redraw = run_machine_cycle(&mut cpu, is_debug);
         if breakpoints.contains(&cpu.pc) {
             is_debug = true;
         }
-        if is_debug {
+        if is_debug && !cpu.is_busy() {
             is_debug = do_debug_stuff(&cpu, &mut breakpoints);
         }
 
         let _nanos_passed = 238.4;
-        let timer_interrupt = cpu.mmu.timer.pass_time(4);
+        let timer_interrupt = cpu.mmu.timer.pass_time(1);
         if timer_interrupt {
             cpu.mmu._if |= Interrupts::TIMER;
         }
 
-        if cpu.clock % 17_500 == 0 {
+        if should_redraw {
             let opt_event = window.next();
             if let Some(ref e) = opt_event {
                 let joypad_interrupt: Option<JoypadInterrupt> = cpu.mmu.joypad.on_event(&e);
@@ -111,7 +113,7 @@ fn main() {
     }
 }
 
-fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
+fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) -> bool {
     if !cpu.is_busy() {
         let interrupt_handled = cpu.handle_interrupts();
         cpu.handle_ei_delay();
@@ -131,7 +133,9 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) {
     if vblank_int.is_some() { cpu.mmu._if |= Interrupts::VBLANK }
     if stat_int.is_some() { cpu.mmu._if |= Interrupts::LCD_STAT }
 
-    cpu.pass_cycle()
+    cpu.pass_cycle();
+
+    return vblank_int.is_some();
 }
 
 fn print_io_registers(cpu: &Cpu) {

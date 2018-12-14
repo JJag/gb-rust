@@ -80,8 +80,8 @@ impl Mmu {
                 0xFE00...0xFE9F => self.oam[addr - 0xFE00],
 
                 0xFF00          => self.joypad.read_byte(),
-                0xFF04          => self.timer.div,
-                0xFF05          => self.timer.tima,
+                0xFF04          => self.timer.div(),
+                0xFF05          => self.timer.tima(),
                 0xFF06          => self.timer.tma,
                 0xFF07          => self.timer.tac.to_u8(),
 
@@ -133,8 +133,8 @@ impl Mmu {
             0xE000...0xFDFF => self.work_ram[addr - 0xE000] = val,
             0xFE00...0xFE9F => self.oam[addr - 0xFE00] = val,
             0xFF00          => self.joypad.write_byte(val),
-            0xFF04          => self.timer.div = val,
-            0xFF05          => self.timer.tima = val,
+            0xFF04          => self.timer.reset_div(),
+            0xFF05          => self.timer.reset_tima(),
             0xFF06          => self.timer.tma = val,
             0xFF07          => self.timer.tac = TimerControl::from_u8(val),
             0xFFFF          => self.ie = Interrupts::from_bits_truncate(val),
