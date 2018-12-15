@@ -193,6 +193,7 @@ impl Ppu {
     }
 
     fn render_line(&mut self, ly: u8, vram: &[u8], _oam: &[u8]) {
+        assert!(!self.lcdc.tall_sprites);
         #[derive(PartialEq, Eq)]
         enum Pixel {
             Bg(u8),
