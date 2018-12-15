@@ -41,9 +41,7 @@ impl Cartridge for Mbc1 {
             0x0000...0x3FFF => self.rom[addr as usize],
             0x4000...0x7FFF => {
                 let idx = 0x4000 * self.rom_bank + (addr - 0x4000) as u32;
-//                println!("{:X}", addr);
-                self.rom[idx as usize];
-                self.rom[addr as usize]
+                self.rom[idx as usize]
             }
             0xA000...0xBFFF => {
                 panic!("RAM not supported yet");
