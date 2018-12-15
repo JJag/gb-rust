@@ -11,6 +11,7 @@ use std::io::Read;
 
 use piston_window::*;
 
+use crate::mbc::*;
 use crate::cpu::*;
 use crate::Interrupts;
 use crate::joypad::Joypad;
@@ -27,6 +28,8 @@ mod mmu;
 mod timer;
 mod util;
 mod ppu;
+mod mbc;
+
 
 const OPERATION_MASK: u8 = 0b1111_1000;
 
@@ -38,20 +41,29 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
     Result::Ok(contents)
 }
 
+fn build_cart(rom: Vec<u8>) -> Box<Cartridge> {
+    let mbc_type = rom[0x0147];
+    match mbc_type {
+        0 => Box::new(NoMbc::new(rom)),
+        1 => Box::new(Mbc1::new(rom)),
+        _ => panic!("Unsupported MBC"),
+    }
+}
+
 fn main() {
     let skip_bootrom = false;
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
     let rom = load_rom(filename).expect("error when loading a ROM");
-    assert_eq!(rom[0x0147], 0, "Unsupported MBC");
+    let cart = build_cart(rom);
+    let rom_name = cart.get_name();
     let joypad = Joypad::new();
     let timer = Timer::new();
     let ppu = Ppu::new();
-    let mmu = Mmu::new(bootrom, rom, joypad, timer, ppu);
+    let mmu = Mmu::new(bootrom, cart, joypad, timer, ppu);
     let mut cpu = Cpu::new(mmu);
 
-    let rom_name = cpu.mmu.get_rom_name();
 
     let bg_map_dim = [32 * 8, 32 * 8];
     let screen_dim = [160, 144];

@@ -1,5 +1,6 @@
 use crate::Interrupts;
 use crate::joypad::Joypad;
+use crate::mbc::*;
 use crate::ppu::*;
 use crate::timer::Timer;
 use crate::timer::TimerControl;
@@ -14,9 +15,8 @@ const ZERO_RAM_SIZE: usize = 128;
 
 pub struct Mmu {
     bootrom: Vec<u8>,
-    rom: Vec<u8>,
+    pub cart: Box<Cartridge>,
     pub vram: [u8; VRAM_SIZE],
-    ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
     pub oam: [u8; OAM_SIZE],
     unhandled_io: [u8; IO_SIZE],
@@ -33,16 +33,15 @@ pub struct Mmu {
 impl Mmu {
     pub fn new(
         bootrom: Vec<u8>,
-        rom: Vec<u8>,
+        cart: Box<Cartridge>,
         joypad: Joypad,
         timer: Timer,
         ppu: Ppu,
     ) -> Mmu {
         let mmu = Mmu {
             bootrom,
-            rom,
+            cart,
             vram: [0; 8 * 1024],
-            ext_ram: [0; 8 * 1024],
             work_ram: [0; 8 * 1024],
             oam: [0; 160],
             unhandled_io: [0; 128],
@@ -70,10 +69,10 @@ impl Mmu {
         } else {
             let addr = addr as usize;
             match addr {
-                0x0000...0x3FFF => self.rom[addr],
-                0x4000...0x7FFF => self.rom[addr],
+                0x0000...0x3FFF => self.cart.read_byte(addr as u16),
+                0x4000...0x7FFF => self.cart.read_byte(addr as u16),
                 0x8000...0x9FFF => self.vram[addr - 0x8000],
-                0xA000...0xBFFF => self.ext_ram[addr - 0xA000],
+                0xA000...0xBFFF => self.cart.read_byte(addr as u16),
                 0xC000...0xDFFF => self.work_ram[addr - 0xC000],
                 0xE000...0xFDFF => self.work_ram[addr - 0xE000],
                 0xFE00...0xFE9F => self.oam[addr - 0xFE00],
@@ -110,11 +109,6 @@ impl Mmu {
         val
     }
 
-    pub fn get_rom_name(&self) -> String {
-        let ascii = &self.rom[0x134..0x144];
-        String::from_utf8(ascii.to_vec()).unwrap_or("unknown".to_string())
-    }
-
     pub fn write_word(&mut self, val: u16, addr: u16) -> () {
         let (lo, hi) = util::split_word(val);
         self.write_byte(hi, addr);
@@ -124,10 +118,10 @@ impl Mmu {
     pub fn write_byte(&mut self, val: u8, addr: u16) -> () {
         let addr = addr as usize;
         match addr {
-            0x0000...0x3FFF => {}, // writing to ROM
-            0x4000...0x7FFF => {}, // writing to ROM
+            0x0000...0x3FFF => self.cart.write_byte(addr as u16, val),
+            0x4000...0x7FFF => self.cart.write_byte(addr as u16, val),
             0x8000...0x9FFF => self.vram[addr - 0x8000] = val,
-            0xA000...0xBFFF => self.ext_ram[addr - 0xA000] = val,
+            0xA000...0xBFFF => self.cart.write_byte(addr as u16, val),
             0xC000...0xDFFF => self.work_ram[addr - 0xC000] = val,
             0xE000...0xFDFF => self.work_ram[addr - 0xE000] = val,
             0xFE00...0xFE9F => self.oam[addr - 0xFE00] = val,
