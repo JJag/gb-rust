@@ -13,7 +13,7 @@ Work-In-Progress classic GameBoy emulator written for educational purposes.
 | Test                       | Status       |
 |----------------------------|--------------|
 | `01-special.gb`            | PASSED       |
-| `02-interrupts.gb`         | EI FAILED #2 |
+| `02-interrupts.gb`         | PASSED       |
 | `03-op sp,hl.gb`           | PASSED       |
 | `04-op r,imm.gb`           | PASSED       |
 | `05-op rp.gb`              | PASSED       |
