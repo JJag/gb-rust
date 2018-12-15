@@ -99,7 +99,7 @@ impl Default for Oam {
 }
 
 
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct OamEntry {
     pub pos_x: u8,
     pub pos_y: u8,

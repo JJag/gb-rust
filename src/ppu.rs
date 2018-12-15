@@ -1,6 +1,7 @@
 use crate::vram::DmgColor;
 
 use std::mem;
+use crate::vram::Oam;
 
 pub struct VBlankInterrupt {}
 
@@ -192,11 +193,13 @@ impl Ppu {
     }
 
     fn render_line(&mut self, ly: u8, vram: &[u8], _oam: &[u8]) {
+        #[derive(PartialEq, Eq)]
         enum Pixel {
             Bg(u8),
             Sprite0(u8),
             Sprite1(u8),
         }
+        const VRAM_OFFSET: u16 = 0x8000;
         let window_enabled = self.lcdc.window_enabled && ly <= self.w_y;
         let spr_enabled = self.lcdc.sprites_enabled;
         let mut line: Vec<Pixel> = Vec::with_capacity(160);
@@ -204,8 +207,8 @@ impl Ppu {
         let bg_tile_row = ly.wrapping_add(self.sc_y) / 8;
         let bg_row_in_tile = ly.wrapping_add(self.sc_y) % 8;
 
-        let w_tile_row = (ly + self.w_y) / 8;
-        let w_row_in_tile = (ly + self.w_y) % 8;
+        let w_tile_row = ly.wrapping_sub(self.w_y) / 8;
+        let w_row_in_tile = ly.wrapping_sub(self.w_y) % 8;
         let tileset1: bool = self.lcdc.bg_window_tile_data_select1;
         for x in 0..160 {   // TODO execute in 8-pixel chunks
             let window = window_enabled && x <= self.w_x;
@@ -216,10 +219,10 @@ impl Ppu {
             let y_in_tile: u8;
             if window {
                 tilemap1 = self.lcdc.window_tilemap_select1;
-                tilemap_x = (x + self.w_x) / 8;
+                tilemap_x = x.wrapping_sub(self.w_x) / 8;
                 tilemap_y = w_tile_row;
                 y_in_tile = w_row_in_tile;
-                x_in_tile = (x + self.w_x) % 8;
+                x_in_tile = x.wrapping_sub(self.w_x) % 8;
             } else {
                 tilemap1 = self.lcdc.bg_tilemap_select1;
                 tilemap_x = x.wrapping_add(self.sc_x) / 8;
@@ -227,7 +230,6 @@ impl Ppu {
                 y_in_tile = bg_row_in_tile;
                 x_in_tile = x.wrapping_add(self.sc_x) % 8;
             }
-            const VRAM_OFFSET: u16 = 0x8000;
             let tilemap_start_addr;
             if tilemap1 {
                 tilemap_start_addr = 0x9C00;
@@ -240,8 +242,8 @@ impl Ppu {
             let tileset_mode1 = self.lcdc.bg_window_tile_data_select1;
 
             let tile_addr = get_tile_addr(tile_idx, tileset_mode1, vram);
-            let tile_lo = vram[(tile_addr - VRAM_OFFSET + (y_in_tile *2) as u16 + 0) as usize];
-            let tile_hi = vram[(tile_addr - VRAM_OFFSET + (y_in_tile *2) as u16 + 1) as usize];
+            let tile_lo = vram[(tile_addr - VRAM_OFFSET + (y_in_tile * 2) as u16 + 0) as usize];
+            let tile_hi = vram[(tile_addr - VRAM_OFFSET + (y_in_tile * 2) as u16 + 1) as usize];
 
 
             let color_hi_bit = 1 & (tile_hi >> (7 - x_in_tile));
@@ -250,6 +252,66 @@ impl Ppu {
             let color_idx = (color_hi_bit << 1) | color_lo_bit;
             line.push(Pixel::Bg(color_idx));
         }
+
+        // SPRITES
+
+        if self.lcdc.sprites_enabled {
+            let tile_height: u8;
+            if self.lcdc.tall_sprites {
+                tile_height = 16;
+            } else {
+                tile_height = 8
+            }
+
+            let oam = Oam::from_bytes(_oam);
+            let mut sprites_on_line = vec![];
+            for spr in oam.sprites.iter() {
+                if sprites_on_line.len() < 10 {
+                let spr_visible_on_line =
+                    spr.pos_x > 0 &&
+                        spr.pos_x < 160 + 8 &&
+                        ly + 16 >= spr.pos_y &&
+                        ly + 16 < spr.pos_y + tile_height;
+                if spr_visible_on_line { sprites_on_line.push(spr) }
+                }
+            }
+
+            for x in 0..160 {
+                for spr in &sprites_on_line {
+                    let should_draw = x + 8 >= spr.pos_x && x < spr.pos_x;
+                    if should_draw {
+                        let tile_idx = spr.tile_idx;
+                        let y_in_tile = ly + 16 - (spr.pos_y );
+                        let y_in_tile = if spr.flip_y { tile_height - 1 - y_in_tile } else { y_in_tile };
+                        let x_in_tile = x + 8 - (spr.pos_x);
+                        let x_in_tile = if spr.flip_x { 7 - x_in_tile } else { x_in_tile };
+                        assert!(y_in_tile < tile_height);
+                        assert!(x_in_tile < 8);
+
+                        let tile_addr = get_tile_addr(tile_idx, true, vram);
+
+                        let tile_lo = vram[(tile_addr - VRAM_OFFSET + (y_in_tile * 2) as u16 + 0) as usize];
+                        let tile_hi = vram[(tile_addr - VRAM_OFFSET + (y_in_tile * 2) as u16 + 1) as usize];
+
+                        let color_hi_bit = 1 & (tile_hi >> (7 - x_in_tile));
+                        let color_lo_bit = 1 & (tile_lo >> (7 - x_in_tile));
+
+                        let color_idx = (color_hi_bit << 1) | color_lo_bit;
+                        let spr_high_prio = self.lcdc.bg_window_priority;
+
+                        let transparent = color_idx == 0;
+                        if !transparent && (spr_high_prio || line[x as usize] == Pixel::Bg(0)) {
+                            if spr.palette1 {
+                                line[x as usize] = Pixel::Sprite1(color_idx);
+                            } else {
+                                line[x as usize] = Pixel::Sprite0(color_idx);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         for x in 0..160 {
             let color = match line[x] {
@@ -303,7 +365,7 @@ impl Lcdc {
                 (self.bg_window_tile_data_select1 as u8) << 4 |
                 (self.bg_tilemap_select1 as u8) << 3 |
                 (self.tall_sprites as u8) << 2 |
-                (self.sprites_enabled as u8) << 2 |
+                (self.sprites_enabled as u8) << 1 |
                 (self.bg_window_priority as u8) << 0
         )
     }
@@ -316,7 +378,7 @@ impl Lcdc {
             bg_window_tile_data_select1: (b & (1 << 4) != 0),
             bg_tilemap_select1: (b & (1 << 3) != 0),
             tall_sprites: (b & (1 << 2) != 0),
-            sprites_enabled: (b & (1 << 2) != 0),
+            sprites_enabled: (b & (1 << 1) != 0),
             bg_window_priority: (b & (1 << 0) != 0),
         }
     }
