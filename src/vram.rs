@@ -26,7 +26,7 @@ impl Vram {
         Vram {
             tileset: build_tileset(bytes),
             bg_tilemap: build_tilemap(bytes),
-            window_tilemap: build_tilemap(bytes), // TODO BUILD REAL WINDOW
+            window_tilemap: build_tilemap(bytes),
         }
     }
 }

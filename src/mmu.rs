@@ -16,11 +16,11 @@ const ZERO_RAM_SIZE: usize = 128;
 pub struct Mmu {
     bootrom: Vec<u8>,
     rom: Vec<u8>,
-    pub vram: [u8; VRAM_SIZE],  // TODO use struct
+    pub vram: [u8; VRAM_SIZE],
     ext_ram: [u8; EXT_RAM_SIZE],
     work_ram: [u8; WORK_RAM_SIZE],
-    pub oam: [u8; OAM_SIZE],    // TODO use struct
-    unhandled_io: [u8; IO_SIZE], // TODO split
+    pub oam: [u8; OAM_SIZE],
+    unhandled_io: [u8; IO_SIZE],
     zero_ram: [u8; ZERO_RAM_SIZE],
 
     // IO registers
@@ -167,7 +167,7 @@ impl Mmu {
         let src_from = (src as u16) << 8;
         let dst_from = 0xFE00;
 
-        for i in 0x00..=0x9F {
+        for i in 0x00..0xA0 {
             let b = self.read_byte(src_from + i);
             self.write_byte(b, dst_from + i);
         }

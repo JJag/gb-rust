@@ -47,7 +47,6 @@ impl Timer {
 #[derive(Eq, PartialEq, Debug)]
 pub struct TimerControl {
     enabled: bool,
-    // TODO find out what's purpose of this really
     clock_freq: TacFrequency,
 }
 

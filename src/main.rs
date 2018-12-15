@@ -45,6 +45,7 @@ fn main() {
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
     let rom = load_rom(filename).expect("error when loading a ROM");
+    assert_eq!(rom[0x0147], 0, "Unsupported MBC");
     let joypad = Joypad::new();
     let timer = Timer::new();
     let ppu = Ppu::new();
