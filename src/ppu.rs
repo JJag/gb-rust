@@ -201,7 +201,6 @@ impl Ppu {
         }
         const VRAM_OFFSET: u16 = 0x8000;
         let window_enabled = self.lcdc.window_enabled && ly <= self.w_y;
-        let spr_enabled = self.lcdc.sprites_enabled;
         let mut line: Vec<Pixel> = Vec::with_capacity(160);
 
         let bg_tile_row = ly.wrapping_add(self.sc_y) / 8;
@@ -209,7 +208,6 @@ impl Ppu {
 
         let w_tile_row = ly.wrapping_sub(self.w_y) / 8;
         let w_row_in_tile = ly.wrapping_sub(self.w_y) % 8;
-        let tileset1: bool = self.lcdc.bg_window_tile_data_select1;
         for x in 0..160 {   // TODO execute in 8-pixel chunks
             let window = window_enabled && x <= self.w_x;
             let tilemap1: bool;
@@ -325,7 +323,7 @@ impl Ppu {
     }
 }
 
-fn get_tile_addr(tile_idx: u8, tileset_mode1: bool, vram: &[u8]) -> u16 {
+fn get_tile_addr(tile_idx: u8, tileset_mode1: bool, _vram: &[u8]) -> u16 {
     if tileset_mode1 {
         0x8000 + (tile_idx as u16 * 16) as u16
     } else {
