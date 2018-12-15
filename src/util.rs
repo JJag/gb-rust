@@ -101,6 +101,7 @@ impl Array2D {
     }
 }
 
+#[cfg(test)]
 mod test {
     use super::*;
 

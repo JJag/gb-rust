@@ -4,7 +4,6 @@ use crate::ppu::*;
 use crate::timer::Timer;
 use crate::timer::TimerControl;
 use crate::util;
-use crate::vram::*;
 
 const VRAM_SIZE: usize = 8 * 1024;
 const EXT_RAM_SIZE: usize = 8 * 1024;

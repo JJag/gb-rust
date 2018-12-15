@@ -18,7 +18,6 @@ use crate::joypad::JoypadInterrupt;
 use crate::mmu::Mmu;
 use crate::ppu::*;
 use crate::timer::Timer;
-use crate::vram::*;
 
 mod vram;
 mod joypad;
