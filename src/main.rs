@@ -40,7 +40,7 @@ fn load_rom(filename: &str) -> std::io::Result<Vec<u8>> {
 const CLOCK_FREQUENCY_HZ: u32 = 4_194_304;
 
 fn main() {
-    let skip_bootrom = true;
+    let skip_bootrom = false;
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
     let bootrom = load_rom("roms/bootrom.gb").expect("error when loading a ROM");
@@ -70,8 +70,8 @@ fn main() {
     let mut gfx = gfx::Gfx {};
 
     let mut breakpoints: Vec<u16> = vec![
-        0x50,
-        0xC2B5,
+//        0x50,
+//        0xC2B5,
     ];
     let mut is_debug = false;
 
@@ -81,19 +81,12 @@ fn main() {
     }
 
     loop {
-
         let should_redraw = run_machine_cycle(&mut cpu, is_debug);
         if breakpoints.contains(&cpu.pc) {
             is_debug = true;
         }
         if is_debug && !cpu.is_busy() {
             is_debug = do_debug_stuff(&cpu, &mut breakpoints);
-        }
-
-        let _nanos_passed = 238.4;
-        let timer_interrupt = cpu.mmu.timer.pass_time(1);
-        if timer_interrupt {
-            cpu.mmu._if |= Interrupts::TIMER;
         }
 
         if should_redraw {
@@ -106,7 +99,7 @@ fn main() {
                 }
 
                 if let Some(_) = e.render_args() {
-                    gfx.render_framebuffer(&mut window, &e, &cpu.mmu);
+                    gfx.render_framebuffer1(&mut window, &e, &cpu.mmu.ppu.framebuffer);
                 }
             }
         }
@@ -114,7 +107,11 @@ fn main() {
 }
 
 fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) -> bool {
-    if !cpu.is_busy() {
+    if cpu.halted && cpu.any_interrupt() {
+        cpu.halted = false;
+    }
+
+    if !cpu.halted && !cpu.is_busy() {
         let interrupt_handled = cpu.handle_interrupts();
         cpu.handle_ei_delay();
         if interrupt_handled {
@@ -129,11 +126,14 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) -> bool {
         cpu.handle_ei_delay();
     }
 
-    let (vblank_int, stat_int) = cpu.mmu.ppu.step();
+    let (vblank_int, stat_int) = cpu.mmu.ppu.step(&cpu.mmu.vram, &cpu.mmu.oam);
     if vblank_int.is_some() { cpu.mmu._if |= Interrupts::VBLANK }
     if stat_int.is_some() { cpu.mmu._if |= Interrupts::LCD_STAT }
 
-    cpu.pass_cycle();
+    let timer_interrupt = cpu.mmu.timer.pass_time(1);
+    if timer_interrupt { cpu.mmu._if |= Interrupts::TIMER }
+
+    if !cpu.halted { cpu.pass_cycle() }
 
     return vblank_int.is_some();
 }

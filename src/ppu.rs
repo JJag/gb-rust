@@ -1,5 +1,7 @@
 use crate::vram::DmgColor;
 
+use std::mem;
+
 pub struct VBlankInterrupt {}
 
 pub struct StatInterrupt {}
@@ -130,7 +132,7 @@ impl Ppu {
     }
 
     // TODO design it better
-    pub fn step(&mut self) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
+    pub fn step(&mut self, vram: &[u8], oam: &[u8]) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
         self.mode_time += 1;
         self.prev_mode = self.mode;
         self.prev_ly = self.ly;
@@ -150,6 +152,9 @@ impl Ppu {
             GpuMode::HBlank => {
                 if self.mode_time >= 204 {
                     self.mode_time = 0;
+                    if self.ly < 144 {
+                        self.render_line(self.ly, vram, oam);
+                    }
                     self.ly += 1;
 
                     if self.ly == 143 {
@@ -185,6 +190,86 @@ impl Ppu {
 
         (vblank_interrupt, stat_interrupt)
     }
+
+    fn render_line(&mut self, ly: u8, vram: &[u8], _oam: &[u8]) {
+        enum Pixel {
+            Bg(u8),
+            Sprite0(u8),
+            Sprite1(u8),
+        }
+        let window_enabled = self.lcdc.window_enabled && ly <= self.w_y;
+        let spr_enabled = self.lcdc.sprites_enabled;
+        let mut line: Vec<Pixel> = Vec::with_capacity(160);
+
+        let bg_tile_row = ly.wrapping_add(self.sc_y) / 8;
+        let bg_row_in_tile = ly.wrapping_add(self.sc_y) % 8;
+
+        let w_tile_row = (ly + self.w_y) / 8;
+        let w_row_in_tile = (ly + self.w_y) % 8;
+        let tileset1: bool = self.lcdc.bg_window_tile_data_select1;
+        for x in 0..160 {   // TODO execute in 8-pixel chunks
+            let window = window_enabled && x <= self.w_x;
+            let tilemap1: bool;
+            let tilemap_x: u8;
+            let tilemap_y: u8;
+            let x_in_tile: u8;
+            let y_in_tile: u8;
+            if window {
+                tilemap1 = self.lcdc.window_tilemap_select1;
+                tilemap_x = (x + self.w_x) / 8;
+                tilemap_y = w_tile_row;
+                y_in_tile = w_row_in_tile;
+                x_in_tile = (x + self.w_x) % 8;
+            } else {
+                tilemap1 = self.lcdc.bg_tilemap_select1;
+                tilemap_x = x.wrapping_add(self.sc_x) / 8;
+                tilemap_y = bg_tile_row;
+                y_in_tile = bg_row_in_tile;
+                x_in_tile = x.wrapping_add(self.sc_x) % 8;
+            }
+            const VRAM_OFFSET: u16 = 0x8000;
+            let tilemap_start_addr;
+            if tilemap1 {
+                tilemap_start_addr = 0x9C00;
+            } else {
+                tilemap_start_addr = 0x9800;
+            }
+            let tilemap_idx = tilemap_y as u16 * 32 + tilemap_x as u16;
+            let tile_idx_addr = (tilemap_start_addr - VRAM_OFFSET + tilemap_idx) as usize;
+            let tile_idx = vram[tile_idx_addr];
+            let tileset_mode1 = self.lcdc.bg_window_tile_data_select1;
+
+            let tile_addr = get_tile_addr(tile_idx, tileset_mode1, vram);
+            let tile_lo = vram[(tile_addr - VRAM_OFFSET + (y_in_tile *2) as u16 + 0) as usize];
+            let tile_hi = vram[(tile_addr - VRAM_OFFSET + (y_in_tile *2) as u16 + 1) as usize];
+
+
+            let color_hi_bit = 1 & (tile_hi >> (7 - x_in_tile));
+            let color_lo_bit = 1 & (tile_lo >> (7 - x_in_tile));
+
+            let color_idx = (color_hi_bit << 1) | color_lo_bit;
+            line.push(Pixel::Bg(color_idx));
+        }
+
+        for x in 0..160 {
+            let color = match line[x] {
+                Pixel::Bg(idx) => self.bg_palette.get_color(idx),
+                Pixel::Sprite0(idx) => self.obj0_palette.get_color(idx),
+                Pixel::Sprite1(idx) => self.obj1_palette.get_color(idx),
+            };
+            let fb_idx = (ly as usize * 160 + x);
+            self.framebuffer[fb_idx] = color;
+        }
+    }
+}
+
+fn get_tile_addr(tile_idx: u8, tileset_mode1: bool, vram: &[u8]) -> u16 {
+    if tileset_mode1 {
+        0x8000 + (tile_idx as u16 * 16) as u16
+    } else {
+        let tile_idx = unsafe { mem::transmute::<u8, i8>(tile_idx) } as i32;
+        (0x9000 + (tile_idx * 16)) as u16
+    }
 }
 
 /*
@@ -200,7 +285,7 @@ impl Ppu {
 #[derive(Default)]
 pub struct Lcdc {
     pub lcd_display_enable: bool,
-    pub window_tilemap_select: bool,
+    pub window_tilemap_select1: bool,
     pub window_enabled: bool,
     pub bg_window_tile_data_select1: bool,
     pub bg_tilemap_select1: bool,
@@ -213,7 +298,7 @@ impl Lcdc {
     pub fn to_byte(&self) -> u8 {
         (
             (self.lcd_display_enable as u8) << 7 |
-                (self.window_tilemap_select as u8) << 6 |
+                (self.window_tilemap_select1 as u8) << 6 |
                 (self.window_enabled as u8) << 5 |
                 (self.bg_window_tile_data_select1 as u8) << 4 |
                 (self.bg_tilemap_select1 as u8) << 3 |
@@ -226,7 +311,7 @@ impl Lcdc {
     pub fn from_byte(b: u8) -> Lcdc {
         Lcdc {
             lcd_display_enable: (b & (1 << 7) != 0),
-            window_tilemap_select: (b & (1 << 6) != 0),
+            window_tilemap_select1: (b & (1 << 6) != 0),
             window_enabled: (b & (1 << 5) != 0),
             bg_window_tile_data_select1: (b & (1 << 4) != 0),
             bg_tilemap_select1: (b & (1 << 3) != 0),

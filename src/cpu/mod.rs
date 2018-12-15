@@ -204,6 +204,13 @@ impl Cpu {
         }
     }
 
+    pub fn any_interrupt(&mut self) -> bool {
+        let ime = self.ime;
+        let ie = self.mmu.ie;
+        let _if = self.mmu._if;
+        !(ie & _if).is_empty()
+    }
+
     /// Returns true if any interrupt got handled
     pub fn handle_interrupts(&mut self) -> bool {
         if self.ime {

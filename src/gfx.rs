@@ -109,6 +109,20 @@ impl Gfx {
     }
 
 
+    pub fn render_framebuffer1(
+        &mut self,
+        window: &mut PistonWindow,
+        e: &Event,
+        framebuffer: &[DmgColor],
+    ) {
+        let mut buf = Array2D::new(160, 144);
+        for idx in 0..160 * 144 {
+            let c = dmg_color_to_idx(framebuffer[idx]);
+            buf.set(idx % 160, idx / 160, c);
+        }
+        self.render_buf(window, e, &buf);
+    }
+
     //    pub fn render(&buf: )
     pub fn render_framebuffer(
         &mut self,
