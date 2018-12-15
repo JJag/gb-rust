@@ -6,6 +6,11 @@ extern crate bitflags;
 extern crate image;
 extern crate piston_window;
 
+use std::fs::File;
+use std::io::Read;
+
+use piston_window::*;
+
 use crate::cpu::*;
 use crate::Interrupts;
 use crate::joypad::Joypad;
@@ -14,9 +19,6 @@ use crate::mmu::Mmu;
 use crate::ppu::*;
 use crate::timer::Timer;
 use crate::vram::*;
-use piston_window::*;
-use std::fs::File;
-use std::io::Read;
 
 mod vram;
 mod joypad;
@@ -120,9 +122,8 @@ fn run_machine_cycle(cpu: &mut Cpu, _debug_mode: bool) -> bool {
             cpu.set_busy(interrupt_routine_cycles);
         } else {
             let opcode = cpu.fetch_opcode_byte();
-            let instr_cycles = 4;   // TODO use proper value
-            execute(cpu, opcode);
-            cpu.set_busy(instr_cycles);
+            let instr_cycles = execute(cpu, opcode);
+            cpu.set_busy(instr_cycles as u32);
         }
         cpu.handle_ei_delay();
     }
@@ -236,7 +237,47 @@ fn print_registers(cpu: &Cpu) {
     eprintln!("FF44: {:02X}", cpu.mmu.read_byte(0xFF44));
 }
 
-fn execute(cpu: &mut Cpu, opcode: u8) {
+
+static CYCLES: [u8; 256] = [
+    1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,
+    1, 3, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 1, 1, 2, 1,
+    3, 3, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 1, 1, 2, 1,
+    3, 3, 2, 2, 3, 3, 3, 1, 3, 2, 2, 2, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    5, 3, 4, 4, 6, 4, 2, 4, 5, 4, 4, 0, 6, 6, 2, 4,
+    5, 3, 4, 4, 6, 4, 2, 4, 5, 4, 4, 0, 6, 0, 2, 4,
+    3, 3, 2, 0, 0, 4, 2, 4, 4, 1, 4, 0, 0, 0, 2, 4,
+    3, 3, 2, 1, 0, 4, 2, 4, 3, 2, 4, 1, 0, 0, 2, 4,
+];
+
+static CB_CYCLES: [u8; 256] = [
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+    2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
+];
+
+
+fn execute(cpu: &mut Cpu, opcode: u8) -> u8 {
     use crate::cpu::Reg8::*;
 
     match opcode {
@@ -455,7 +496,9 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xC8 => cpu.RET_Z(),
         0xC9 => cpu.RET(),
         0xCA => cpu.JP_Z(),
-        0xCB => execute_CB_prefixed(cpu),
+        0xCB => {
+            return execute_CB_prefixed(cpu);
+        }
         0xCC => cpu.CALL_Z(),
         0xCD => cpu.CALL(),
         0xCE => cpu.ADC_n(),
@@ -516,13 +559,14 @@ fn execute(cpu: &mut Cpu, opcode: u8) {
         0xFF => cpu.RST_38H(),
         _ => handle_invalid_opcode(opcode),
     }
+    return CYCLES[opcode as usize];
 }
 
 fn handle_invalid_opcode(opcode: u8) {
     panic!("INVALID OPCODE {:02x}", opcode)
 }
 
-pub fn execute_CB_prefixed(cpu: &mut Cpu) {
+pub fn execute_CB_prefixed(cpu: &mut Cpu) -> u8 {
     let opcode = cpu.mmu.read_byte(cpu.pc);
     cpu.pc += 1;
     let reg_code = reg_code(opcode);
@@ -580,6 +624,7 @@ pub fn execute_CB_prefixed(cpu: &mut Cpu) {
             }
         }
     }
+    return CB_CYCLES[opcode as usize];
 }
 
 pub fn bit_code(opcode: u8) -> u8 {

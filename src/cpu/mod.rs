@@ -1,4 +1,3 @@
-use crate::mmu;
 use crate::mmu::Mmu;
 use crate::util;
 

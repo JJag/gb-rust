@@ -319,8 +319,8 @@ impl Ppu {
                 Pixel::Sprite0(idx) => self.obj0_palette.get_color(idx),
                 Pixel::Sprite1(idx) => self.obj1_palette.get_color(idx),
             };
-            let fb_idx = (ly as usize * 160 + x);
-            self.framebuffer[fb_idx] = color;
+            let framebuffer_idx = ly as usize * 160 + x;
+            self.framebuffer[framebuffer_idx] = color;
         }
     }
 }
