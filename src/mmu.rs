@@ -133,7 +133,7 @@ impl Mmu {
             0xFE00...0xFE9F => self.oam[addr - 0xFE00] = val,
             0xFF00          => self.joypad.write_byte(val),
             0xFF04          => self.timer.reset_div(),
-            0xFF05          => self.timer.reset_tima(),
+            0xFF05          => self.timer.set_tima(val),
             0xFF06          => self.timer.tma = val,
             0xFF07          => self.timer.tac = TimerControl::from_u8(val),
             0xFFFF          => self.ie = Interrupts::from_bits_truncate(val),
