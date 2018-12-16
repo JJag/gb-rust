@@ -1,9 +1,8 @@
 #[derive(Debug)]
 pub struct Timer {
-    div: u8,
+    div_internal: u16,
     tima: u32,
     tima_counter: u32,
-    div_counter: u32,
 
     pub tma: u8,
     pub tac: TimerControl,
@@ -12,18 +11,17 @@ pub struct Timer {
 const CLOCK_FREQ_HZ: u32 = 4_194_304;
 
 impl Timer {
-    pub fn div(&self) -> u8 { self.div as u8 }
-    pub fn reset_div(&mut self) { self.div = 0 }
+    pub fn div(&self) -> u8 { (self.div_internal >> 8) as u8 }
+    pub fn reset_div(&mut self) { self.div_internal = 0 }
     pub fn tima(&self) -> u8 { self.tima as u8 }
     pub fn set_tima(&mut self, val: u8) { self.tima = val as u32 }
 
     // TODO check proper init values
     pub fn new() -> Timer {
         Timer {
-            div: 0,
+            div_internal: 0,
             tima: 0,
             tima_counter: 0,
-            div_counter: 0,
 
             tma: 0,
             tac: TimerControl {
@@ -35,19 +33,14 @@ impl Timer {
 
     pub fn pass_time(&mut self, cycles: u32) -> bool {
         assert!(cycles < 256, "Loses precision");
-        const DIV_CYCLES_NEEDED: u32 = 256 / 4;
         const TIMA_CYCLES_NEEDED: u32 = 1024 / 4;
 
         if self.tac.enabled {
             let timaFreq = self.tac.clock_freq.get_frequency_hz();
             let tima_multiplier = timaFreq / 4096;
             self.tima_counter += tima_multiplier * cycles;
-            self.div_counter += cycles;
 
-            if self.div_counter >= DIV_CYCLES_NEEDED {
-                self.div_counter -= DIV_CYCLES_NEEDED;
-                self.div.wrapping_add(1);
-            }
+            self.div_internal.wrapping_add(4);
 
             if self.tima_counter >= TIMA_CYCLES_NEEDED {
                 self.tima_counter -= TIMA_CYCLES_NEEDED;
