@@ -11,7 +11,6 @@ pub trait Cartridge {
     }
 }
 
-
 pub struct Mbc1 {
     rom: Vec<u8>,
     ram: Vec<u8>,
@@ -25,8 +24,8 @@ impl Mbc1 {
     pub fn new(rom: Vec<u8>) -> Mbc1 {
         let ram = vec![0; 0x8000];
         Mbc1 {
-            rom: rom,
-            ram: ram,
+            rom,
+            ram,
             rom_bank: 1,
             ram_bank: 0,
             ram_enabled: false,
@@ -44,32 +43,29 @@ impl Cartridge for Mbc1 {
                 self.rom[idx as usize]
             }
             0xA000...0xBFFF => {
-                panic!("RAM not supported yet");
+                let idx = 0x2000 * self.ram_bank + (addr - 0x2000) as u32;
+                self.ram[idx as usize]
             }
             _ => panic!("Unandled address: {:X}", addr),
         }
     }
     fn write_byte(&mut self, addr: u16, val: u8) {
-        let val = val as u32;
         match addr {
             0x0000...0x1FFF => {
-                self.ram_enabled = val & 0x0A == 0x0A;
-                eprintln!("Enabled RAM = {:?}", self.ram_enabled);
-            },
+                self.ram_enabled = val as u32 & 0x0A == 0x0A;
+            }
             0x2000...0x3FFF => {
-                self.rom_bank = (val & 0x1F);
+                self.rom_bank = (val as u32 & 0x1F);
                 if [0x00, 0x20, 0x40, 0x60].contains(&self.rom_bank) {
                     self.rom_bank += 1;
                 }
-                eprintln!("self.rom_bank = {:?}", self.rom_bank);
             }
             0x4000...0x5FFF => {
                 if self.ram_banking_mode {
-                    self.ram_bank = val % 4;
+                    self.ram_bank = val as u32 % 4;
                 } else {
-                    self.rom_bank = self.rom_bank | ((val % 3) << 5);
+                    self.rom_bank = self.rom_bank | ((val as u32 % 3) << 5);
                 }
-                println!("XD");
             }
             0x6000...0x7FFF => {
                 self.ram_banking_mode = val % 2 == 1;
@@ -78,10 +74,11 @@ impl Cartridge for Mbc1 {
                 } else {
                     self.ram_bank %= 4;
                 }
-                println!("SDSDS");
+//                println!("SDSDS");
             }
             0xA000...0xBFFF => {
-                panic!("RAM not supported yet");
+                let idx = 0x2000 * self.ram_bank + (addr - 0xA000) as u32;
+                self.ram[idx as usize] = val;
             }
             _ => panic!("Unandled address: {:X}", addr),
         }
