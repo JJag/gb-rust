@@ -134,32 +134,32 @@ impl Ppu {
 
     // TODO design it better
     pub fn step(&mut self, vram: &[u8], oam: &[u8]) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
-        self.mode_time += 1;
+        self.mode_time += 4;    // mode_time is in clock cycles
         self.prev_mode = self.mode;
         self.prev_ly = self.ly;
         match self.mode {
             GpuMode::OamAccess => {
-                if self.mode_time >= 80 {
+                if self.mode_time > 80 {
                     self.mode_time = 0;
                     self.mode = GpuMode::VramAccess;
                 }
             }
             GpuMode::VramAccess => {
-                if self.mode_time >= 172 {
+                if self.mode_time > 172 {
+                    if self.ly <= 144 {
+                        self.render_line(self.ly, vram, oam);
+                    }
+
                     self.mode_time = 0;
                     self.mode = GpuMode::HBlank;
                 }
             }
             GpuMode::HBlank => {
-                if self.mode_time >= 204 {
+                if self.mode_time > 204 {
                     self.mode_time = 0;
-                    if self.ly < 144 {
-                        self.render_line(self.ly, vram, oam);
-                    }
                     self.ly += 1;
-                    self.lyc_coincidence = self.ly == self.lyc;
 
-                    if self.ly == 143 {
+                    if self.ly > 143 {
                         // last line was rendered
                         self.mode = GpuMode::VBlank;
                     } else {
@@ -168,7 +168,7 @@ impl Ppu {
                 }
             }
             GpuMode::VBlank => {
-                if self.mode_time >= 456 {
+                if self.mode_time > 456 {
                     self.mode_time = 0;
                     self.ly += 1;
 
@@ -180,12 +180,14 @@ impl Ppu {
             }
         }
 
-        let vblank_interrupt = self.mode == GpuMode::VBlank && self.mode != self.prev_mode;
+        self.lyc_coincidence = self.ly == self.lyc;
+        let mode_changed = self.mode != self.prev_mode;
+        let vblank_interrupt = self.mode == GpuMode::VBlank && mode_changed;
         let mut stat_interrupt = false;
         stat_interrupt |= self.lyc_interrupt_enable && self.ly != self.prev_ly && self.ly == self.lyc;
-        stat_interrupt |= self.hblank_interrupt_enable && self.mode == GpuMode::HBlank && self.mode != self.prev_mode;
+        stat_interrupt |= self.hblank_interrupt_enable && self.mode == GpuMode::HBlank && mode_changed;
         stat_interrupt |= self.vblank_interrupt_enable && vblank_interrupt; // TODO not sure if flag is for STAT interrupt
-        stat_interrupt |= self.oam_interrupt_enable && self.mode == GpuMode::OamAccess && self.mode != self.prev_mode;
+        stat_interrupt |= self.oam_interrupt_enable && self.mode == GpuMode::OamAccess && mode_changed;
 
         let vblank_interrupt = if vblank_interrupt { Some(VBlankInterrupt {}) } else { None };
         let stat_interrupt = if stat_interrupt { Some(StatInterrupt {}) } else { None };
