@@ -12,7 +12,10 @@ const CLOCK_FREQ_HZ: u32 = 4_194_304;
 
 impl Timer {
     pub fn div(&self) -> u8 { (self.div_internal >> 8) as u8 }
-    pub fn reset_div(&mut self) { self.div_internal = 0 }
+    pub fn reset_div(&mut self) {
+        self.div_internal = 0;
+        self.tima_counter = 0;
+    }
     pub fn tima(&self) -> u8 { self.tima as u8 }
     pub fn set_tima(&mut self, val: u8) { self.tima = val as u32 }
 
