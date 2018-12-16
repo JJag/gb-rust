@@ -162,7 +162,7 @@ impl Mmu {
 
             // PPU
             0xFF40          => self.ppu.lcdc = Lcdc::from_byte(val),
-            0xFF41          => {},  // Write to LCDSTAT attempt - do nothing probably
+            0xFF41          => self.ppu.write_lcdstat(val),
             0xFF42          => self.ppu.sc_y = val ,
             0xFF43          => self.ppu.sc_x = val,
             0xFF44          => self.ppu.ly = val,
