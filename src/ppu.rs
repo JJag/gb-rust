@@ -157,6 +157,7 @@ impl Ppu {
                         self.render_line(self.ly, vram, oam);
                     }
                     self.ly += 1;
+                    self.lyc_coincidence = self.ly == self.lyc;
 
                     if self.ly == 143 {
                         // last line was rendered
@@ -267,8 +268,6 @@ impl Ppu {
             for spr in oam.sprites.iter() {
                 if sprites_on_line.len() < 10 {
                 let spr_visible_on_line =
-                    spr.pos_x > 0 &&
-                        spr.pos_x < 160 + 8 &&
                         ly + 16 >= spr.pos_y &&
                         ly + 16 < spr.pos_y + tile_height;
                 if spr_visible_on_line { sprites_on_line.push(spr) }
