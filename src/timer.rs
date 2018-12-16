@@ -25,7 +25,7 @@ impl Timer {
 
             tma: 0,
             tac: TimerControl {
-                enabled: false,
+                enabled: true,
                 clock_freq: TacFrequency::Hz4096,
             },
         }
@@ -40,8 +40,7 @@ impl Timer {
             let tima_multiplier = timaFreq / 4096;
             self.tima_counter += tima_multiplier * cycles;
 
-            self.div_internal.wrapping_add(4);
-
+            self.div_internal = self.div_internal.wrapping_add(4);
             if self.tima_counter >= TIMA_CYCLES_NEEDED {
                 self.tima_counter -= TIMA_CYCLES_NEEDED;
                 self.tima += 1;
