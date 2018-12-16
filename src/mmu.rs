@@ -28,6 +28,7 @@ pub struct Mmu {
     pub joypad: Joypad,
     pub ppu: Ppu,
     dma_cycles_left: u32,
+    dma_src: u8,
     restrict_vram_oam: bool,
 }
 
@@ -53,6 +54,7 @@ impl Mmu {
             joypad: joypad,
             ppu: ppu,
             dma_cycles_left: 0,
+            dma_src: 0,
             restrict_vram_oam: false,
         };
 
@@ -108,7 +110,7 @@ impl Mmu {
                 0xFF43          => self.ppu.sc_x,
                 0xFF44          => self.ppu.ly,
                 0xFF45          => self.ppu.lyc,
-                0xFF46          => 0,   // DMA transfer
+                0xFF46          => self.dma_src,
                 0xFF47          => self.ppu.bg_palette.to_u8(),
                 0xFF48          => self.ppu.obj0_palette.to_u8(),
                 0xFF49          => self.ppu.obj1_palette.to_u8(),
@@ -181,6 +183,7 @@ impl Mmu {
 
     fn dma(&mut self, src: u8) {
         assert!(src <= 0xF1);
+        self.dma_src = src;
         let src_from = (src as u16) << 8;
         for i in 0x00..0xA0 {
             self.oam[i] = self.read_byte(src_from + i as u16);
