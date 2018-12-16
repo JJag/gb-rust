@@ -86,19 +86,19 @@ impl Joypad {
     pub fn read_byte(&self) -> u8 {
         let byte =
             if self.dir_select {
-                0b0010_1111
+                0b1110_1111
                     & !((self.down as u8) << 3)
                     & !((self.up as u8) << 2)
                     & !((self.left as u8) << 1)
                     & !((self.right as u8) << 0)
             } else if self.btn_select {
-                0b0001_1111
+                0b1101_1111
                     & !((self.start as u8) << 3)
                     & !((self.select as u8) << 2)
                     & !((self.b as u8) << 1)
                     & !((self.a as u8) << 0)
             } else {
-                0b0011_1111
+                0b1111_1111
             }; // TODO dunno what the state should be in this case(undefined perhaps)
         return byte;
     }
