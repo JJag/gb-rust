@@ -86,7 +86,7 @@ impl Oam {
     pub fn from_bytes(bytes: &[u8]) -> Oam {
         let mut oam: Oam = Default::default();
         for i in 0..40 {
-            oam.sprites[i] = OamEntry::from_bytes(&bytes[i..i+4])
+            oam.sprites[i] = OamEntry::from_bytes(&bytes[i*4..(i*4)+4])
         }
         oam
     }

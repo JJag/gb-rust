@@ -132,7 +132,6 @@ impl Ppu {
         self.hblank_interrupt_enable = val & (1 << 3) != 0;
     }
 
-    // TODO design it better
     pub fn step(&mut self, vram: &[u8], oam: &[u8]) -> (Option<VBlankInterrupt>, Option<StatInterrupt>) {
         self.mode_time += 4;    // mode_time is in clock cycles
         self.prev_mode = self.mode;
@@ -275,7 +274,6 @@ impl Ppu {
                 if spr_visible_on_line { sprites_on_line.push(spr) }
                 }
             }
-
             for x in 0..160 {
                 for spr in &sprites_on_line {
                     let should_draw = x + 8 >= spr.pos_x && x < spr.pos_x;
