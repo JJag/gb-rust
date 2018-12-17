@@ -203,7 +203,7 @@ impl Ppu {
             Sprite1(u8),
         }
         const VRAM_OFFSET: u16 = 0x8000;
-        let window_enabled = self.lcdc.window_enabled && ly <= self.w_y;
+        let window_enabled = self.lcdc.window_enabled && ly > self.w_y;
         let mut line: Vec<Pixel> = Vec::with_capacity(160);
 
         let bg_tile_row = ly.wrapping_add(self.sc_y) / 8;
@@ -211,19 +211,19 @@ impl Ppu {
 
         let w_tile_row = ly.wrapping_sub(self.w_y) / 8;
         let w_row_in_tile = ly.wrapping_sub(self.w_y) % 8;
-        for x in 0..160 {   // TODO execute in 8-pixel chunks
-            let window = window_enabled && x <= self.w_x;
+        for x in 0..160 {
+            let window_over_bg = window_enabled && x + 7 > self.w_x;
             let tilemap1: bool;
             let tilemap_x: u8;
             let tilemap_y: u8;
             let x_in_tile: u8;
             let y_in_tile: u8;
-            if window {
+            if window_over_bg {
                 tilemap1 = self.lcdc.window_tilemap_select1;
-                tilemap_x = x.wrapping_sub(self.w_x) / 8;
+                tilemap_x = (x + 7).wrapping_sub(self.w_x) / 8;
                 tilemap_y = w_tile_row;
                 y_in_tile = w_row_in_tile;
-                x_in_tile = x.wrapping_sub(self.w_x) % 8;
+                x_in_tile = (x + 7).wrapping_sub(self.w_x) % 8;
             } else {
                 tilemap1 = self.lcdc.bg_tilemap_select1;
                 tilemap_x = x.wrapping_add(self.sc_x) / 8;
