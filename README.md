@@ -1,13 +1,23 @@
 # gb-rust
+
 [![Build Status](https://travis-ci.org/JJag/gb-rust.svg?branch=master)](https://travis-ci.org/JJag/gb-rust)
 
 Work-In-Progress classic GameBoy emulator written for educational purposes.
+
+![](img/sml.gif)
 
 ## Running
 
 `cargo run --release path/to/game_file.gb`
 
+Only MBC1 bank controller is implemented currently, so most games won't run.
 
+Controls:
+* D-pad - arrows
+* A - Z
+* B - X
+* Start - Q
+* Select - W
 ## Blargg's test ROMs status:
 
 | Test                       | Status       |
