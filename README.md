@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/JJag/gb-rust.svg?branch=master)](https://travis-ci.org/JJag/gb-rust)
 
-Work-In-Progress classic GameBoy emulator written for educational purposes.
+~Work-In-Progress~ _Unfinished_ classic GameBoy emulator written for educational purposes.
 
 ![](img/sml.gif)
 
